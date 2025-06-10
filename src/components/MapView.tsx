@@ -5,15 +5,7 @@ import 'leaflet/dist/leaflet.css';
 
 const defaultCenter: LatLngExpression = [-33.523, -70.604]; // La Florida, Chile
 
-// Arreglo de cámaras (luego esto vendrá de tu backend o API)
-const initialCameras = [
-  { id: 1, posicion: [-33.52, -70.603], estadoCamara: true, nombre: 'Cámara Plaza', linkCamara: '', direccion: 'Avenida 123', ultimaConexion : "2024-06-09T19:30:00Z" },
-  { id: 2, posicion: [-33.525, -70.6], estadoCamara: false, nombre: 'Cámara Sur', linkCamara: '', direccion: 'Avenida 123', ultimaConexion : "2024-06-09T19:30:00Z" },
-  { id: 3, posicion: [-33.511, -70.59], estadoCamara: true, nombre: 'Cámara Centro', linkCamara: '', direccion: 'Avenida 123', ultimaConexion : "2024-06-09T19:30:00Z" },
-];
-
-export default function MapView({ onCameraClick }: { onCameraClick: (cam: any) => void }) {
-  const [cameras, setCameras] = useState(initialCameras);
+export default function MapView({cameras, onShowModal}) {
 
   // Colores por estado de alerta
   const getEstadoColor = (estadoCamara: boolean) => {
@@ -44,13 +36,24 @@ export default function MapView({ onCameraClick }: { onCameraClick: (cam: any) =
           key={cam.id}
           position={cam.posicion as LatLngExpression}
           icon={createIcon(getEstadoColor(cam.estadoCamara))}
-          eventHandlers={{
-            click: () => onCameraClick(cam)
-          }}
         >
           <Popup>
             <b>{cam.nombre}</b><br />
             Estado: <span style={{ color: getEstadoColor(cam.estadoCamara) }}>{getEstado(cam.estadoCamara)}</span>
+            <br />
+            <button
+              style={{
+                marginTop: 8,
+                padding: '6px 16px',
+                background: '#3880ff',
+                color: 'white',
+                border: 'none',
+                borderRadius: 4,
+                cursor: 'pointer'
+              }}
+              onClick={() => onShowModal(cam)}
+            >Ver transmisión
+            </button>
           </Popup>
         </Marker>
       ))}

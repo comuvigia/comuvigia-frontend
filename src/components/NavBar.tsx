@@ -6,7 +6,10 @@ export function Navbar({ unseenCount, onShowNotifications }) {
   return (
     <IonHeader>
       <IonToolbar>
-        <IonTitle>ComuVigIA</IonTitle>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px', paddingLeft: '10px', paddingBottom: '5px'}} />
+            {/*<IonTitle style={{'color': '#095187', 'fontWeight': 'bold', 'padding': 0}}>ComuVigIA</IonTitle>*/}
+        </div>
         <IonButtons slot="end">
           <IonButton onClick={onShowNotifications}>
             <IonIcon icon={notificationsOutline} />
