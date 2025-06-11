@@ -1,7 +1,13 @@
 import React from 'react';
 import { IonModal, IonContent, IonHeader, IonToolbar, IonTitle, IonButton } from '@ionic/react';
+import { Camera } from '../types/Camera';
 
-export function CameraModal({ open, onClose, camera }) {
+interface CameraModalProps {
+    camera: Camera | null;
+    open: boolean;
+    onClose: () => void;
+}
+export function CameraModal({ open, onClose, camera }: CameraModalProps) {
   if (!camera) return null;
   return (
     <IonModal isOpen={open} onDidDismiss={onClose}>
@@ -12,7 +18,6 @@ export function CameraModal({ open, onClose, camera }) {
       </IonHeader>
       <IonContent>
         <p>{camera.direccion}</p>
-        {/* Aquí va el player de video */}
         <video controls autoPlay style={{ width: '100%' }} src={camera.linkCamara || "https://www.w3schools.com/html/mov_bbb.mp4"} />
         <IonButton onClick={onClose}>Cerrar</IonButton>
       </IonContent>
