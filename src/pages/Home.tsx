@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MapView from '../components/MapView';
 import { CameraModal } from '../components/CameraModal';
 import { Navbar } from '../components/NavBar';
@@ -9,26 +9,48 @@ import {
 } from '@ionic/react';
 import { Alert } from '../types/Alert';
 import {NotificacionesPopover  } from '../components/Notificaciones';
+import axios from 'axios';
 
-const initialAlerts: Alert[] = [
-    { idAlerta: 1, idCamara: 1, mensaje: 'Merodeo detectado en Calle 1', horaSuceso: "2025-06-08T16:39:00Z", scoreConfianza: 70.5, estado: false },
-    { idAlerta: 2, idCamara: 1, mensaje: 'Merodeo detectado en Calle 2', horaSuceso: "2025-06-09T17:31:00Z", scoreConfianza: 75.3, estado: false},
-    { idAlerta: 3, idCamara: 1, mensaje: 'Merodeo detectado en Calle 3', horaSuceso: "2025-06-06T19:35:00Z", scoreConfianza: 80.5, estado: true},
-  ];
+// URL del backend cargado desde archivo .env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 function Home() {
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [alerts, setAlerts] = useState(initialAlerts);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
+  
+  // Carga de alertas desde backend
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loadingAlerts, setLoadingAlerts] = useState(true);
 
-  // Listado de camaras
-  const cameras: Camera[] = [
-    { idCamara: 1, posicion: [-33.52, -70.603], estadoCamara: true, nombre: 'Cámara Plaza', linkCamara: '', direccion: 'Avenida 123', ultimaConexion : "2024-06-09T19:30:00Z" },
-    { idCamara: 2, posicion: [-33.525, -70.6], estadoCamara: false, nombre: 'Cámara Sur', linkCamara: '', direccion: 'Avenida 123', ultimaConexion : "2024-06-09T19:30:00Z" },
-    { idCamara: 3, posicion: [-33.511, -70.59], estadoCamara: true, nombre: 'Cámara Centro', linkCamara: '', direccion: 'Avenida 123', ultimaConexion : "2024-06-09T19:30:00Z" },
-  ];
+  useEffect(() => {
+    axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`)
+      .then(response => {
+        setAlerts(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener alertas:', error);
+      })
+      .finally(() => setLoadingAlerts(false));
+  }, []);
+
+  const [cameras, setCameras] = useState<Camera[]>([]);
+  const [loadingCameras, setLoadingCameras] = useState(true);
+
+  // Carga de camaras desde backend
+  useEffect(() => {
+    axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`)
+      .then(response => {
+        setCameras(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener cámaras:', error);
+      })
+      .finally(() => setLoadingCameras(false));
+  }, []);
+
+  if (loadingCameras || loadingAlerts) return <div>Cargando datos...</div>;
 
   const handleShowModal = (camera: Camera) => {
     setSelectedCamera(camera);
@@ -77,10 +99,10 @@ function Home() {
               // Aquí actualiza el estado de la alerta según la acción
               if (accion === "leida") {
                 // Cambiar estado a leído
-                console.log('Leída:', alert.idAlerta);
+                console.log('Leída:', alert.id);
               } else if (accion === "falso_positivo") {
                 // Cambiar estado a falso positivo, o eliminar
-                console.log('Falso positivo:', alert.idAlerta);
+                console.log('Falso positivo:', alert.id);
               }
             }}
           />

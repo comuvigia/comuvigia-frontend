@@ -33,12 +33,12 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
         </IonItem>
         {alerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {alerts.map(alert => (
-          <IonItem key={alert.idAlerta} color={alert.estado ? undefined : "warning"} lines='full'>
+          <IonItem key={alert.id} color={alert.estado ? undefined : "warning"} lines='full'>
             <IonLabel>
               {alert.mensaje}
               {!alert.estado && <span style={{ color: 'red', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
-              <p>Score: {alert.scoreConfianza} &nbsp; | &nbsp; Cámara: {alert.idCamara}</p>
-              <p>{formatearFecha(alert.horaSuceso)}</p>
+              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id_camara}</p>
+              <p>{formatearFecha(alert.hora_suceso)}</p>
             </IonLabel>
             <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>
                 <IonIcon icon={ellipsisVertical} />

@@ -69,13 +69,13 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
         <FixLeafletResize headerHeight={headerHeight} />
         {cameras.map(cam => (
           <Marker
-            key={cam.idCamara}
+            key={cam.id}
             position={cam.posicion as LatLngExpression}
-            icon={createIcon(getEstadoColor(cam.estadoCamara))}
+            icon={createIcon(getEstadoColor(cam.estado_camara))}
           >
             <Popup>
               <b>{cam.nombre}</b><br />
-              Estado: <span style={{ color: getEstadoColor(cam.estadoCamara) }}>{getEstado(cam.estadoCamara)}</span>
+              Estado: <span style={{ color: getEstadoColor(cam.estado_camara) }}>{getEstado(cam.estado_camara)}</span>
               <br />
               <button
                 style={{
