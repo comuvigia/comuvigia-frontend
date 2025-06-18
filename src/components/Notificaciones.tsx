@@ -22,7 +22,11 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
     setAccionOpen(false);
     setSelectedAlert(null);
   };
-
+  // En tu componente:
+  const handleLabelClick = () => {
+    console.log('Label clickeado!');
+    // Aquí va tu lógica
+  };
   return (
     <>
       <IonList style={{ maxWidth: 500, minHeight: 180, maxHeight: 450, overflowY: "auto" }}>
@@ -33,12 +37,12 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
         </IonItem>
         {alerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {alerts.map(alert => (
-          <IonItem key={alert.idAlerta} color={alert.estado ? undefined : "warning"} lines='full'>
-            <IonLabel>
+          <IonItem key={alert.id} color={alert.estado ? undefined : "warning"} lines='full'>
+            <IonLabel onClick={handleLabelClick} style={{ cursor: 'pointer' }}>
               {alert.mensaje}
               {!alert.estado && <span style={{ color: 'red', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
-              <p>Score: {alert.scoreConfianza} &nbsp; | &nbsp; Cámara: {alert.idCamara}</p>
-              <p>{formatearFecha(alert.horaSuceso)}</p>
+              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id}</p>
+              <p>{formatearFecha(alert.hora_suceso)}</p>
             </IonLabel>
             <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>
                 <IonIcon icon={ellipsisVertical} />

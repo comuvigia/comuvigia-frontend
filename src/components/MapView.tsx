@@ -17,6 +17,22 @@ function FixLeafletResize({ headerHeight }: { headerHeight: number }) {
   }, [map, headerHeight]);
   return null;
 }
+function formatDateTimeUTC(isoString: string) {
+  const date = new Date(isoString);
+  
+  // Extraer componentes UTC
+  const day = date.getUTCDate();
+  const month = date.getUTCMonth() + 1; // Los meses son 0-indexados
+  const year = date.getUTCFullYear();
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  
+  // Formatear con ceros iniciales
+  const pad = num => num.toString().padStart(2, '0');
+  
+  return `${day}/${pad(month)}/${year} ${pad(hours)}:${pad(minutes)}`;
+}
+
 
 interface MapViewProps {
   cameras: Camera[];
@@ -43,8 +59,8 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
   }, []);
   
   // Colores por estado de alerta
-  const getEstadoColor = (estadoCamara: boolean) => (estadoCamara ? 'green' : 'red');
-  const getEstado = (estadoCamara: boolean) => (estadoCamara ? 'Activa' : 'Inactiva');
+  const getEstadoColor = (estado_camara: boolean) => (estado_camara ? 'green' : 'red');
+  const getEstado = (estado_camara: boolean) => (estado_camara ? 'Activa' : 'Inactiva');
 
   // Marker custom con color
   const createIcon = (color: string) =>
@@ -69,13 +85,15 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
         <FixLeafletResize headerHeight={headerHeight} />
         {cameras.map(cam => (
           <Marker
-            key={cam.idCamara}
+            key={cam.id}
             position={cam.posicion as LatLngExpression}
-            icon={createIcon(getEstadoColor(cam.estadoCamara))}
+            icon={createIcon(getEstadoColor(cam.estado_camara))}
           >
             <Popup>
               <b>{cam.nombre}</b><br />
-              Estado: <span style={{ color: getEstadoColor(cam.estadoCamara) }}>{getEstado(cam.estadoCamara)}</span>
+              Estado: <span style={{ color: getEstadoColor(cam.estado_camara) }}>{getEstado(cam.estado_camara)}</span>
+              <br />
+              Última conexión: <span>{formatDateTimeUTC(cam.ultima_conexion)}</span>
               <br />
               <button
                 style={{
