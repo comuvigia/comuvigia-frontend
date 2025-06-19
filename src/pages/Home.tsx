@@ -3,31 +3,25 @@ import MapView from '../components/MapView';
 import { CameraModal } from '../components/CameraModal';
 import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
+import { Alert } from '../types/Alert';
 import {
   IonPopover,
   IonContent
 } from '@ionic/react';
-import {NotificacionesPopover  } from '../components/Notificaciones';
-// Yo
+import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const socket = io(BACKEND_URL);
-//Claudio
-import { fetchCameras } from '../services/cameraService';
-import { useAlertStore } from '../stores/useAlertStore';
-import { fetchUltimasAlertas, fetchUnseenAlertas, marcarAlertaVista } from '../services/alertaService';
-import { useRealtimeAlert } from '../hooks/useRealtimeAlert';
 
 function Home() {
-  const [cameras, setCameras] = useState<Camera[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
-  // Yo  
+  
   // Carga de alertas desde backend
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -84,35 +78,6 @@ function Home() {
   }, []);
 
   if (loadingCameras || loadingAlerts) return <div>Cargando datos...</div>;
-// Claudio
-  const [loadingC, setLoadingC] = useState(true);
-  const [errorC, setErrorC] = useState<string | null>(null);
-  const { alerts, unseenAlerts, setAlerts, setUnseenAlerts, markAsSeen } = useAlertStore();
-  useRealtimeAlert();
-
-  // Carga las alertas al montar
-  useEffect(() => {
-    fetchUltimasAlertas().then(setAlerts).catch(console.error);
-    fetchUnseenAlertas().then(setUnseenAlerts).catch(console.error);
-  }, [setAlerts, setUnseenAlerts]);
-
-  // Marcar alerta como vista
-  const handleMarkAsSeen = (id: number) => {
-    marcarAlertaVista(id).then(() => markAsSeen(id));
-  };
-
-  // Listado de camaras
-  useEffect(() => {
-    setLoadingC(true);
-    fetchCameras()
-      .then(setCameras)
-      .catch(err => setErrorC(err.message))
-      .finally(() => setLoadingC(false));
-  }, []);
-  
-  // Si hay error en las cámaras o alertas, mostrar mensaje
-  if (loadingC) return <div>Cargando cámaras...</div>;
-  if (errorC) return <div style={{ color: 'red' }}>Error: {errorC}</div>;
 
   const handleShowModal = (camera: Camera) => {
     setSelectedCamera(camera);

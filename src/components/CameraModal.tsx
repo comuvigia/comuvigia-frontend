@@ -9,6 +9,7 @@ interface CameraModalProps {
 }
 export function CameraModal({ open, onClose, camera }: CameraModalProps) {
   if (!camera) return null;
+  const CAMERA_URL = import.meta.env.VITE_CAMERA_URL; 
   return (
     <IonModal isOpen={open} onDidDismiss={onClose}>
       <IonHeader>
@@ -22,7 +23,7 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
         <IonButton onClick={onClose}>Cerrar</IonButton>*/}
         <img
           style={{ width: '100%', maxHeight: 400, objectFit: 'contain', background: '#000' }}
-          src={camera.link_camara || "http://localhost:5000/video_feed"}
+          src={camera.link_camara || `${CAMERA_URL}/video_feed`}
           
         />
         <IonButton onClick={onClose}>Cerrar</IonButton>
