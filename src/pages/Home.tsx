@@ -52,9 +52,9 @@ function Home() {
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [loadingCameras, setLoadingCameras] = useState(true);
 
-  // Carga de camaras desde backend
+  // Carga de camaras desde backend con cantidad de alertas
   useEffect(() => {
-    axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`)
+    axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`)
       .then(response => {
         setCameras(response.data);
       })
@@ -70,6 +70,14 @@ function Home() {
       // Agrega la nueva alerta a la lista general y no vistas
       setAlerts(prev => [alerta, ...prev]);
       setUnseenAlerts(prev => [alerta, ...prev]);
+      // Incrementar contador de alertas de la cámara correspondiente
+      setCameras(prevCameras =>
+        prevCameras.map(c =>
+          c.id === alerta.id_camara
+            ? { ...c, total_alertas: (c.total_alertas ?? 0) + 1 }
+            : c
+        )
+      );
     });
 
     return () => {
