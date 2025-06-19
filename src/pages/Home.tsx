@@ -146,6 +146,12 @@ function Home() {
     }
   };
 
+  const estados: { [key: number]: string } = {
+    0: "En Observación",
+    1: "Confirmada",
+    2: "Falso Positivo"
+  };
+
   return (
     <div>
       <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
@@ -182,6 +188,8 @@ function Home() {
       <CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />
       <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)}>
         <IonContent className="ion-padding">
+          <h2>Alerta {alertaSeleccionada?.id}</h2>
+          <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; Cámara: {alertaSeleccionada?.id_camara} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
           <h2>Descripción del Suceso</h2>
           {alertaSeleccionada?.descripcion_suceso ? (
             <p>{alertaSeleccionada.descripcion_suceso}</p>
