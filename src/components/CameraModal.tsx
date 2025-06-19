@@ -18,7 +18,13 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
       </IonHeader>
       <IonContent>
         <p>{camera.direccion}</p>
-        <video controls autoPlay style={{ width: '100%' }} src={camera.linkCamara || "https://www.w3schools.com/html/mov_bbb.mp4"} />
+        {/*<video controls autoPlay style={{ width: '100%' }} src={camera.link_camara || "https://www.w3schools.com/html/mov_bbb.mp4"} />
+        <IonButton onClick={onClose}>Cerrar</IonButton>*/}
+        <img
+          style={{ width: '100%', maxHeight: 400, objectFit: 'contain', background: '#000' }}
+          src={camera.link_camara || "http://localhost:5000/video_feed"}
+          
+        />
         <IonButton onClick={onClose}>Cerrar</IonButton>
       </IonContent>
     </IonModal>
