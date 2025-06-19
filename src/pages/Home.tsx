@@ -85,15 +85,10 @@ function Home() {
   };
 
 
-  // Calcular alertas no vistas (esto debe venir desde backend filtrado)
-  //const unseenAlerts = alerts.filter(a => !a.estado).length;
-
   // Handler para mostrar popover en el sitio del click (la campana)
   const handleShowNotifications = (e: React.MouseEvent) => {
     setEvent(e.nativeEvent);
     setPopoverOpen(true);
-    // Marcar todas como vistas
-    //setUnseenAlerts([]);
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -158,23 +153,10 @@ function Home() {
               })
             }
             formatearFecha={formatearFecha}
-            // Yo
             handleAccion={async (alert, accion) => {
               const nuevoEstado = accion === "leida" ? 1 : 2;
               await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
             }
-/* Claudio
-            handleAccion={(alert, accion) => {
-              // Aquí actualiza el estado de la alerta según la acción
-              if (accion === "leida") {
-                // Cambiar estado a leído
-                console.log('Leída:', alert.id);
-                handleMarkAsSeen(alert.id)
-              } else if (accion === "falso_positivo") {
-                // Cambiar estado a falso positivo, o eliminar
-                console.log('Falso positivo:', alert.id);
-              }
-                */
             }
           />
         </IonContent>
