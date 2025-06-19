@@ -10,9 +10,11 @@ import {
 import { Alert } from '../types/Alert';
 import {NotificacionesPopover  } from '../components/Notificaciones';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const socket = io(BACKEND_URL);
 
 function Home() {
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
@@ -32,6 +34,18 @@ function Home() {
       .catch(error => {
         console.error('Error al obtener alertas:', error);
       })
+  }, []);
+
+  const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
+
+  useEffect(() => {
+    axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/no-vistas`)
+      .then(response => {
+        setUnseenAlerts(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener alertas no vistas:', error);
+      })
       .finally(() => setLoadingAlerts(false));
   }, []);
 
@@ -49,6 +63,19 @@ function Home() {
       })
       .finally(() => setLoadingCameras(false));
   }, []);
+  
+  // Manejo WebSocket
+  useEffect(() => {
+    socket.on('nueva-alerta', (alerta: Alert) => {
+      // Agrega la nueva alerta a la lista general y no vistas
+      setAlerts(prev => [alerta, ...prev]);
+      setUnseenAlerts(prev => [alerta, ...prev]);
+    });
+
+    return () => {
+      socket.off('nueva-alerta');
+    };
+  }, []);
 
   if (loadingCameras || loadingAlerts) return <div>Cargando datos...</div>;
 
@@ -57,15 +84,16 @@ function Home() {
     setModalOpen(true);
   };
 
+
   // Calcular alertas no vistas (esto debe venir desde backend filtrado)
-  const unseenAlerts = alerts.filter(a => !a.estado).length;
+  //const unseenAlerts = alerts.filter(a => !a.estado).length;
 
   // Handler para mostrar popover en el sitio del click (la campana)
   const handleShowNotifications = (e: React.MouseEvent) => {
     setEvent(e.nativeEvent);
     setPopoverOpen(true);
     // Marcar todas como vistas
-    setAlerts(alerts.map(a => ({ ...a, estado: true })));
+    //setUnseenAlerts([]);
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -80,9 +108,33 @@ function Home() {
     }).format(fecha);
   };
 
+  const marcarVistaAlerta = async (
+    alerta: Alert,
+    nuevoEstado: number,
+    setAlerts: React.Dispatch<React.SetStateAction<Alert[]>>,
+    setUnseenAlerts: React.Dispatch<React.SetStateAction<Alert[]>>
+  ) => {
+    try {
+      await axios.post(`${BACKEND_URL}/api/alertas/marcar-vista/${alerta.id}`, {
+        estado: nuevoEstado,
+      });
+
+      setAlerts(prev =>
+        prev.map(a =>
+          a.id === alerta.id ? { ...a, estado: nuevoEstado } : a
+        )
+      );
+
+      setUnseenAlerts(prev => prev.filter(a => a.id !== alerta.id));
+
+    } catch (error) {
+      console.error('Error al actualizar alerta:', error);
+    }
+  };
+
   return (
     <div>
-      <Navbar unseenCount={unseenAlerts} onShowNotifications={handleShowNotifications} />
+      <Navbar unseenCount={unseenAlerts.length} onShowNotifications={handleShowNotifications} />
       
       <IonPopover
         isOpen={popoverOpen}
@@ -93,17 +145,20 @@ function Home() {
       >
         <IonContent>
           <NotificacionesPopover
-            alerts={alerts}
+            alerts={
+              [...alerts].sort((a, b) => {
+                // Se ordena por estado: no vistas (estado === 0) primero
+                if (a.estado !== b.estado) {
+                  return a.estado === 0 ? -1 : 1;
+                }
+                // Si tienen el mismo estado, ordenamos por hora_suceso descendente
+                return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
+              })
+            }
             formatearFecha={formatearFecha}
-            handleAccion={(alert, accion) => {
-              // Aquí actualiza el estado de la alerta según la acción
-              if (accion === "leida") {
-                // Cambiar estado a leído
-                console.log('Leída:', alert.id);
-              } else if (accion === "falso_positivo") {
-                // Cambiar estado a falso positivo, o eliminar
-                console.log('Falso positivo:', alert.id);
-              }
+            handleAccion={async (alert, accion) => {
+              const nuevoEstado = accion === "leida" ? 1 : 2;
+              await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
             }}
           />
         </IonContent>
