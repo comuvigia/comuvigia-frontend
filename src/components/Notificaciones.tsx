@@ -23,6 +23,18 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
     setSelectedAlert(null);
   };
 
+  const estados: { [key: number]: string } = {
+    0: "En Observación",
+    1: "Confirmada",
+    2: "Falso Positivo"
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score <= 40) return 'success';
+    if (score <= 60) return 'warning';
+    return 'danger';
+  };
+
   return (
     <>
       <IonList style={{ maxWidth: 500, minHeight: 180, maxHeight: 450, overflowY: "auto" }}>
@@ -33,11 +45,11 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
         </IonItem>
         {alerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {alerts.map(alert => (
-          <IonItem key={alert.id} color={alert.estado ? undefined : "warning"} lines='full'>
+          <IonItem key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)} lines='full'>
             <IonLabel>
               {alert.mensaje}
-              {!alert.estado && <span style={{ color: 'red', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
-              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id_camara}</p>
+              {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
+              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id_camara} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
               <p>{formatearFecha(alert.hora_suceso)}</p>
             </IonLabel>
             <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>
