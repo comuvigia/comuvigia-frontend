@@ -7,9 +7,10 @@ interface NotificacionesPopoverProps {
     alerts: Alert[];
     formatearFecha: (fechaISO: string) => string;
     handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
+    onVerDescripcion: (alert: Alert) => void;
 }
 
-export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: NotificacionesPopoverProps) {
+export function NotificacionesPopover({ alerts, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
@@ -51,7 +52,7 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
         {alerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {alerts.map(alert => (
           <IonItem key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)} lines='full'>
-            <IonLabel onClick={handleLabelClick} style={{ cursor: 'pointer' }}>
+            <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
               {alert.mensaje}
               {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
               <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id_camara} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>

@@ -6,7 +6,9 @@ import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
 import {
   IonPopover,
-  IonContent
+  IonContent,
+  IonButton,
+  IonModal
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
@@ -21,6 +23,8 @@ function Home() {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
+  const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
+  const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
   
   // Carga de alertas desde backend
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -92,11 +96,16 @@ function Home() {
     setModalOpen(true);
   };
 
-
   // Handler para mostrar popover en el sitio del click (la campana)
   const handleShowNotifications = (e: React.MouseEvent) => {
     setEvent(e.nativeEvent);
     setPopoverOpen(true);
+  };
+
+  const handleVerDescripcion = (alerta: Alert) => {
+    setPopoverOpen(false); // Cierra el popover
+    setAlertaSeleccionada(alerta);
+    setMostrarDescripcion(true); // Muestra la sección de detalle
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -164,13 +173,70 @@ function Home() {
             handleAccion={async (alert, accion) => {
               const nuevoEstado = accion === "leida" ? 1 : 2;
               await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
-            }
-            }
+            }}
+            onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
           />
         </IonContent>
       </IonPopover>
       <MapView cameras={ cameras } onShowModal={handleShowModal}/>
       <CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />
+      <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)}>
+        <IonContent className="ion-padding">
+          <h2>Descripción del Suceso</h2>
+          {alertaSeleccionada?.descripcion_suceso ? (
+            <p>{alertaSeleccionada.descripcion_suceso}</p>
+          ) : (
+            <p style={{ fontStyle: 'italic', color: '#888' }}>Esta alerta no tiene descripción</p>
+          )}
+          <br />
+          <IonButton
+            expand="block"
+            onClick={() => {
+              const nueva = prompt(
+                "Editar descripción:",
+                alertaSeleccionada?.descripcion_suceso || ""
+              );
+              if (nueva !== null && alertaSeleccionada) {
+                axios
+                  .put(`${BACKEND_URL}/api/alertas/editar-descripcion/${alertaSeleccionada.id}`, {
+                    descripcion_suceso: nueva
+                  })
+                  .then(() => {
+                    setAlerts(prev =>
+                      prev.map(a =>
+                        a.id === alertaSeleccionada.id
+                          ? { ...a, descripcion_suceso: nueva }
+                          : a
+                      )
+                    );
+                    setAlertaSeleccionada(prev =>
+                      prev ? { ...prev, descripcion_suceso: nueva } : prev
+                    );
+                  });
+              }
+            }}
+            style={{
+              padding: '16px 24px',
+              fontSize: '1.1rem',
+              borderRadius: '12px',
+            }}
+          >
+            Editar descripción
+          </IonButton>
+          <br />
+          <IonButton color="medium"
+            expand="block"
+            onClick={() => setMostrarDescripcion(false)}
+            style={{
+              padding: '16px 24px',
+              fontSize: '1.1rem',
+              borderRadius: '12px',
+            }}
+          >
+            Cerrar
+          </IonButton>
+        </IonContent>
+      </IonModal>
     </div>
   );
 }
