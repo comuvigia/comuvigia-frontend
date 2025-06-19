@@ -35,6 +35,11 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
     return 'danger';
   };
 
+  // En tu componente:
+  const handleLabelClick = () => {
+    console.log('Label clickeado!');
+    // Aquí va tu lógica
+  };
   return (
     <>
       <IonList style={{ maxWidth: 500, minHeight: 180, maxHeight: 450, overflowY: "auto" }}>
@@ -46,7 +51,7 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
         {alerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {alerts.map(alert => (
           <IonItem key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)} lines='full'>
-            <IonLabel>
+            <IonLabel onClick={handleLabelClick} style={{ cursor: 'pointer' }}>
               {alert.mensaje}
               {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
               <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id_camara} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
