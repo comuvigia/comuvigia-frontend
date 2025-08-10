@@ -31,8 +31,8 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion, on
   };
 
   const getScoreColor = (score: number) => {
-    if (score <= 40) return 'success';
-    if (score <= 60) return 'warning';
+    if (score <= 0.4) return 'success';
+    if (score <= 0.6) return 'warning';
     return 'danger';
   };
 
