@@ -7,9 +7,10 @@ interface NotificacionesPopoverProps {
     alerts: Alert[];
     formatearFecha: (fechaISO: string) => string;
     handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
+    onVerDescripcion: (alert: Alert) => void;
 }
 
-export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: NotificacionesPopoverProps) {
+export function NotificacionesPopover({ alerts, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
@@ -22,6 +23,19 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
     setAccionOpen(false);
     setSelectedAlert(null);
   };
+
+  const estados: { [key: number]: string } = {
+    0: "En Observación",
+    1: "Confirmada",
+    2: "Falso Positivo"
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score <= 0.4) return 'success';
+    if (score <= 0.6) return 'warning';
+    return 'danger';
+  };
+
   // En tu componente:
   const handleLabelClick = () => {
     console.log('Label clickeado!');
@@ -37,11 +51,11 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion }: 
         </IonItem>
         {alerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {alerts.map(alert => (
-          <IonItem key={alert.id} color={alert.estado ? undefined : "warning"} lines='full'>
-            <IonLabel onClick={handleLabelClick} style={{ cursor: 'pointer' }}>
+          <IonItem key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)} lines='full'>
+            <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
               {alert.mensaje}
-              {!alert.estado && <span style={{ color: 'red', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
-              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id}</p>
+              {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
+              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id_camara} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
               <p>{formatearFecha(alert.hora_suceso)}</p>
             </IonLabel>
             <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>

@@ -1,52 +1,95 @@
-import React, { useEffect, useState }from 'react';
+import React, { useEffect, useState } from 'react';
 import MapView from '../components/MapView';
 import { CameraModal } from '../components/CameraModal';
 import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
+import { Alert } from '../types/Alert';
 import {
   IonPopover,
-  IonContent
+  IonContent,
+  IonButton,
+  IonModal
 } from '@ionic/react';
-import {NotificacionesPopover  } from '../components/Notificaciones';
-import { fetchCameras } from '../services/cameraService';
-import { useAlertStore } from '../stores/useAlertStore';
-import { fetchUltimasAlertas, fetchUnseenAlertas, marcarAlertaVista } from '../services/alertaService';
-import { useRealtimeAlert } from '../hooks/useRealtimeAlert';
+import { NotificacionesPopover } from '../components/Notificaciones';
+import axios from 'axios';
+import { io } from 'socket.io-client';
+
+// URL del backend cargado desde archivo .env
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const socket = io(BACKEND_URL);
 
 function Home() {
-  const [cameras, setCameras] = useState<Camera[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
   const [modalOpen, setModalOpen] = useState(false);
-  const [loadingC, setLoadingC] = useState(true);
-  const [errorC, setErrorC] = useState<string | null>(null);
-  const { alerts, unseenAlerts, setAlerts, setUnseenAlerts, markAsSeen } = useAlertStore();
-  useRealtimeAlert();
+  const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
+  const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
+  
+  // Carga de alertas desde backend
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loadingAlerts, setLoadingAlerts] = useState(true);
 
-  // Carga las alertas al montar
   useEffect(() => {
-    fetchUltimasAlertas().then(setAlerts).catch(console.error);
-    fetchUnseenAlertas().then(setUnseenAlerts).catch(console.error);
-  }, [setAlerts, setUnseenAlerts]);
+    axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`)
+      .then(response => {
+        setAlerts(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener alertas:', error);
+      })
+  }, []);
 
-  // Marcar alerta como vista
-  const handleMarkAsSeen = (id: number) => {
-    marcarAlertaVista(id).then(() => markAsSeen(id));
-  };
+  const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
 
-  // Listado de camaras
   useEffect(() => {
-    setLoadingC(true);
-    fetchCameras()
-      .then(setCameras)
-      .catch(err => setErrorC(err.message))
-      .finally(() => setLoadingC(false));
+    axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/no-vistas`)
+      .then(response => {
+        setUnseenAlerts(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener alertas no vistas:', error);
+      })
+      .finally(() => setLoadingAlerts(false));
+  }, []);
+
+  const [cameras, setCameras] = useState<Camera[]>([]);
+  const [loadingCameras, setLoadingCameras] = useState(true);
+
+  // Carga de camaras desde backend con cantidad de alertas
+  useEffect(() => {
+    axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`)
+      .then(response => {
+        setCameras(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener cámaras:', error);
+      })
+      .finally(() => setLoadingCameras(false));
   }, []);
   
-  // Si hay error en las cámaras o alertas, mostrar mensaje
-  if (loadingC) return <div>Cargando cámaras...</div>;
-  if (errorC) return <div style={{ color: 'red' }}>Error: {errorC}</div>;
+  // Manejo WebSocket
+  useEffect(() => {
+    socket.on('nueva-alerta', (alerta: Alert) => {
+      // Agrega la nueva alerta a la lista general y no vistas
+      setAlerts(prev => [alerta, ...prev]);
+      setUnseenAlerts(prev => [alerta, ...prev]);
+      // Incrementar contador de alertas de la cámara correspondiente
+      setCameras(prevCameras =>
+        prevCameras.map(c =>
+          c.id === alerta.id_camara
+            ? { ...c, total_alertas: (c.total_alertas ?? 0) + 1 }
+            : c
+        )
+      );
+    });
+
+    return () => {
+      socket.off('nueva-alerta');
+    };
+  }, []);
+
+  if (loadingCameras || loadingAlerts) return <div>Cargando datos...</div>;
 
   const handleShowModal = (camera: Camera) => {
     setSelectedCamera(camera);
@@ -57,8 +100,12 @@ function Home() {
   const handleShowNotifications = (e: React.MouseEvent) => {
     setEvent(e.nativeEvent);
     setPopoverOpen(true);
-    // Marcar todas como vistas
-    setAlerts(alerts.map(a => ({ ...a, estado: true })));
+  };
+
+  const handleVerDescripcion = (alerta: Alert) => {
+    setPopoverOpen(false); // Cierra el popover
+    setAlertaSeleccionada(alerta);
+    setMostrarDescripcion(true); // Muestra la sección de detalle
   };
 
   const formatearFecha = (fechaISO: string) => {
@@ -75,6 +122,36 @@ function Home() {
   // Calcular alertas no vistas
   const unseenCountAlerts = unseenAlerts.length;
 
+  const marcarVistaAlerta = async (
+    alerta: Alert,
+    nuevoEstado: number,
+    setAlerts: React.Dispatch<React.SetStateAction<Alert[]>>,
+    setUnseenAlerts: React.Dispatch<React.SetStateAction<Alert[]>>
+  ) => {
+    try {
+      await axios.post(`${BACKEND_URL}/api/alertas/marcar-vista/${alerta.id}`, {
+        estado: nuevoEstado,
+      });
+
+      setAlerts(prev =>
+        prev.map(a =>
+          a.id === alerta.id ? { ...a, estado: nuevoEstado } : a
+        )
+      );
+
+      setUnseenAlerts(prev => prev.filter(a => a.id !== alerta.id));
+
+    } catch (error) {
+      console.error('Error al actualizar alerta:', error);
+    }
+  };
+
+  const estados: { [key: number]: string } = {
+    0: "En Observación",
+    1: "Confirmada",
+    2: "Falso Positivo"
+  };
+
   return (
     <div>
       <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
@@ -88,24 +165,86 @@ function Home() {
       >
         <IonContent>
           <NotificacionesPopover
-            alerts={alerts}
+            alerts={
+              [...alerts].sort((a, b) => {
+                // Se ordena por estado: no vistas (estado === 0) primero
+                if (a.estado !== b.estado) {
+                  return a.estado === 0 ? -1 : 1;
+                }
+                // Si tienen el mismo estado, ordenamos por hora_suceso descendente
+                return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
+              })
+            }
             formatearFecha={formatearFecha}
-            handleAccion={(alert, accion) => {
-              // Aquí actualiza el estado de la alerta según la acción
-              if (accion === "leida") {
-                // Cambiar estado a leído
-                console.log('Leída:', alert.id);
-                handleMarkAsSeen(alert.id)
-              } else if (accion === "falso_positivo") {
-                // Cambiar estado a falso positivo, o eliminar
-                console.log('Falso positivo:', alert.id);
-              }
+            handleAccion={async (alert, accion) => {
+              const nuevoEstado = accion === "leida" ? 1 : 2;
+              await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
             }}
+            onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
           />
         </IonContent>
       </IonPopover>
       <MapView cameras={ cameras } onShowModal={handleShowModal}/>
       <CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />
+      <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)}>
+        <IonContent className="ion-padding">
+          <h2>Alerta {alertaSeleccionada?.id}</h2>
+          <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; Cámara: {alertaSeleccionada?.id_camara} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
+          <h2>Descripción del Suceso</h2>
+          {alertaSeleccionada?.descripcion_suceso ? (
+            <p>{alertaSeleccionada.descripcion_suceso}</p>
+          ) : (
+            <p style={{ fontStyle: 'italic', color: '#888' }}>Esta alerta no tiene descripción</p>
+          )}
+          <br />
+          <IonButton
+            expand="block"
+            onClick={() => {
+              const nueva = prompt(
+                "Editar descripción:",
+                alertaSeleccionada?.descripcion_suceso || ""
+              );
+              if (nueva !== null && alertaSeleccionada) {
+                axios
+                  .put(`${BACKEND_URL}/api/alertas/editar-descripcion/${alertaSeleccionada.id}`, {
+                    descripcion_suceso: nueva
+                  })
+                  .then(() => {
+                    setAlerts(prev =>
+                      prev.map(a =>
+                        a.id === alertaSeleccionada.id
+                          ? { ...a, descripcion_suceso: nueva }
+                          : a
+                      )
+                    );
+                    setAlertaSeleccionada(prev =>
+                      prev ? { ...prev, descripcion_suceso: nueva } : prev
+                    );
+                  });
+              }
+            }}
+            style={{
+              padding: '16px 24px',
+              fontSize: '1.1rem',
+              borderRadius: '12px',
+            }}
+          >
+            Editar descripción
+          </IonButton>
+          <br />
+          <IonButton color="medium"
+            expand="block"
+            onClick={() => setMostrarDescripcion(false)}
+            style={{
+              padding: '16px 24px',
+              fontSize: '1.1rem',
+              borderRadius: '12px',
+            }}
+          >
+            Cerrar
+          </IonButton>
+        </IonContent>
+      </IonModal>
     </div>
   );
 }

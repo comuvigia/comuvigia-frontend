@@ -6,5 +6,5 @@ export interface Alert {
     score_confianza: number, // Score de confianza del suceso (0 a 100)
     clip_suceso?: Blob, // Clip de video del suceso (opcional)
     descripcion_suceso?: string | null; // Descripción del suceso (opcional, puede ser null)
-    estado: boolean; // Estado de la alerta (true = visto, false = no visto)
+    estado: number; // Estado de la alerta (0 = "En Observación", 1 = "Confirmada", 2 = "Falso Positivo")
 }

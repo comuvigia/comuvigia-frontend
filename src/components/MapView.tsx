@@ -95,6 +95,8 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
               <br />
               Última conexión: <span>{formatDateTimeUTC(cam.ultima_conexion)}</span>
               <br />
+              Cantidad de Alertas: <strong>{cam.total_alertas ?? 0}</strong>
+              <br />
               <button
                 style={{
                   marginTop: 8,
