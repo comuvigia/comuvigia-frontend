@@ -1,5 +1,17 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
+
+/* Importar Montserrat desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* Aplicar a todo el proyecto */
+* {
+  font-family: 'Montserrat', sans-serif !important;
+}
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: #1B4965 !important;
+}
 ion-popover{
     --width: 400px !important;
 }

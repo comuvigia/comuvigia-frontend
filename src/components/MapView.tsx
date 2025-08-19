@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
 import L, { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Camera } from '../types/Camera';
@@ -41,7 +41,7 @@ interface MapViewProps {
 export default function MapView({ cameras, onShowModal }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const [headerHeight, setHeaderHeight] = useState(60);
-
+  
   useEffect(() => {
     const header = document.querySelector("ion-header");
     if (header) {
@@ -77,11 +77,13 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
         zoom={15}
         style={{ height: `calc(100vh - ${headerHeight}px)`, width: '100%' }}
         whenCreated={mapInstance => { mapRef.current = mapInstance; }}
+        zoomControl={false}
       >
         <TileLayer
           attribution='&copy; OpenStreetMap'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <ZoomControl position="bottomright" /> {/* Puedes usar: 'topleft', 'topright', 'bottomleft', 'bottomright' */}
         <FixLeafletResize headerHeight={headerHeight} />
         {cameras.map(cam => (
           <Marker
