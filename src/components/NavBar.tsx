@@ -36,6 +36,7 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
           <IonList>
             <IonItem routerLink='/home'>Inicio</IonItem>
             <IonItem routerLink='/historial'>Historial</IonItem>
+            <IonItem routerLink='/grabaciones'>Grabaciones</IonItem>
             <IonItem>Perfil</IonItem>
             <IonItem>Cerrar sesión</IonItem>
           </IonList>

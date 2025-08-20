@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  color: #666;
+  color: #1B4965;
 }
 
 .error-message {
@@ -40,3 +40,47 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
+.containerHistorialLoading{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 15px;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+.containerHistorialLoading:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.full-page-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 20px;
+    font-size: 1.2rem;
+    color: #1B4965;
+}
+
+ion-spinner {
+    width: 60px;
+    height: 60px;
+    --color: #1B4965;
+}
+
+.mi-clase-oculto{
+  width: -moz-available;
+  height: 500px;
+}
+
+.mi-clase-visible{
+  width: -moz-available;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+}
