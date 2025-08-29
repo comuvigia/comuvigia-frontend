@@ -302,7 +302,7 @@ function Historial(){
                 </div>
             
                 <hr className='hr-vertical' />
-            
+                
                 <div className={`mi-clase${alerts.length === 0 ? '-oculto' : '-visible'}`}>
                     <IonTitle style={{ flexShrink: 0 }}>
                     Alertas de {selectedCamera ? selectedCamera.nombre : 'Ninguna cámara seleccionada'}

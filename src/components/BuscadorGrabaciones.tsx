@@ -22,8 +22,10 @@ export function BuscadorGrabaciones(){
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(3); // Puedes ajustar este valor
+    const [itemsPerPage, setItemsPerPage] = useState(3);
     const [totalRecords, setTotalRecords] = useState(0);
+    const [thumbnails, setThumbnails] = useState({});
+    const [loadingThumbnails, setLoadingThumbnails] = useState({});
 
     // Cargar cámaras al montar el componente
     useEffect(() => {
@@ -87,6 +89,157 @@ export function BuscadorGrabaciones(){
         return pageNumbers;
     };
 
+    // Función para obtener la URL del thumbnail
+    const getThumbnailUrl = (cameraId, startTime) => {
+        return `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(startTime)}`;
+    };
+
+    // Función para cargar un thumbnail
+    const loadThumbnail = async (cameraId, timestamp) => {
+        const thumbnailKey = `${cameraId}_${timestamp}`;
+        
+        // Si ya está cargando o ya cargado, no hacer nada
+        if (thumbnails[thumbnailKey] || loadingThumbnails[thumbnailKey]) {
+            return;
+        }
+        
+        setLoadingThumbnails(prev => ({ ...prev, [thumbnailKey]: true }));
+        
+        try {
+            const response = await fetch(
+            //`${API_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(timestamp)}`
+            `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(timestamp)}`
+            );
+            
+            if (response.ok) {
+            // Convertir la imagen a URL de datos para cachear
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            
+            setThumbnails(prev => ({ 
+                ...prev, 
+                [thumbnailKey]: imageUrl 
+            }));
+            }
+        } catch (error) {
+            console.error('Error loading thumbnail:', error);
+        } finally {
+            setLoadingThumbnails(prev => ({ ...prev, [thumbnailKey]: false }));
+        }
+    };
+
+    // Efecto para cargar thumbnails cuando cambian las grabaciones
+    useEffect(() => {
+        if (recordings.length > 0 && selectedCamera) {
+            recordings.forEach(recording => {
+            loadThumbnail(selectedCamera, recording.time);
+            });
+        }
+    }, [recordings, selectedCamera]);
+
+    // Componente de thumbnail - no se usa actualmente
+    const Thumbnail = ({ cameraId, timestamp, className }) => {
+        const thumbnailKey = `${cameraId}_${timestamp}`;
+        const thumbnailUrl = thumbnails[thumbnailKey];
+        const isLoading = loadingThumbnails[thumbnailKey];
+        
+        if (isLoading) {
+            return <div className={`thumbnail-loading ${className}`}>Cargando...</div>;
+        }
+        
+        return (
+            <img
+            src={thumbnailUrl || '/placeholder-thumbnail.jpg'}
+            alt={`Grabación ${new Date(timestamp).toLocaleString()}`}
+            className={className}
+            onError={(e) => {
+                e.target.src = '/placeholder-thumbnail.jpg';
+            }}
+            />
+        );
+    };
+
+    // Función para descargar video
+    const downloadVideo = async (cameraId, startTime, endTime, filename) => {
+        try {
+            // Mostrar indicador de carga
+            setDownloading(true);
+            
+            // Construir URL de descarga
+            const params = new URLSearchParams({
+            start_time: startTime,
+            end_time: endTime,
+            format: 'mp4'
+            });
+            
+            const response = await fetch(
+            `${BACKEND_CAMERA_URL}/video/download/${cameraId}?${params.toString()}`
+            );
+            
+            if (!response.ok) {
+            throw new Error('Error al descargar el video');
+            }
+            
+            // Convertir respuesta a blob y crear descarga
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename || `grabacion_${new Date(startTime).toLocaleDateString()}.mp4`;
+            document.body.appendChild(link);
+            link.click();
+            
+            // Limpiar
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+            
+        } catch (error) {
+            console.error('Error descargando video:', error);
+            alert('Error al descargar el video: ' + error);
+        } finally {
+            setDownloading(false);
+        }
+    };
+
+    // Estado para tracking de descargas
+    const [downloading, setDownloading] = useState(false);
+    const [downloadingId, setDownloadingId] = useState(null);
+
+    const DownloadButton = ({ recording, cameraId, onDownload }) => {
+        const [isDownloading, setIsDownloading] = useState(false);
+        console.log('Rendering DownloadButton for recording:', recording);
+        const handleDownload = async () => {
+            setIsDownloading(true);
+            try {
+                await onDownload(recording, cameraId);
+            } finally {
+                setIsDownloading(false);
+            }
+        };
+        
+        // Calcular nombre del archivo
+        const getFilename = (rec) => {
+            const date = new Date(rec.time);
+            return `grabacion_${date.toISOString().split('T')[0]}_${date.getHours()}${date.getMinutes()}.mp4`;
+        };
+        
+        return (
+            <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="download-btn"
+            title="Descargar video"
+            >
+            {isDownloading ? (
+                <span className="download-spinner">⏳</span>
+            ) : (
+                <span className="download-icon">&#10515;</span>
+            )}
+            {isDownloading ? 'Descargando...' : 'Descargar'}
+            </button>
+        );
+    };
+
     return (
         <div className="container">
             <header>
@@ -147,6 +300,16 @@ export function BuscadorGrabaciones(){
             <div className="results-list">
                 {recordings.map(recording => (
                 <div key={recording.key} className="result-item">
+                    <div className="thumbnail">
+                        <img 
+                            src={getThumbnailUrl(selectedCamera, recording.start_time)} 
+                            alt={`Grabación ${new Date(recording.time).toLocaleString()}`}
+                            onError={(e) => {
+                            // Fallback si el thumbnail no está disponible
+                            (e.target as HTMLImageElement).src = '/placeholder-thumbnail.jpg';
+                            }}
+                        />
+                    </div>
                     <div className="date-time">{new Date(recording.end_time).toLocaleString()}</div>
                     <div className="duration">
                     <span className="value">{parseFloat(String(recording.duration_seconds/60)).toFixed(2)} min</span>
@@ -155,6 +318,20 @@ export function BuscadorGrabaciones(){
                     <div className="size">
                         <span className="value">{recording.size_mb} MB</span>
                         <span className="label">Tamaño</span>
+                    </div>
+                    <div className="download-section">
+                        <DownloadButton
+                            recording={recording}
+                            cameraId={selectedCamera}
+                            onDownload={async (rec, camId) => {
+                                // Calcular end_time basado en la duración
+                                const startTime = new Date(rec.start_time);
+                                //const duration = rec.duration_seconds || 300; // 5 minutos por defecto
+                                const endTime = new Date(rec.end_time);
+                                
+                                await downloadVideo(camId, rec.start_time, rec.end_time, 'prueba');
+                        }}
+                        />
                     </div>
                 </div>
                 ))}
