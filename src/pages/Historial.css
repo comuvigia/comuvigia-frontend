@@ -1,59 +1,60 @@
 .loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: #1B4965;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #1B4965;
 }
 
 .error-message {
-  color: #eb445a;
-  padding: 16px;
-  text-align: center;
+    color: #eb445a;
+    padding: 16px;
+    text-align: center;
 }
 
 .selected-camera {
-  --background: rgba(27, 73, 101, 0.1);
-  border-left: 4px solid #1B4965;
+    --background: rgba(27, 73, 101, 0.1);
+    border-left: 4px solid #1B4965;
 }
 
 .camera-item {
     cursor: pointer;
 }
 
-/* Mejoras para el containerHistorial */
 .containerHistorial {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin: 30px;
-  border: 1px solid #e0e0e0;
-  border-radius: 15px;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    max-width: 1000px;
+    margin: 30px auto;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 
 .containerHistorial:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .containerHistorialLoading{
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  margin: 30px;
-  border: 1px solid #e0e0e0;
-  border-radius: 15px;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    transition: all 0.3s ease;
+    max-width: 1000px;
+    margin: 30px auto;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
 .containerHistorialLoading:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .full-page-loading {
@@ -74,13 +75,43 @@ ion-spinner {
 }
 
 .mi-clase-oculto{
-  width: -moz-available;
-  height: 500px;
+    width: -moz-available;
+    height: 500px;
 }
 
 .mi-clase-visible{
-  width: -moz-available;
-  height: 500px;
-  display: flex;
-  flex-direction: column;
+    width: -moz-available;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+.hr-vertical {
+    height: 500px;
+    border-width: 1px;
+}
+
+@media (max-width: 650px) {
+    .containerHistorial {
+        flex-direction: column;
+        height: 600px;
+        overflow-y: auto;
+    }
+    .hr-vertical {
+        height: 500px;
+        border-width: 1px;
+        display: none;
+    }
+    .mi-clase-oculto{
+        width: -moz-available;
+        height: 500px;
+        padding-top: 40px;
+    }
+    .mi-clase-visible{
+        width: -moz-available;
+        height: 500px;
+        display: flex;
+        flex-direction: column;
+        padding-top: 40px;
+    }
+
 }
