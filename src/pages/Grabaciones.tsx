@@ -58,10 +58,10 @@ function Historial(){
     const [loadingAlerts, setLoadingAlerts] = useState(true);
     const fetchAlerts = async (cameraId: number) => {
       try {
-        console.log('Cargando alertas para cámara:', cameraId);
+        //console.log('Cargando alertas para cámara:', cameraId);
         setLoadingAlerts(true);
         const response = await axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/camara/${cameraId}`);
-        console.log('Respuesta de alertas:', response.data);
+        //console.log('Respuesta de alertas:', response.data);
         //const filteredAlerts = response.data.filter(alert => alert.id_camara === cameraId);
         setAlerts(response.data);
       } catch (err) {
@@ -233,52 +233,52 @@ function Historial(){
                           )}
                           <br />
                           <IonButton
-                              expand="block"
-                              onClick={() => {
-                              const nueva = prompt(
-                                  "Editar descripción:",
-                                  alertaSeleccionada?.descripcion_suceso || ""
-                              );
-                              if (nueva !== null && alertaSeleccionada) {
-                                  axios
-                                  .put(`${BACKEND_URL}/api/alertas/editar-descripcion/${alertaSeleccionada.id}`, {
-                                      descripcion_suceso: nueva
-                                  })
-                                  .then(() => {
-                                      setAlerts(prev =>
-                                      prev.map(a =>
-                                          a.id === alertaSeleccionada.id
-                                          ? { ...a, descripcion_suceso: nueva }
-                                          : a
-                                      )
-                                      );
-                                      setAlertaSeleccionada(prev =>
-                                      prev ? { ...prev, descripcion_suceso: nueva } : prev
-                                      );
-                                  });
-                              }
-                              }}
-                              style={{
-                                  padding: '16px 24px',
-                                  fontSize: '1.1rem',
-                                  borderRadius: '12px',
-                                  '--background': '#1B4965',
-                              }}
-                          >
-                              Editar descripción
-                          </IonButton>
-                          <br />
-                          <IonButton color="medium"
-                              expand="block"
-                              onClick={() => setMostrarDescripcion(false)}
-                              style={{
-                              padding: '16px 24px',
-                              fontSize: '1.1rem',
-                              borderRadius: '12px',
-                              }}
-                          >
-                              Cerrar
-                          </IonButton>
+                            expand="block"
+                            onClick={() => {
+                            const nueva = prompt(
+                                "Editar descripción:",
+                                alertaSeleccionada?.descripcion_suceso || ""
+                            );
+                            if (nueva !== null && alertaSeleccionada) {
+                                axios
+                                .put(`${BACKEND_URL}/api/alertas/editar-descripcion/${alertaSeleccionada.id}`, {
+                                    descripcion_suceso: nueva
+                                })
+                                .then(() => {
+                                    setAlerts(prev =>
+                                    prev.map(a =>
+                                        a.id === alertaSeleccionada.id
+                                        ? { ...a, descripcion_suceso: nueva }
+                                        : a
+                                    )
+                                    );
+                                    setAlertaSeleccionada(prev =>
+                                    prev ? { ...prev, descripcion_suceso: nueva } : prev
+                                    );
+                                });
+                            }
+                            }}
+                            style={{
+                            padding: '16px 24px',
+                            fontSize: '1.1rem',
+                            '--border-radius': '15px',
+                            '--background': '#1B4965'
+                            }}
+                        >
+                            Editar descripción
+                        </IonButton>
+                        <br />
+                        <IonButton color="medium"
+                            expand="block"
+                            onClick={() => setMostrarDescripcion(false)}
+                            style={{
+                            padding: '16px 24px',
+                            fontSize: '1.1rem',
+                            '--border-radius': '15px',
+                            }}
+                        >
+                            Cerrar
+                        </IonButton>
                       </IonContent>
                   </IonModal>
                   <BuscadorGrabaciones/>

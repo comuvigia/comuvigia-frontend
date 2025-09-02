@@ -220,29 +220,15 @@ button:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 768px) {
-  header {
-      flex-direction: column;
-      align-items: stretch;
-  }
-  
-  .filters {
-      flex-direction: column;
-  }
-  
-  .result-item {
-      grid-template-columns: 1fr;
-      gap: 12px;
-      text-align: center;
-  }
-  
-  .date-time {
-      justify-content: center;
-  }
-    .container{
-        height: 500px;
-        overflow-y: auto;
-    }
+.no-videos-message {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
 }
 
 /* Estilos para los inputs de fecha */
@@ -259,6 +245,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .search-button{
   padding: 10px;
   border-radius: 15px;
+}
+
+.download-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
 }
 
 .download-btn {
@@ -359,4 +352,50 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
   color: #fff;
   margin-bottom: 8px;
+}
+
+#search-btn{
+    margin: 0;
+  }
+
+@media (max-width: 768px) {
+  header {
+      flex-direction: column;
+      align-items: stretch;
+  }
+  
+  .filters {
+      flex-direction: column;
+  }
+  
+  .result-item {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      text-align: center;
+  }
+  
+  .date-time {
+      justify-content: center;
+  }
+    .container{
+        height: 500px;
+        overflow-y: auto;
+    }
+}
+@media (max-width: 650px) {
+  .result-item {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      text-align: center;
+      flex-direction: column;
+  }
+  .download-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 0;
+  }
+  #search-btn{
+    margin: auto;
+  }
 }

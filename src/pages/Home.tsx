@@ -231,7 +231,7 @@ function Home() {
             style={{
               padding: '16px 24px',
               fontSize: '1.1rem',
-              borderRadius: '12px',
+              '--border-radius': '15px',
               '--background': '#1B4965'
             }}
           >
@@ -244,7 +244,7 @@ function Home() {
             style={{
               padding: '16px 24px',
               fontSize: '1.1rem',
-              borderRadius: '12px',
+              '--border-radius': '15px',
             }}
           >
             Cerrar

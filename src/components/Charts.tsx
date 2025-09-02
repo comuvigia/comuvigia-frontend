@@ -40,14 +40,64 @@ export const PieChart: React.FC<ChartProps> = ({ data }) => {
   return <Pie data={data} options={options}/>;
 };
 
-export const BarChart: React.FC<ChartProps> = ({ data }) => {
+export const BarChartSector: React.FC<ChartProps> = ({ data }) => {
   const options = {
+    responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        display: false,
       },
+      title: {
+        display: true,
+        text: ''
+      }
     },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Cantidad de Alertas'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Sector'
+        }
+      }
+    }
   };
+  return <Bar data={data} options={options} className='bar-chart'/>;
+};
 
+export const BarChartTipo: React.FC<ChartProps> = ({ data }) => {
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      title: {
+        display: true,
+        text: ''
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Cantidad de Alertas'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Tipos de Alerta'
+        }
+      }
+    }
+  };
   return <Bar data={data} options={options} className='bar-chart'/>;
 };

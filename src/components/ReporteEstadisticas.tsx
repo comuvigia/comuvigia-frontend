@@ -15,7 +15,7 @@ import {
   IonItem,
   IonBadge,
 } from '@ionic/react';
-import { PieChart, BarChart } from './Charts';
+import { PieChart, BarChartSector, BarChartTipo } from './Charts';
 import './ReporteEstadisticas.css';
 
 interface Sector {
@@ -46,6 +46,8 @@ interface EstadisticasData {
     asaltos_hogar: number;
     no_especificados: number;
     tasa_confianza: number;
+    tasa_precision: number;
+    tasa_error: number;
   };
   sectores: Sector[];
 }
@@ -65,8 +67,7 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
         label: 'Alertas por Sector',
         data: sectores.map(s => s.total_alertas),
         backgroundColor: [
-          '#ff6b6b', '#4ecdc4', '#45b7d1', '#f9c80e', '#f86624',
-          '#662e9b', '#ea3546', '#43bccd', '#f86624', '#2ec4b6'
+          '#10dc60', '#ff4961', '#ffc409', '#7044ff'
         ]
       }
     ]
@@ -76,7 +77,7 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
     labels: [/*'Confirmadas', 'Falsos Positivos', */'Merodeos', 'Portonazos', 'Asaltos Hogar', 'Falsos positivos'],
     datasets: [
       {
-        label: 'Distribución por Tipo',
+        label: '',
         data: [
           //estadisticas_totales.alertas_confirmadas,
           //estadisticas_totales.falsos_positivos,
@@ -86,7 +87,7 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
           estadisticas_totales.falsos_positivos
         ],
         backgroundColor: [
-          '#10dc60', '#ff4961', '#ffc409', '#7044ff'//, '#92949c'
+          '#10dc60', '#ff4961', '#ffc409', '#7044ff'
         ]
       }
     ]
@@ -147,11 +148,37 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
               <IonRow>
                 <IonCol>
                   <div className="confidence-progress">
-                    <IonLabel>Tasa de Confianza: {estadisticas_totales.tasa_confianza}%</IonLabel>
+                    <IonLabel>Tasa de confianza: {estadisticas_totales.tasa_confianza}%</IonLabel>
                     <IonProgressBar 
                       value={estadisticas_totales.tasa_confianza / 100} 
                       color={estadisticas_totales.tasa_confianza > 70 ? 'success' : 
                              estadisticas_totales.tasa_confianza > 40 ? 'warning' : 'danger'}
+                    />
+                  </div>
+                </IonCol>
+              </IonRow>
+
+              <IonRow>
+                <IonCol>
+                  <div className="confidence-progress">
+                    <IonLabel>Tasa de precisión: {estadisticas_totales.tasa_precision}%</IonLabel>
+                    <IonProgressBar 
+                      value={estadisticas_totales.tasa_precision / 100} 
+                      color={estadisticas_totales.tasa_precision > 70 ? 'success' : 
+                             estadisticas_totales.tasa_precision > 40 ? 'warning' : 'danger'}
+                    />
+                  </div>
+                </IonCol>
+              </IonRow>
+              
+              <IonRow>
+                <IonCol>
+                  <div className="confidence-progress">
+                    <IonLabel>Tasa de error: {estadisticas_totales.tasa_error}%</IonLabel>
+                    <IonProgressBar 
+                      value={estadisticas_totales.tasa_error / 100} 
+                      color={estadisticas_totales.tasa_error > 70 ? 'success' : 
+                             estadisticas_totales.tasa_error > 40 ? 'warning' : 'danger'}
                     />
                   </div>
                 </IonCol>
@@ -166,7 +193,7 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
             <IonCardTitle>Distribución por Sector</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
-            <BarChart data={chartDataSectores} />
+            <BarChartSector data={chartDataSectores} />
           </IonCardContent>
         </IonCard>
 
@@ -175,7 +202,7 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
             <IonCardTitle>Distribución por Tipo</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
-            <BarChart data={chartDataTipos} />
+            <BarChartTipo data={chartDataTipos} />
           </IonCardContent>
         </IonCard>
 

@@ -39,7 +39,7 @@ function Historial(){
         try {
             setLoadingCameras(true);
             const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/`);
-            console.log('Respuesta de cámaras:', response.data);
+            //console.log('Respuesta de cámaras:', response.data);
             setCameras(response.data);
             if (response.data.length > 0) {
                 setSelectedCamera(response.data[0]);
@@ -57,10 +57,10 @@ function Historial(){
     const [loadingAlerts, setLoadingAlerts] = useState(true);
     const fetchAlerts = async (cameraId: number) => {
         try {
-            console.log('Cargando alertas para cámara:', cameraId);
+            //console.log('Cargando alertas para cámara:', cameraId);
             setLoadingAlerts(true);
             const response = await axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/camara/${cameraId}`);
-            console.log('Respuesta de alertas:', response.data);
+            //console.log('Respuesta de alertas:', response.data);
             //const filteredAlerts = response.data.filter(alert => alert.id_camara === cameraId);
             setAlerts(response.data);
         } catch (err) {
@@ -251,10 +251,10 @@ function Historial(){
                         }
                         }}
                         style={{
-                            padding: '16px 24px',
-                            fontSize: '1.1rem',
-                            borderRadius: '12px',
-                            '--background': '#1B4965',
+                        padding: '16px 24px',
+                        fontSize: '1.1rem',
+                        '--border-radius': '15px',
+                        '--background': '#1B4965'
                         }}
                     >
                         Editar descripción
@@ -266,7 +266,7 @@ function Historial(){
                         style={{
                         padding: '16px 24px',
                         fontSize: '1.1rem',
-                        borderRadius: '12px',
+                        '--border-radius': '15px',
                         }}
                     >
                         Cerrar
