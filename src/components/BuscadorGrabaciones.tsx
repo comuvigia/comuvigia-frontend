@@ -172,11 +172,11 @@ export function BuscadorGrabaciones(){
         );
     };
     // Función para descargar video
-    const downloadVideo = async (cameraId, startTime, endTime, filename, recordingKey) => {
+    const downloadVideo = async (cameraId: number, startTime: string, endTime: string, filename: string, recordingKey: string, uniqueId: string) => {
         try {
             // Mostrar indicador de carga
             //setDownloading(true);
-            setDownloadingIds(prev => new Set(prev).add(recordingKey));
+            setDownloadingIds(prev => new Set([...prev, uniqueId]));
 
             // Construir URL de descarga
             const params = new URLSearchParams({
@@ -213,7 +213,7 @@ export function BuscadorGrabaciones(){
             //setDownloading(false);
             setDownloadingIds(prev => {
                 const newSet = new Set(prev);
-                newSet.delete(recordingKey);
+                newSet.delete(uniqueId);
                 return newSet;
             });
         }
@@ -270,7 +270,7 @@ export function BuscadorGrabaciones(){
                 </div>
             ) : (
                 recordings.map(recording => (
-                <div key={recording.key} className="result-item">
+                <div key={recording.id} className="result-item">
                     <div className="thumbnail">
                     <img 
                         src={getThumbnailUrl(selectedCamera, recording.start_time)} 
@@ -294,10 +294,10 @@ export function BuscadorGrabaciones(){
                         <DownloadButton
                             recording={recording}
                             cameraId={selectedCamera}
-                            isDownloading={downloadingIds.has(recording.key)}
+                            isDownloading={downloadingIds.has(recording.id)}
                             onDownload={async (rec, camId) => {
                                 const filename = `grabacion_${new Date(rec.start_time).toISOString().split('T')[0]}_${new Date(rec.start_time).toISOString().split('T')[1]}.mp4`;
-                                await downloadVideo(camId, rec.start_time, rec.end_time, filename, rec.key);
+                                await downloadVideo(camId, rec.start_time, rec.end_time, filename, rec.key, rec.id);
                             }}
                         />
                     </div>

@@ -56,8 +56,8 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
             </IonMenuButton>
           </IonButtons>
           
-          <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => history.push('/home')}>
-              <img src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px', paddingLeft: '10px', paddingBottom: '5px', cursor: 'pointer'}} />
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+              <img onClick={() => history.push('/home')} src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px', paddingLeft: '10px', paddingBottom: '5px', cursor: 'pointer'}} />
           </div>
           
           <IonButtons slot="end">
