@@ -59,6 +59,7 @@ function Home() {
   useEffect(() => {
     axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`)
       .then(response => {
+        console.log("JSON recibido del backend:", response.data);
         setCameras(response.data);
       })
       .catch(error => {
