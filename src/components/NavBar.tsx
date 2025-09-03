@@ -14,6 +14,7 @@ import {
   IonMenuButton
 } from '@ionic/react';
 import { notificationsOutline, personOutline, menuOutline } from 'ionicons/icons';
+import { useHistory } from 'react-router';
 
 interface NavBarProps {
     unseenCount: number;
@@ -21,6 +22,7 @@ interface NavBarProps {
 }
 
 export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
+  const history = useHistory();
   return (
     <>
       {/* Menú Hamburguesa */}
@@ -28,7 +30,7 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
         <IonHeader>
           <IonToolbar>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px'}} />
+              <img src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px'}}/>
             </div>
           </IonToolbar>
         </IonHeader>
@@ -37,8 +39,9 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
             <IonItem routerLink='/home'>Inicio</IonItem>
             <IonItem routerLink='/historial'>Historial</IonItem>
             <IonItem routerLink='/grabaciones'>Grabaciones</IonItem>
-            <IonItem>Perfil</IonItem>
-            <IonItem>Cerrar sesión</IonItem>
+            <IonItem routerLink='/reportes'>Reportes</IonItem>
+            {/*<IonItem>Perfil</IonItem>
+            <IonItem>Cerrar sesión</IonItem>*/}
           </IonList>
         </IonContent>
       </IonMenu>
@@ -54,7 +57,7 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
           </IonButtons>
           
           <div style={{ display: 'flex', alignItems: 'center' }}>
-              <img src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px', paddingLeft: '10px', paddingBottom: '5px'}} />
+              <img onClick={() => history.push('/home')} src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px', paddingLeft: '10px', paddingBottom: '5px', cursor: 'pointer'}} />
           </div>
           
           <IonButtons slot="end">

@@ -4,26 +4,31 @@ import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
 import {
-    IonLabel,
-    IonList,
-    IonItem,
     IonPopover,
-    IonContent,
     IonButton,
     IonModal,
+    IonSpinner,
+    IonContent,
+    IonSelect,
+    IonSelectOption,
+    IonAlert,
     IonTitle,
-    IonSpinner
+    IonGrid,
+    IonRow,
+    IonCol
 } from '@ionic/react';
+import ReporteEstadisticas from '../components/ReporteEstadisticas';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import './Historial.css';
+import './Reportes.css';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const socket = io(BACKEND_URL);
 
-function Historial(){
+function Reportes(){
     const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
@@ -31,6 +36,50 @@ function Historial(){
     const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
     const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [data, setData] = useState<any>(null);
+    const [filtros, setFiltros] = useState({
+        dias: 7,
+        agrupacion: 'day'
+    });
+
+    const cargarDatos = async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const resultado = await getEstadisticas(filtros.dias, filtros.agrupacion);
+            setData(resultado);
+        } catch (err) {
+            setError('Error al cargar los datos');
+            console.error('Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarDatos();
+    }, []);
+
+    const getEstadisticas = async (dias: number = 7, agrupacion: string = 'month') => {
+    try {
+        const fecha_inicio = '2025-08-01T03:51:24';
+        const fecha_fin = '2025-08-30T04:51:44';
+        const response = await fetch(
+        `${BACKEND_URL}/api/alertas/estadisticas-totales?fecha_inicio=${fecha_inicio}&fecha_fin=${fecha_fin}&group=${agrupacion}`
+        );
+        
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching estadísticas:', error);
+        throw error;
+    }
+    };
 
     // Carga de camaras desde backend
     const [cameras, setCameras] = useState<Camera[]>([]);
@@ -61,7 +110,6 @@ function Historial(){
             setLoadingAlerts(true);
             const response = await axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/camara/${cameraId}`);
             //console.log('Respuesta de alertas:', response.data);
-            //const filteredAlerts = response.data.filter(alert => alert.id_camara === cameraId);
             setAlerts(response.data);
         } catch (err) {
             setError('Error al cargar las alertas');
@@ -92,14 +140,9 @@ function Historial(){
 
     // Handler para ver descripción de alerta
     const handleVerDescripcion = (alerta: Alert) => {
-        setPopoverOpen(false); // Cierra el popover
+        setPopoverOpen(false);
         setAlertaSeleccionada(alerta);
-        setMostrarDescripcion(true); // Muestra la sección de detalle
-    };
-
-    // Handler para ver alertas de camara seleccionada
-    const handleCameraClick = (camera: Camera) => {
-        setSelectedCamera(camera);
+        setMostrarDescripcion(true);
     };
 
     const formatearFecha = (fechaISO: string) => {
@@ -110,13 +153,12 @@ function Historial(){
         year: "numeric",
         hour: "numeric",
         minute: "numeric",
-        hour12: true, // Formato 12h (AM/PM)
+        hour12: true,
         }).format(fecha);
     };
-    // Calcular alertas no vistas
+    
     const unseenCountAlerts = unseenAlerts.length;
 
-    // Función para marcar alerta como vista o no vista
     const marcarVistaAlerta = async (
         alerta: Alert,
         nuevoEstado: number,
@@ -141,20 +183,16 @@ function Historial(){
         }
     };
 
-    // Mapeo de estados de alerta
     const estados: { [key: number]: string } = {
         0: "En Observación",
         1: "Confirmada",
         2: "Falso Positivo"
     };
 
-    // Manejo WebSocket para recibir nuevas alertas
     useEffect(() => {
         socket.on('nueva-alerta', (alerta: Alert) => {
-        // Agrega la nueva alerta a la lista general y no vistas
         setAlerts(prev => [alerta, ...prev]);
         setUnseenAlerts(prev => [alerta, ...prev]);
-        // Incrementar contador de alertas de la cámara correspondiente
         setCameras(prevCameras =>
             prevCameras.map(c =>
             c.id === alerta.id_camara
@@ -169,12 +207,10 @@ function Historial(){
         };
     }, []);
 
-    // Cargar cámaras al montar el componente
     useEffect(() => {
       fetchCameras();
     }, []);
 
-    // Cargar alertas cuando cambia la cámara seleccionada
     useEffect(() => {
       if (selectedCamera) {
         fetchAlerts(selectedCamera.id);
@@ -182,24 +218,28 @@ function Historial(){
     }, [selectedCamera]);
 
     return (
-        <div>
+        <div style={{ 
+            height: '100vh', 
+            display: 'flex', 
+            flexDirection: 'column',
+            fontFamily: 'Arial, sans-serif'
+        }}>
             <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
+            
             <IonPopover
                 isOpen={popoverOpen}
                 event={event}
                 onDidDismiss={() => setPopoverOpen(false)}
-                side="bottom"  // Aparece debajo del icono
-                alignment="end" // Ajusta al lado derecho del botón
+                side="bottom"
+                alignment="end"
             >
                 <IonContent>
                     <NotificacionesPopover
                         alerts={
                             [...alerts].sort((a, b) => {
-                                // Se ordena por estado: no vistas (estado === 0) primero
                                 if (a.estado !== b.estado) {
                                 return a.estado === 0 ? -1 : 1;
                                 }
-                                // Si tienen el mismo estado, ordenamos por hora_suceso descendente
                                 return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
                             })
                         }
@@ -212,7 +252,9 @@ function Historial(){
                     />
                 </IonContent>
             </IonPopover>
+
             <CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />
+            
             <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)}>
                 <IonContent className="ion-padding">
                     <h2>Alerta {alertaSeleccionada?.id}</h2>
@@ -224,6 +266,7 @@ function Historial(){
                         <p style={{ fontStyle: 'italic', color: '#888' }}>Esta alerta no tiene descripción</p>
                     )}
                     <br />
+                    
                     <IonButton
                         expand="block"
                         onClick={() => {
@@ -271,79 +314,111 @@ function Historial(){
                     >
                         Cerrar
                     </IonButton>
+
                 </IonContent>
             </IonModal>
-            <div className="containerHistorial">
-                <div style={{ width: '500px', paddingRight: '15px' }}>
-                    <IonTitle>Cámaras</IonTitle>
-                    {loadingCameras ? (
-                    <div className="loading-container">
-                        <IonSpinner name="crescent" />
-                        <p>Cargando cámaras...</p>
-                    </div>
-                    ) : error ? (
-                    <p className="error-message">{error}</p>
-                    ) : (
-                    <IonList>
-                        {cameras.map((camera) => (
-                        <IonItem 
-                            key={camera.id} 
-                            onClick={() => handleCameraClick(camera)}
-                            className={selectedCamera?.id === camera.id ? 'selected-camera' : 'camera-item'}
-                        >
-                            <IonLabel>
-                            <h2>{camera.nombre}</h2>
-                            <p>{camera.direccion}</p>
-                            </IonLabel>
-                        </IonItem>
-                        ))}
-                    </IonList>
-                    )}
-                </div>
             
-                <hr className='hr-vertical' />
-                
-                <div className={`mi-clase${alerts.length === 0 ? '-oculto' : '-visible'}`}>
-                    <IonTitle style={{ flexShrink: 0 }}>
-                    Alertas de {selectedCamera ? selectedCamera.nombre : 'Ninguna cámara seleccionada'}
-                    </IonTitle>
-                    
-                    <div style={{
-                        overflowY: 'auto',
-                        flexGrow: 1,
-                        marginTop: '10px',
-                        paddingRight: '8px'
+            {/* Contenedor principal con scroll */}
+            <div style={{ 
+                flex: 1, 
+                overflow: 'auto', 
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                <div className='containerReporte' style={{ 
+                    minHeight: 'min-content',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    width: '100%'
+                }}>
+                    {/* Header responsive */}
+                    <div style={{ 
+                        width: '100%', 
+                        padding: '16px',
+                        marginBottom: '16px',
+                        textAlign: { xs: 'center', md: 'left' }
                     }}>
-                    {loadingAlerts ? (
-                        <div className="loading-container">
-                        <IonSpinner name="crescent" />
-                        <p>Cargando alertas...</p>
+                        <IonTitle>
+                            Reportes y Estadísticas
+                        </IonTitle>
+                    </div>
+                    
+                    
+
+                    {/* Contenido con scroll interno */}
+                    <div style={{ 
+                        flex: 1, 
+                        overflow: 'auto',
+                        minHeight: '400px',
+                        backgroundColor: 'white',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}>
+                        {loading && (
+                        <div style={{ 
+                            textAlign: 'center', 
+                            padding: '60px 20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: '300px'
+                        }}>
+                            <IonSpinner 
+                                style={{ 
+                                    marginBottom: '20px',
+                                    width: '40px',
+                                    height: '40px',
+                                    '--color': '#1B4965'
+                                }} 
+                            />
+                            <p style={{ 
+                                color: '#666',
+                                fontSize: '1.1rem',
+                                margin: 0
+                            }}>
+                                Cargando datos del reporte...
+                            </p>
                         </div>
-                    ) : error ? (
-                        <p className="error-message">{error}</p>
-                    ) : (
-                        <IonList style={{ paddingBottom: '20px' }}>
-                        {alerts.length > 0 ? (
-                            alerts.map((alert) => (
-                            <IonItem key={alert.id}>
-                                <IonLabel>
-                                <h2>Alerta {alert.id}</h2>
-                                <p>{new Date(alert.hora_suceso).toLocaleString()}</p>
-                                <p>{alert.mensaje}</p>
-                                </IonLabel>
-                            </IonItem>
-                            ))
-                        ) : (
-                            <IonItem>
-                            <IonLabel>No hay alertas para esta cámara</IonLabel>
-                            </IonItem>
                         )}
-                        </IonList>
-                    )}
+
+                        {error && (
+                        <IonAlert
+                            isOpen={!!error}
+                            header="Error"
+                            message={error}
+                            buttons={['OK']}
+                            onDidDismiss={() => setError('')}
+                        />
+                        )}
+
+                        {data && !loading && (
+                        <div style={{ 
+                            minHeight: 'min-content',
+                            overflow: 'visible'
+                        }}>
+                            <ReporteEstadisticas data={data} />
+                        </div>
+                        )}
+
+                        {!loading && !data && !error && (
+                        <div style={{ 
+                            textAlign: 'center', 
+                            padding: '60px 20px',
+                            color: '#666'
+                        }}>
+                            <h3 style={{ marginBottom: '16px' }}>Selecciona los filtros y genera tu reporte</h3>
+                            <p>Los datos se mostrarán aquí una vez que generes el reporte.</p>
+                        </div>
+                        )}
                     </div>
                 </div>
-            </div> 
+            </div>
         </div>
     );
 }
-export default Historial;
+export default Reportes;

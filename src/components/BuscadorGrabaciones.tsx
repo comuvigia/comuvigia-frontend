@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-    IonIcon,
     IonSpinner,
     IonTitle,
 } from '@ionic/react';
@@ -8,7 +7,6 @@ import axios from 'axios';
 import { Camera } from '../types/Camera';
 import './BuscadorGrabaciones.css';
 import '../pages/Historial.css';
-import { videocam } from 'ionicons/icons';
 
 const BACKEND_CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -38,7 +36,8 @@ export function BuscadorGrabaciones(){
                 }
             } catch (err) {
                 setError('Error al cargar las cámaras');
-                console.error(err);
+                console.error(error)
+                console.error(err);     
             }
         };
         fetchCameras();
@@ -47,20 +46,27 @@ export function BuscadorGrabaciones(){
     // Función para buscar grabaciones
     const searchRecordings = async (page=1) => {
         setLoading(true);
+        setError('');
         try {
             const pageNumber = typeof page === 'object' ? 1 : page;
-            const formattedStartDate = `${startDate}T00:00:00`;
-            const formattedEndDate = `${endDate}T23:59:59`;
+            //const formattedStartDate = `${startDate}T00:00:00`;
+            //const formattedEndDate = `${endDate}T23:59:59`;
+            const formattedStartDate = startDate;
+            const formattedEndDate = endDate;
             // Tu llamada a la API aquí
             const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?start_date=${formattedStartDate}&end_date=${formattedEndDate}&page=${pageNumber}&per_page=${itemsPerPage}&duration=2`);
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
             const data = await response.json();
             
             setRecordings(data.videos || []);
-            setTotalRecords(data.pagination.total); // Asegúrate que tu API devuelva el total de registros
+            setTotalRecords(data.pagination.total);
             setCurrentPage(page);
-        } catch (error) {
+        } catch (err) {
             setError("Error al cargar las grabaciones");
-            console.error(error);
+            console.error(error)
+            console.error("Error en searchRecordings:", err); 
         } finally {
             setLoading(false);
         }
@@ -137,47 +143,54 @@ export function BuscadorGrabaciones(){
         }
     }, [recordings, selectedCamera]);
 
-    // Componente de thumbnail - no se usa actualmente
-    const Thumbnail = ({ cameraId, timestamp, className }) => {
-        const thumbnailKey = `${cameraId}_${timestamp}`;
-        const thumbnailUrl = thumbnails[thumbnailKey];
-        const isLoading = loadingThumbnails[thumbnailKey];
-        
-        if (isLoading) {
-            return <div className={`thumbnail-loading ${className}`}>Cargando...</div>;
-        }
+    // Estado para tracking de descargas
+    //const [downloading, setDownloading] = useState(false);
+    //const [downloadingId, setDownloadingId] = useState(null);
+    const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
+    const DownloadButton = ({ recording, cameraId, onDownload, isDownloading }) => {
+        //console.log('Rendering DownloadButton for recording:', recording);
         
         return (
-            <img
-            src={thumbnailUrl || '/placeholder-thumbnail.jpg'}
-            alt={`Grabación ${new Date(timestamp).toLocaleString()}`}
-            className={className}
-            onError={(e) => {
-                e.target.src = '/placeholder-thumbnail.jpg';
-            }}
-            />
+            <button
+                onClick={() => onDownload(recording, cameraId)}
+                disabled={isDownloading}
+                className="download-btn"
+                title="Descargar video"
+            >
+                {isDownloading ? (
+                    <div className="download-loading">
+                        <IonSpinner name="crescent" style={{ width: '16px', height: '16px' }} />
+                        <span>Descargando...</span>
+                    </div>
+                ) : (
+                    <>
+                        <span className="download-icon">&#10515;</span>
+                        <span>Descargar</span>
+                    </>
+                )}
+            </button>
         );
     };
-
     // Función para descargar video
-    const downloadVideo = async (cameraId, startTime, endTime, filename) => {
+    const downloadVideo = async (cameraId: number, startTime: string, endTime: string, filename: string, recordingKey: string, uniqueId: string) => {
         try {
             // Mostrar indicador de carga
-            setDownloading(true);
-            
+            //setDownloading(true);
+            setDownloadingIds(prev => new Set([...prev, uniqueId]));
+
             // Construir URL de descarga
             const params = new URLSearchParams({
-            start_time: startTime,
-            end_time: endTime,
-            format: 'mp4'
+                start_time: startTime,
+                end_time: endTime,
+                format: 'mp4'
             });
             
             const response = await fetch(
-            `${BACKEND_CAMERA_URL}/video/download/${cameraId}?${params.toString()}`
+                `${BACKEND_CAMERA_URL}/video/download/${cameraId}?${params.toString()}`
             );
             
             if (!response.ok) {
-            throw new Error('Error al descargar el video');
+                throw new Error('Error al descargar el video');
             }
             
             // Convertir respuesta a blob y crear descarga
@@ -197,55 +210,19 @@ export function BuscadorGrabaciones(){
             console.error('Error descargando video:', error);
             alert('Error al descargar el video: ' + error);
         } finally {
-            setDownloading(false);
+            //setDownloading(false);
+            setDownloadingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(uniqueId);
+                return newSet;
+            });
         }
-    };
-
-    // Estado para tracking de descargas
-    const [downloading, setDownloading] = useState(false);
-    const [downloadingId, setDownloadingId] = useState(null);
-
-    const DownloadButton = ({ recording, cameraId, onDownload }) => {
-        const [isDownloading, setIsDownloading] = useState(false);
-        console.log('Rendering DownloadButton for recording:', recording);
-        const handleDownload = async () => {
-            setIsDownloading(true);
-            try {
-                await onDownload(recording, cameraId);
-            } finally {
-                setIsDownloading(false);
-            }
-        };
-        
-        // Calcular nombre del archivo
-        const getFilename = (rec) => {
-            const date = new Date(rec.time);
-            return `grabacion_${date.toISOString().split('T')[0]}_${date.getHours()}${date.getMinutes()}.mp4`;
-        };
-        
-        return (
-            <button
-            onClick={handleDownload}
-            disabled={isDownloading}
-            className="download-btn"
-            title="Descargar video"
-            >
-            {isDownloading ? (
-                <span className="download-spinner">⏳</span>
-            ) : (
-                <span className="download-icon">&#10515;</span>
-            )}
-            {isDownloading ? 'Descargando...' : 'Descargar'}
-            </button>
-        );
     };
 
     return (
         <div className="container">
             <header>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {/*<IonIcon icon={videocam} size="large" style={{color: '#000', paddingTop: '6px'}}/>
-                <h1>Resultados de Grabación</h1>*/}
                 <IonTitle>Grabaciones</IonTitle>
                 </div>
             </header>
@@ -263,33 +240,22 @@ export function BuscadorGrabaciones(){
                 </div>
                 <div className="filter-group">
                 <label htmlFor="start-date">Fecha Inicio</label>
-                <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(String(e.target.value) as string)}/>
+                <input type="datetime-local" id="start-date" value={startDate} onChange={e => setStartDate(String(e.target.value) as string)}/>
                 </div>
                     
                 <div className="filter-group">
                 <label htmlFor="end-date">Fecha Fin</label>
-                <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(String(e.target.value) as string)} min={startDate}/>
+                <input type="datetime-local" id="end-date" value={endDate} onChange={e => setEndDate(String(e.target.value) as string)} min={startDate}/>
                 </div>
                     
-                {/*<div className="filter-group">
-                <label htmlFor="time-range">Rango Horario</label>
-                <select id="time-range">
-                    <option>Todo el día</option>
-                    <option>Mañana (6:00-12:00)</option>
-                    <option>Tarde (12:00-18:00)</option>
-                    <option>Noche (18:00-24:00)</option>
-                    <option>Madrugada (0:00-6:00)</option>
-                </select>
-                </div>*/}
-                    
                 <div className="filter-group" style={{ paddingTop: '5px'}}>
-                <label>&nbsp;&nbsp;</label>
-                <button id="search-btn" className="search-button"
-                        onClick={() => searchRecordings()}
-                        disabled={loading || !selectedCamera}
-                >
-                    {loading ? <IonSpinner name="crescent" /> : 'Buscar'}
-                </button>
+                    <label>&nbsp;&nbsp;</label>
+                    <button id="search-btn" className="search-button"
+                            onClick={() => searchRecordings()}
+                            disabled={loading || !selectedCamera}
+                    >
+                        {loading ? <IonSpinner name="crescent" /> : 'Buscar'}
+                    </button>
                 </div>
             </div>
             
@@ -298,17 +264,22 @@ export function BuscadorGrabaciones(){
             </div>
             
             <div className="results-list">
-                {recordings.map(recording => (
-                <div key={recording.key} className="result-item">
+            {recordings.length === 0 ? (
+                <div className="no-videos-message">
+                No hay videos disponibles
+                </div>
+            ) : (
+                recordings.map(recording => (
+                <div key={recording.id} className="result-item">
                     <div className="thumbnail">
-                        <img 
-                            src={getThumbnailUrl(selectedCamera, recording.start_time)} 
-                            alt={`Grabación ${new Date(recording.time).toLocaleString()}`}
-                            onError={(e) => {
-                            // Fallback si el thumbnail no está disponible
-                            (e.target as HTMLImageElement).src = '/placeholder-thumbnail.jpg';
-                            }}
-                        />
+                    <img 
+                        src={getThumbnailUrl(selectedCamera, recording.start_time)} 
+                        alt={`Grabación ${new Date(recording.time).toLocaleString()}`}
+                        onError={(e) => {
+                        // Fallback si el thumbnail no está disponible
+                        (e.target as HTMLImageElement).src = '/placeholder-thumbnail.jpg';
+                        }}
+                    />
                     </div>
                     <div className="date-time">{new Date(recording.end_time).toLocaleString()}</div>
                     <div className="duration">
@@ -316,25 +287,23 @@ export function BuscadorGrabaciones(){
                     <span className="label">Duración</span>
                     </div>
                     <div className="size">
-                        <span className="value">{recording.size_mb} MB</span>
-                        <span className="label">Tamaño</span>
+                    <span className="value">{recording.size_mb} MB</span>
+                    <span className="label">Tamaño</span>
                     </div>
                     <div className="download-section">
                         <DownloadButton
                             recording={recording}
                             cameraId={selectedCamera}
+                            isDownloading={downloadingIds.has(recording.id)}
                             onDownload={async (rec, camId) => {
-                                // Calcular end_time basado en la duración
-                                const startTime = new Date(rec.start_time);
-                                //const duration = rec.duration_seconds || 300; // 5 minutos por defecto
-                                const endTime = new Date(rec.end_time);
-                                
-                                await downloadVideo(camId, rec.start_time, rec.end_time, 'prueba');
-                        }}
+                                const filename = `grabacion_${new Date(rec.start_time).toISOString().split('T')[0]}_${new Date(rec.start_time).toISOString().split('T')[1]}.mp4`;
+                                await downloadVideo(camId, rec.start_time, rec.end_time, filename, rec.key, rec.id);
+                            }}
                         />
                     </div>
                 </div>
-                ))}
+                ))
+            )}
             </div>
             
             <div className="pagination">

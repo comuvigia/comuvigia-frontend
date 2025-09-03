@@ -8,12 +8,13 @@ import {
   IonPopover,
   IonContent,
   IonButton,
-  IonModal
+  IonModal,
+  IonSpinner
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-
+import './Home.css';
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const socket = io(BACKEND_URL);
@@ -88,7 +89,8 @@ function Home() {
   }, []);
 
   // Loading de camaras y alertas
-  if (loadingCameras || loadingAlerts) return <div>Cargando datos...</div>;
+  if (loadingCameras || loadingAlerts)
+    return <div className='global-loading'><IonSpinner name="crescent" /></div>;
 
   // Handler para mostrar modal de cámara
   const handleShowModal = (camera: Camera) => {
@@ -229,7 +231,7 @@ function Home() {
             style={{
               padding: '16px 24px',
               fontSize: '1.1rem',
-              borderRadius: '12px',
+              '--border-radius': '15px',
               '--background': '#1B4965'
             }}
           >
@@ -242,7 +244,7 @@ function Home() {
             style={{
               padding: '16px 24px',
               fontSize: '1.1rem',
-              borderRadius: '12px',
+              '--border-radius': '15px',
             }}
           >
             Cerrar

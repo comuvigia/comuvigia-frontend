@@ -103,10 +103,10 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
                 style={{
                   marginTop: 8,
                   padding: '6px 16px',
-                  background: '#3880ff',
+                  background: '#1B4965',
                   color: 'white',
                   border: 'none',
-                  borderRadius: 4,
+                  borderRadius: 15,
                   cursor: 'pointer'
                 }}
                 onClick={() => onShowModal(cam)}
