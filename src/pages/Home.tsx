@@ -8,12 +8,13 @@ import {
   IonPopover,
   IonContent,
   IonButton,
-  IonModal
+  IonModal,
+  IonSpinner
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-
+import './Home.css';
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const socket = io(BACKEND_URL);
@@ -29,7 +30,6 @@ function Home() {
   // Carga de alertas desde backend
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
-
   useEffect(() => {
     axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`)
       .then(response => {
@@ -40,8 +40,8 @@ function Home() {
       })
   }, []);
 
+  // Carga de alertas no vistas desde backend
   const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
-
   useEffect(() => {
     axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/no-vistas`)
       .then(response => {
@@ -53,10 +53,9 @@ function Home() {
       .finally(() => setLoadingAlerts(false));
   }, []);
 
+  // Carga de camaras desde backend con cantidad de alertas
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [loadingCameras, setLoadingCameras] = useState(true);
-
-  // Carga de camaras desde backend con cantidad de alertas
   useEffect(() => {
     axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`)
       .then(response => {
@@ -68,7 +67,7 @@ function Home() {
       .finally(() => setLoadingCameras(false));
   }, []);
   
-  // Manejo WebSocket
+  // Manejo WebSocket para recibir nuevas alertas
   useEffect(() => {
     socket.on('nueva-alerta', (alerta: Alert) => {
       // Agrega la nueva alerta a la lista general y no vistas
@@ -89,8 +88,11 @@ function Home() {
     };
   }, []);
 
-  if (loadingCameras || loadingAlerts) return <div>Cargando datos...</div>;
+  // Loading de camaras y alertas
+  if (loadingCameras || loadingAlerts)
+    return <div className='global-loading'><IonSpinner name="crescent" /></div>;
 
+  // Handler para mostrar modal de cámara
   const handleShowModal = (camera: Camera) => {
     setSelectedCamera(camera);
     setModalOpen(true);
@@ -101,7 +103,8 @@ function Home() {
     setEvent(e.nativeEvent);
     setPopoverOpen(true);
   };
-
+  
+  // Handler para ver descripción de alerta
   const handleVerDescripcion = (alerta: Alert) => {
     setPopoverOpen(false); // Cierra el popover
     setAlertaSeleccionada(alerta);
@@ -119,9 +122,11 @@ function Home() {
       hour12: true, // Formato 12h (AM/PM)
     }).format(fecha);
   };
+
   // Calcular alertas no vistas
   const unseenCountAlerts = unseenAlerts.length;
 
+  // Función para marcar alerta como vista o no vista
   const marcarVistaAlerta = async (
     alerta: Alert,
     nuevoEstado: number,
@@ -145,7 +150,8 @@ function Home() {
       console.error('Error al actualizar alerta:', error);
     }
   };
-
+  
+  // Mapeo de estados de alerta
   const estados: { [key: number]: string } = {
     0: "En Observación",
     1: "Confirmada",
@@ -155,7 +161,6 @@ function Home() {
   return (
     <div>
       <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
-      
       <IonPopover
         isOpen={popoverOpen}
         event={event}
@@ -226,7 +231,8 @@ function Home() {
             style={{
               padding: '16px 24px',
               fontSize: '1.1rem',
-              borderRadius: '12px',
+              '--border-radius': '15px',
+              '--background': '#1B4965'
             }}
           >
             Editar descripción
@@ -238,7 +244,7 @@ function Home() {
             style={{
               padding: '16px 24px',
               fontSize: '1.1rem',
-              borderRadius: '12px',
+              '--border-radius': '15px',
             }}
           >
             Cerrar
