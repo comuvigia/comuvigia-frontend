@@ -27,7 +27,7 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
     try {
       
       await axios.post(`${IA_URL}/api/casos_prueba`, {
-        delito: camera.nombre,
+        delito: camera.link_camara,
       });
     } catch (error) {
       console.error('Error al notificar al backend', error);
