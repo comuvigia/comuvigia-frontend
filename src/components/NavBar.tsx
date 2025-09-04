@@ -30,7 +30,7 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
         <IonHeader>
           <IonToolbar>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px'}}/>
+              <img src="/comuvigia.png" alt="Logo" style={{ height: '60px'}}/>
             </div>
           </IonToolbar>
         </IonHeader>
@@ -57,7 +57,7 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
           </IonButtons>
           
           <div style={{ display: 'flex', alignItems: 'center' }}>
-              <img onClick={() => history.push('/home')} src="../../public/comuvigia.png" alt="Logo" style={{ height: '60px', paddingLeft: '10px', paddingBottom: '5px', cursor: 'pointer'}} />
+              <img onClick={() => history.push('/home')} src="/comuvigia.png" alt="Logo" style={{ height: '60px', paddingLeft: '10px', paddingBottom: '5px', cursor: 'pointer'}} />
           </div>
           
           <IonButtons slot="end">
