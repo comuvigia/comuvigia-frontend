@@ -84,7 +84,7 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
                 <p>{camera.direccion}</p>
                 
                 {/* Mostrar imagen para streaming HTTP */}
-                {camera.link_camara_externo && camera.link_camara !== camera.link_camara_externo ? (
+                {camera.link_camara_externo !== "" ? (
                   // Caso con streaming externo: mostrar imagen
                   <img
                     style={{ 
