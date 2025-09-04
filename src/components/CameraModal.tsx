@@ -86,31 +86,35 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
                 {/* Mostrar imagen para streaming HTTP */}
                 {camera.link_camara_externo !== "" ? (
                   // Caso con streaming externo: mostrar imagen
-                  <img
-                    style={{ 
-                      width: '100%', 
-                      maxHeight: 350, 
-                      objectFit: 'contain', 
-                      background: '#fff', 
-                      border: '3px solid #000', 
-                      borderLeft: 'none', 
-                      borderRight: 'none' 
-                    }}
-                    src={camera.link_camara_externo}
-                    alt="Streaming de cámara"
-                  />
+                  <>
+                    <img
+                        style={{ 
+                        width: '100%', 
+                        maxHeight: 350, 
+                        objectFit: 'contain', 
+                        background: '#fff', 
+                        border: '3px solid #000', 
+                        borderLeft: 'none', 
+                        borderRight: 'none' 
+                        }}
+                        src={camera.link_camara_externo}
+                        alt="Streaming de cámara"
+                    /><IonButton onClick={onClose}>Cerrar</IonButton>
+                  </>
                 ) : (
                   // Caso sin externo: usar link_camara en <video>
-                  <video 
+                  <>
+                    <video 
                     controls 
                     autoPlay 
                     style={{ width: '100%' }} 
                     src={camera.link_camara}
-                  />
+                    />
+                    <IonButton onClick={handleRevisarWhitBackend}>Revisar</IonButton>
+                    <IonButton onClick={onClose}>Cerrar</IonButton>
+                  </>
+                  
                 )}
-
-                
-                <IonButton onClick={onClose}>Cerrar</IonButton>
             </IonContent>
         </IonModal>
     );
