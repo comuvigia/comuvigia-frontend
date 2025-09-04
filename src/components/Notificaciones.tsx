@@ -1,16 +1,18 @@
 import { IonButton, IonIcon, IonActionSheet } from '@ionic/react';
-import { checkmarkDoneOutline, alertCircleOutline, ellipsisVertical } from 'ionicons/icons';import React, { useState } from 'react';
+import { checkmarkDoneOutline, alertCircleOutline, ellipsisVertical } from 'ionicons/icons';
+import React, { useState } from 'react';
 import { IonList, IonItem, IonLabel } from '@ionic/react';
 import { Alert } from '../types/Alert';
 
 interface NotificacionesPopoverProps {
     alerts: Alert[];
+    cameraNames: {[key:number]: string},
     formatearFecha: (fechaISO: string) => string;
     handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
     onVerDescripcion: (alert: Alert) => void;
 }
 
-export function NotificacionesPopover({ alerts, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
+export function NotificacionesPopover({ alerts, cameraNames, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
@@ -41,6 +43,7 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion, on
     console.log('Label clickeado!');
     // Aquí va tu lógica
   };
+
   return (
     <>
       <IonList style={{ maxWidth: 500, minHeight: 180, maxHeight: 450, overflowY: "auto" }}>
@@ -55,7 +58,7 @@ export function NotificacionesPopover({ alerts, formatearFecha, handleAccion, on
             <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
               {alert.mensaje}
               {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
-              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; Cámara: {alert.id_camara} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
+              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; {cameraNames[alert.id_camara]} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
               <p>{formatearFecha(alert.hora_suceso)}</p>
             </IonLabel>
             <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>

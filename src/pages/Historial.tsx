@@ -84,6 +84,20 @@ function Historial(){
         .finally(() => setLoadingAlerts(false));
     }, []);
 
+    // Carga de nombre de camaras desde backend
+    const [cameraNames, setCameraNames] = useState<{[key:number]:string}>({});
+    const [loadingCameraNames, setLoadingCameraNames] = useState(true);
+    useEffect(() => {
+    axios.get<{[key:number]:string}>(`${BACKEND_URL}/api/camaras/nombre-camaras`)
+        .then(response => {
+        setCameraNames(response.data);
+        })
+        .catch(error => {
+        console.error('Error al obtener cámaras:', error);
+        })
+        .finally(() => setLoadingCameraNames(false));
+    }, []);
+
     // Handler para mostrar popover en el sitio del click (la campana)
     const handleShowNotifications = (e: React.MouseEvent) => {
         setEvent(e.nativeEvent);
@@ -203,6 +217,7 @@ function Historial(){
                                 return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
                             })
                         }
+                        cameraNames={cameraNames}
                         formatearFecha={formatearFecha}
                         handleAccion={async (alert, accion) => {
                             const nuevoEstado = accion === "leida" ? 1 : 2;
@@ -216,7 +231,7 @@ function Historial(){
             <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)}>
                 <IonContent className="ion-padding">
                     <h2>Alerta {alertaSeleccionada?.id}</h2>
-                    <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; Cámara: {alertaSeleccionada?.id_camara} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
+                    <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; {alertaSeleccionada ? cameraNames[alertaSeleccionada.id_camara] ?? `ID ${alertaSeleccionada.id_camara}` : ''} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
                     <h2>Descripción del Suceso</h2>
                     {alertaSeleccionada?.descripcion_suceso ? (
                         <p>{alertaSeleccionada.descripcion_suceso}</p>
