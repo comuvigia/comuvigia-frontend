@@ -124,7 +124,7 @@ function Home() {
     });
 
     return () => {
-      socket.off('nueva-alerta');
+      socket.off('nueva-descripcion');
     };
   }, []);
 
