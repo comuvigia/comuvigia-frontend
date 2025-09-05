@@ -64,14 +64,35 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
     // Función para cerrar con llamada al backend
     const handleRevisarWhitBackend = async () => {
         try {
-            await axios.post(`${IA_URL}/api/casos_prueba`, {
-                delito: camera.link_camara,
+            // Usando fetch (recomendado si ya estás usando fetch en el backend)
+            const response = await fetch(`${BACKEND_URL}/casos_prueba?delito=${encodeURIComponent(camera.link_camara)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
             });
+
+            if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
+            console.log('Notificación exitosa al backend:', result);
+            } else {
+            console.warn('La solicitud no fue exitosa:', result.message);
+            }
+
         } catch (error) {
             console.error('Error al notificar al backend', error);
+            
+            // Opcional: Mostrar alerta al usuario
+            // alert('Error al conectar con el servidor. Intente nuevamente.');
+        } finally {
+            onClose();
         }
-        onClose();
-    };
+        };
 
     return (
         <IonModal isOpen={open} onDidDismiss={onClose}>
