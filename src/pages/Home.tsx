@@ -104,6 +104,30 @@ function Home() {
     };
   }, []);
 
+  // Manejo WebSocket para recibir nuevas descripciones
+  useEffect(() => {
+    socket.on('nueva-descripcion', (alerta: Alert) => {
+      // Actualiza alerta con descripcion nueva
+      setAlerts(prev =>
+        prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
+      );
+
+      // Si esa alerta estaba en no vistas, también la actualiza
+      setUnseenAlerts(prev =>
+        prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
+      );
+
+      // Si justo la alerta seleccionada es la que llegó por socket, también la refresca en el modal
+      setAlertaSeleccionada(prev =>
+        prev && prev.id === alerta.id ? { ...prev, descripcion_suceso: alerta.descripcion_suceso } : prev
+      );
+    });
+
+    return () => {
+      socket.off('nueva-alerta');
+    };
+  }, []);
+
   // Loading de camaras y alertas
   if (loadingCameras || loadingAlerts || loadingCameraNames)
     return <div className='global-loading'><IonSpinner name="crescent" /></div>;
