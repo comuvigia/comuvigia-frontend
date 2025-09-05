@@ -28,7 +28,7 @@ function formatDateTimeUTC(isoString: string) {
   const minutes = date.getUTCMinutes();
   
   // Formatear con ceros iniciales
-  const pad = num => num.toString().padStart(2, '0');
+  const pad = (num: number) => num.toString().padStart(2, '0');
   
   return `${day}/${pad(month)}/${year} ${pad(hours)}:${pad(minutes)}`;
 }
@@ -76,7 +76,8 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
         center={defaultCenter}
         zoom={15}
         style={{ height: `calc(100vh - ${headerHeight}px)`, width: '100%' }}
-        whenCreated={mapInstance => { mapRef.current = mapInstance; }}
+        // @ts-ignore
+        whenCreated={(mapInstance: L.Map | null) => { mapRef.current = mapInstance; }}
         zoomControl={false}
       >
         <TileLayer

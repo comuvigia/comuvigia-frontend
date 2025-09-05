@@ -9,24 +9,17 @@ import {
     IonModal,
     IonSpinner,
     IonContent,
-    IonSelect,
-    IonSelectOption,
     IonAlert,
     IonTitle,
-    IonGrid,
-    IonRow,
-    IonCol
 } from '@ionic/react';
 import ReporteEstadisticas from '../components/ReporteEstadisticas';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Reportes.css';
-import { camera } from 'ionicons/icons';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const BACKEND_CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const socket = io(BACKEND_URL);
 
 function Reportes(){
@@ -46,7 +39,7 @@ function Reportes(){
 
     const cargarDatos = async () => {
         setLoading(true);
-        setError(null);
+        setError('');
         
         try {
             const resultado = await getEstadisticas(filtros.dias, filtros.agrupacion);
@@ -355,7 +348,7 @@ function Reportes(){
                         width: '100%', 
                         padding: '16px',
                         marginBottom: '16px',
-                        textAlign: { xs: 'center', md: 'left' }
+                        textAlign: 'center'
                     }}>
                         <IonTitle>
                             Reportes y Estadísticas

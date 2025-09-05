@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { IonModal, IonContent, IonHeader, IonToolbar, IonTitle, IonButton } from '@ionic/react';
+import React, { useState } from 'react';
+import { IonModal, IonContent, IonButton } from '@ionic/react';
 import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
 import axios from 'axios';
@@ -10,7 +10,7 @@ interface CameraModalProps {
     onClose: () => void;
 }
 
-export function DescripcionesModal({ open, onClose, camera }: CameraModalProps) {
+export function DescripcionesModal({ open, onClose }: CameraModalProps) {
     const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
     const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
     const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -21,7 +21,7 @@ export function DescripcionesModal({ open, onClose, camera }: CameraModalProps) 
         <IonModal isOpen={open} onDidDismiss={onClose}>
             <IonContent className="ion-padding">
             <h2>Alerta {alertaSeleccionada?.id}</h2>
-            <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; Cámara: {alertaSeleccionada?.id_camara} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
+            <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; Cámara: {alertaSeleccionada?.id_camara} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado}</p>
             <h2>Descripción del Suceso</h2>
             {alertaSeleccionada?.descripcion_suceso ? (
                 <p>{alertaSeleccionada.descripcion_suceso}</p>

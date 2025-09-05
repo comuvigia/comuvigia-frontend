@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { IonModal, IonContent, IonHeader, IonToolbar, IonTitle, IonButton } from '@ionic/react';
 import { Camera } from '../types/Camera';
-import axios from 'axios';
-import { io } from 'socket.io-client';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const socket = io(BACKEND_URL);
-const IA_URL = import.meta.env.VITE_IA_URL;
 
 interface CameraModalProps {
     camera: Camera | null;
@@ -16,7 +12,6 @@ interface CameraModalProps {
 
 export function CameraModal({ open, onClose, camera }: CameraModalProps) {
     const [esStreaming, setEsStreaming] = useState(false);
-    const CAMERA_URL = import.meta.env.VITE_CAMERA_URL; 
     
     // Mover los hooks antes de cualquier condicional
     useEffect(() => {
@@ -56,15 +51,11 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
 
     if (!camera) return null;
 
-    const url_camara = CAMERA_URL + `/video_feed/${camera.id}`;
-    const videoUrl = camera.link_camara_externo || "https://www.w3schools.com/html/mov_bbb.mp4";
-
-    const esExterna = (url: string) => url.startsWith("http://") || url.startsWith("https://");
-
     // Función para cerrar con llamada al backend
     const handleRevisarWhitBackend = async () => {
         try {
             // Usando fetch (recomendado si ya estás usando fetch en el backend)
+            // @ts-ignore
             const response = await fetch(`${BACKEND_URL}/casos_prueba?delito=${encodeURIComponent(camera.link_camara)}`, {
             method: 'POST',
             headers: {

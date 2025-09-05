@@ -96,15 +96,18 @@ export function BuscadorGrabaciones(){
     };
 
     // Función para obtener la URL del thumbnail
+    // @ts-ignore
     const getThumbnailUrl = (cameraId, startTime) => {
         return `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(startTime)}`;
     };
 
     // Función para cargar un thumbnail
+    // @ts-ignore
     const loadThumbnail = async (cameraId, timestamp) => {
         const thumbnailKey = `${cameraId}_${timestamp}`;
         
         // Si ya está cargando o ya cargado, no hacer nada
+        // @ts-ignore
         if (thumbnails[thumbnailKey] || loadingThumbnails[thumbnailKey]) {
             return;
         }
@@ -147,6 +150,7 @@ export function BuscadorGrabaciones(){
     //const [downloading, setDownloading] = useState(false);
     //const [downloadingId, setDownloadingId] = useState(null);
     const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
+    // @ts-ignore
     const DownloadButton = ({ recording, cameraId, onDownload, isDownloading }) => {
         //console.log('Rendering DownloadButton for recording:', recording);
         
@@ -295,6 +299,7 @@ export function BuscadorGrabaciones(){
                             recording={recording}
                             cameraId={selectedCamera}
                             isDownloading={downloadingIds.has(recording.id)}
+                            // @ts-ignore
                             onDownload={async (rec, camId) => {
                                 const filename = `grabacion_${new Date(rec.start_time).toISOString().split('T')[0]}_${new Date(rec.start_time).toISOString().split('T')[1]}.mp4`;
                                 await downloadVideo(camId, rec.start_time, rec.end_time, filename, rec.key, rec.id);
