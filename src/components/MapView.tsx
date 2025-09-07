@@ -4,6 +4,10 @@ import L, { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Camera } from '../types/Camera';
 import { useEffect, useState, useRef } from "react";
+import './MapView.css';
+import { Tooltip } from 'react-leaflet';
+import { Alert } from '../types/Alert';
+import { NotificacionesPopover } from './Notificaciones';
 
 const defaultCenter: LatLngExpression = [-33.523, -70.604]; // La Florida, Chile
 
@@ -17,6 +21,8 @@ function FixLeafletResize({ headerHeight }: { headerHeight: number }) {
   }, [map, headerHeight]);
   return null;
 }
+
+
 function formatDateTimeUTC(isoString: string) {
   const date = new Date(isoString);
   
@@ -36,12 +42,24 @@ function formatDateTimeUTC(isoString: string) {
 
 interface MapViewProps {
   cameras: Camera[];
-  onShowModal: (camera: Camera) => void;
+
+  selectedCamera?: Camera | null;
+  alerts?: Alert[];
+  cameraNames?: { [key: number]: string };
+  formatearFecha?: (fechaISO: string) => string;
+  handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
+  onVerDescripcion?: (alerta: Alert) => void;
+  setSelectedCamera: (cam: Camera | null) => void;
 }
-export default function MapView({ cameras, onShowModal }: MapViewProps) {
+export default function MapView({ cameras,selectedCamera,alerts,cameraNames,formatearFecha,handleAccion,onVerDescripcion ,setSelectedCamera}: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const [headerHeight, setHeaderHeight] = useState(60);
+  const [activeTab, setActiveTab] = useState<'video' | 'estadisticas' | 'alertas'>('video');
+  const [isDark, setIsDark] = useState(
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
   
+
   useEffect(() => {
     const header = document.querySelector("ion-header");
     if (header) {
@@ -54,8 +72,21 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
       }
     };
 
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    setIsDark(mediaQuery.matches);
+
+      const handleThemeChange = (e: MediaQueryListEvent) => {
+    setIsDark(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleThemeChange);
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      mediaQuery.removeEventListener("change", handleThemeChange);
+    window.removeEventListener("resize", handleResize);
+  };
   }, []);
   
   // Colores por estado de alerta
@@ -71,19 +102,30 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
     });
 
   return (
-    <div className="map-container">
+    <div className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
       <MapContainer
         center={defaultCenter}
         zoom={15}
         style={{ height: `calc(100vh - ${headerHeight}px)`, width: '100%' }}
-        // @ts-ignore
-        whenCreated={(mapInstance: L.Map | null) => { mapRef.current = mapInstance; }}
+        whenCreated={mapInstance => { mapRef.current = mapInstance; }}
         zoomControl={false}
       >
-        <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+  <TileLayer
+    attribution='&copy; CartoDB'
+    url={
+      isDark
+      ?  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      :   "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+    }
+  />
+
+  {
+  /* modo oscuro
+  <TileLayer
+    attribution='&copy; CartoDB'
+    
+  />
+  */}
         <ZoomControl position="bottomright" /> {/* Puedes usar: 'topleft', 'topright', 'bottomleft', 'bottomright' */}
         <FixLeafletResize headerHeight={headerHeight} />
         {cameras.map(cam => (
@@ -92,7 +134,7 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
             position={cam.posicion as LatLngExpression}
             icon={createIcon(getEstadoColor(cam.estado_camara))}
           >
-            <Popup>
+            <Popup className="pop-up">
               <b>{cam.nombre}</b><br />
               Estado: <span style={{ color: getEstadoColor(cam.estado_camara) }}>{getEstado(cam.estado_camara)}</span>
               <br />
@@ -110,13 +152,59 @@ export default function MapView({ cameras, onShowModal }: MapViewProps) {
                   borderRadius: 15,
                   cursor: 'pointer'
                 }}
-                onClick={() => onShowModal(cam)}
+                onClick={() => setSelectedCamera(cam)}
               >Ver transmisión
               </button>
             </Popup>
+            <Tooltip direction="top" opacity={1}>
+              <img src="public/favicon.png" className="camera-tooltip" alt="Miniatura" />
+            </Tooltip>
           </Marker>
         ))}
       </MapContainer>
+      {selectedCamera && (
+        <div className="camera-panel" style={{ top: headerHeight }}>
+          <h2>{selectedCamera.nombre}</h2>
+          <video
+            src="public\loitering.mp4"
+            controls
+            autoPlay
+            muted
+            className="camera-video"
+          />
+          <div className="tab-buttons">
+            <button onClick={() => setActiveTab('video')}>🎥 Video</button>
+            <button onClick={() => setActiveTab('estadisticas')}>📊 Estadísticas</button>
+            <button onClick={() => setActiveTab('alertas')}>🚨 Alertas</button>
+          </div>
+
+          <div className="tab-content"> 
+              {activeTab === 'video' && <div>Contenido de Video (aún vacío)</div>}
+              {activeTab === 'estadisticas' && <div>Contenido de Estadísticas (aún vacío)</div>}
+              {activeTab === 'alertas' && selectedCamera && alerts && (
+                <NotificacionesPopover
+                  alerts={alerts}
+                  selectedCamera={selectedCamera}
+                  cameraNames={selectedCamera.nombre}
+                  variant="map"
+                  formatearFecha={formatearFecha!}
+                  handleAccion={handleAccion!}
+                  onVerDescripcion={onVerDescripcion!}
+                />
+              )}
+          {/*
+            {activeTab === 'video' && <TabVideo camera={selectedCamera} />}
+            {activeTab === 'estadisticas' && <TabEstadisticas camera={selectedCamera} />}
+            {activeTab === 'alertas' && <NotificacionesPorCamara camera={selectedCamera} />}
+          */}
+          </div>
+          <p><strong>Estado:</strong> <span style={{ color: getEstadoColor(selectedCamera.estado_camara) }}>{getEstado(selectedCamera.estado_camara)}</span></p>
+          <p><strong>Última conexión:</strong> {formatDateTimeUTC(selectedCamera.ultima_conexion)}</p>
+          <p><strong>Alertas:</strong> {selectedCamera.total_alertas ?? 0}</p>
+
+          <button onClick={() => setSelectedCamera(null)}>Cerrar panel</button>
+        </div>
+      )}
     </div>
   );
 }

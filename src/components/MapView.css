@@ -17,3 +17,102 @@
   left: 0;
   right: 0;
 }
+
+.map-layout {
+  display: flex;
+  height: 100%;
+  position: relative;
+}
+
+.map-panel {
+  flex: 1;
+}
+
+.camera-panel {
+  width: 20%;
+  padding: 1rem;
+  background: var(--ion-background-color); /* ✅ adaptable */
+  border-left: 1px solid var(--ion-color-step-200); /* ✅ adaptable */
+  color: var(--ion-text-color); /* ✅ asegura legibilidad */
+  opacity: 1; /* asegura que sea sólido */
+  overflow-y: auto;
+  z-index: 1000;
+  position: absolute;
+  margin-top: 3%;
+  right: 3%;
+  height: 80%;
+  border-radius: 3%;
+  border-bottom:10px solid var(--ion-panel-bga);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Sombra elegante */
+}
+
+.camera-panel h2 {
+  margin-top: 0;
+}
+
+.camera-panel video,
+.camera-panel iframe {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.camera-panel button {
+  margin-top: 12px;
+  padding: 6px 16px;
+  background: #ccc;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.camera-tooltip {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+
+.tab-buttons {
+  display:flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.tab-buttons button {
+  flex: auto;
+  padding: 10px;
+  background-color: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast); /* siempre legible */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  margin: 0 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.tab-buttons button:hover {
+  background-color: var(--ion-color-primary-shade);
+}
+
+.tab-content {
+  padding-top: 1rem;
+}
+
+
+.pop-up .leaflet-popup-content-wrapper {
+  background-color: var(--ion-background-color); /* claro */
+  color: var(--ion-text-color)!important;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 1 !important;
+}
+
+
+
+.pop-up .leaflet-popup-tip {
+  background-color: var(--ion-background-color);
+}
+

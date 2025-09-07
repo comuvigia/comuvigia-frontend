@@ -7,15 +7,22 @@ import { Alert } from '../types/Alert';
 interface NotificacionesPopoverProps {
     alerts: Alert[];
     cameraNames: {[key:number]: string},
+    selectedCamera?: { id: number }; // opcional, para filtrar
+    variant?: 'map' | 'sidebar';
     formatearFecha: (fechaISO: string) => string;
     handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
     onVerDescripcion: (alert: Alert) => void;
+    
 }
 
-export function NotificacionesPopover({ alerts, cameraNames, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
+export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,variant, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
+  const filteredAlerts = selectedCamera
+  ? alerts.filter(a => a.id_camara === selectedCamera.id)
+  : alerts;
+  
   const abrirMenu = (alert: Alert) => {
     setSelectedAlert(alert);
     setAccionOpen(true);
@@ -52,8 +59,8 @@ export function NotificacionesPopover({ alerts, cameraNames, formatearFecha, han
             <b>Notificaciones</b>
           </IonLabel>
         </IonItem>
-        {alerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
-        {alerts.map(alert => (
+        {filteredAlerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
+        {filteredAlerts.map(alert => (
           <IonItem key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)} lines='full'>
             <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
               {alert.mensaje}

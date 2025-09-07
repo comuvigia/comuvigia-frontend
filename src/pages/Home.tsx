@@ -29,7 +29,7 @@ function Home() {
   const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
   const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
   const [downloadingClip, setDownloadingClip] = useState<string | null>(null);
-
+  const [alertsByCamera, setAlertsByCamera] = useState<Alert[]>([]);
   // Carga de alertas desde backend
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -134,11 +134,6 @@ function Home() {
   if (loadingCameras || loadingAlerts || loadingCameraNames)
     return <div className='global-loading'><IonSpinner name="crescent" /></div>;
 
-  // Handler para mostrar modal de cámara
-  const handleShowModal = (camera: Camera) => {
-    setSelectedCamera(camera);
-    setModalOpen(true);
-  };
 
   // Handler para mostrar popover en el sitio del click (la campana)
   const handleShowNotifications = (e: React.MouseEvent) => {
@@ -279,16 +274,42 @@ function Home() {
               })
             }
             cameraNames={cameraNames}
+            variant="map"
             formatearFecha={formatearFecha}
             handleAccion={async (alert, accion) => {
               const nuevoEstado = accion === "leida" ? 1 : 2;
               await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
             }}
             onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
+            
           />
         </IonContent>
       </IonPopover>
-      <MapView cameras={ cameras } onShowModal={handleShowModal}/>
+      <MapView
+        cameras={cameras}   // ya la tienes
+        selectedCamera={selectedCamera}           // pasar la cámara seleccionada
+        alerts={
+              [...alerts].sort((a, b) => {
+                // Se ordena por estado: no vistas (estado === 0) primero
+                if (a.estado !== b.estado) {
+                  return a.estado === 0 ? -1 : 1;
+                }
+                // Si tienen el mismo estado, ordenamos por hora_suceso descendente
+                return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
+              })
+            }         // las alertas de la cámara
+        cameraNames={cameraNames}
+        formatearFecha={formatearFecha}
+                    handleAccion={async (alert, accion) => {
+              const nuevoEstado = accion === "leida" ? 1 : 2;
+              await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
+            }}
+        setSelectedCamera={setSelectedCamera}         // función para marcar vista/falso positivo
+        onVerDescripcion={(alerta) => {
+          setAlertaSeleccionada(alerta);
+          setMostrarDescripcion(true);
+        }}
+      />
       <CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />
       <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)}>
         <IonContent className="ion-padding">
