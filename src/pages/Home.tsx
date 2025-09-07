@@ -15,9 +15,10 @@ import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
-import { camera } from 'ionicons/icons';
+import { camera, download } from 'ionicons/icons';
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const socket = io(BACKEND_URL);
 
 function Home() {
@@ -27,7 +28,8 @@ function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
   const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
-  
+  const [downloadingClip, setDownloadingClip] = useState<string | null>(null);
+
   // Carga de alertas desde backend
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -198,6 +200,62 @@ function Home() {
     2: "Falso Positivo"
   };
 
+  const vid = 'https://d1j15et697kmcj.cloudfront.net/portonazo.mp4';
+
+  // Función para descargar clip
+  const downloadClip = async (key: string) => {
+    setDownloadingClip(key); // Iniciar loading
+    try {
+      const response = await axios.post(`${CAMERA_URL}/video/download`, 
+        { key: key },
+        {
+          responseType: 'blob',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Crear y disparar la descarga
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const contentDisposition = response.headers['content-disposition'];
+      let fileName = `clip_${new Date().getTime()}.mp4`;
+      
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+      
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error: any) {
+      console.error('Error al descargar clip:', error);
+      
+      if (error.response?.data instanceof Blob) {
+        try {
+          const errorText = await error.response.data.text();
+          console.error('Error del servidor:', errorText);
+        } catch (blobError) {
+          console.error('No se pudo leer el error del servidor', blobError);
+        }
+      }
+      
+      throw error;
+    } finally {
+      setDownloadingClip(null); // Finalizar loading siempre
+    }
+  };
+
   return (
     <div>
       <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
@@ -236,7 +294,7 @@ function Home() {
         <IonContent className="ion-padding">
           <h2>Alerta {alertaSeleccionada?.id}</h2>
           <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; {alertaSeleccionada ? cameraNames[alertaSeleccionada.id_camara] ?? `ID ${alertaSeleccionada.id_camara}` : ''} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
-          <h2>Descripción del Suceso</h2>
+          <h2>Descripción del suceso</h2>
           {alertaSeleccionada?.descripcion_suceso ? (
             <p>{alertaSeleccionada.descripcion_suceso}</p>
           ) : (
@@ -270,7 +328,7 @@ function Home() {
               }
             }}
             style={{
-              padding: '16px 24px',
+              padding: '0px 100px 15px',
               fontSize: '1.1rem',
               '--border-radius': '15px',
               '--background': '#1B4965'
@@ -278,18 +336,44 @@ function Home() {
           >
             Editar descripción
           </IonButton>
-          <br />
-          <IonButton color="medium"
-            expand="block"
-            onClick={() => setMostrarDescripcion(false)}
-            style={{
-              padding: '16px 24px',
-              fontSize: '1.1rem',
-              '--border-radius': '15px',
-            }}
-          >
-            Cerrar
-          </IonButton>
+
+          <h2>Clip del suceso</h2>
+          <video 
+            controls 
+            autoPlay 
+            style={{ width: '100%' }} 
+            src={ `${CAMERA_URL}/video/play?key=${alertaSeleccionada?.clip}&format=mp4` }
+            />
+            <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}>
+              <IonButton 
+                color="danger"
+                expand="block"
+                onClick={() => downloadClip(alertaSeleccionada?.clip || '')}
+                disabled={downloadingClip === alertaSeleccionada?.clip}
+                style={{
+                  padding: '0px 25px 15px',
+                  fontSize: '1.1rem',
+                  '--border-radius': '15px',
+                }}
+              >
+                {downloadingClip === alertaSeleccionada?.clip ? (
+                  <IonSpinner name="crescent" className='spinner-descarga' />
+                ) : (
+                  'Descargar'
+                )}
+              </IonButton>
+              <IonButton color="medium"
+                expand="block"
+                onClick={() => setMostrarDescripcion(false)}
+                style={{
+                  padding: '0px 25px 15px',
+                  fontSize: '1.1rem',
+                  '--border-radius': '15px',
+                }}
+              >
+                Cerrar
+              </IonButton>
+            </div>
         </IonContent>
       </IonModal>
     </div>

@@ -64,7 +64,7 @@ export function DescripcionesModal({ open, onClose }: CameraModalProps) {
             >
                 Editar descripción
             </IonButton>
-            <br />
+            
             <IonButton color="medium"
                 expand="block"
                 onClick={() => setMostrarDescripcion(false)}
