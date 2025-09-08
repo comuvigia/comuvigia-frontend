@@ -164,7 +164,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
       </MapContainer>
       {selectedCamera && (
         <div className="camera-panel" style={{ top: headerHeight }}>
-          <h2>{selectedCamera.nombre}</h2>
+          <h2 className='camera-panel-text'>{selectedCamera.nombre}</h2>
           <video
             src="public\loitering.mp4"
             controls

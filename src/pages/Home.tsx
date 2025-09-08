@@ -260,8 +260,9 @@ function Home() {
         onDidDismiss={() => setPopoverOpen(false)}
         side="bottom"  // Aparece debajo del icono
         alignment="end" // Ajusta al lado derecho del botón
+        
       >
-        <IonContent>
+        <IonContent class='custom-content'>
           <NotificacionesPopover
             alerts={
               [...alerts].sort((a, b) => {
@@ -274,7 +275,7 @@ function Home() {
               })
             }
             cameraNames={cameraNames}
-            variant="map"
+            variant="sidebar"
             formatearFecha={formatearFecha}
             handleAccion={async (alert, accion) => {
               const nuevoEstado = accion === "leida" ? 1 : 2;

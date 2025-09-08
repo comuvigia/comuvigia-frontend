@@ -1,0 +1,34 @@
+.notificaciones-list-sidebar{
+    max-width: 750px;
+    min-height: 180px;
+    max-height: 450px;
+    overflow-y: "auto" ;
+    
+}
+
+.notificaciones-list-map{
+    width: 100%;
+    min-height: 300px;
+    overflow-y: "auto" ;
+    text-align: center;
+    
+}
+
+.notification-item{
+    padding: 5px; /* opcional, para espacio interno */
+    border-radius: 12%;
+    box-shadow: 0 0px 12px rgba(255, 54, 54, 0.15); /* Sombra elegante */
+    
+}
+
+.notification-title-item{
+    text-align: center;
+    font-size: x-large;
+}
+
+.notification-label-sidebar{
+    padding: 5px; /* opcional, para espacio interno */
+    border-radius: 12%;
+    box-shadow: 0 0px 12px rgba(255, 54, 54, 0.15); /* Sombra elegante */
+}
+

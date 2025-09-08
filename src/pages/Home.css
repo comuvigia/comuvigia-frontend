@@ -7,3 +7,11 @@
     height: 20px;
     --color: #fff;
 }
+
+.custom-content {
+    background-color: rgb(0, 0, 0);
+  border-top-left-radius:30%  ; /* borde superior izquierdo */
+  border-bottom-left-radius: 15px; /* borde inferior izquierdo */
+  border-top-right-radius: 0;      /* opcional, otros bordes sin redondear */
+  border-bottom-right-radius: 0;
+}

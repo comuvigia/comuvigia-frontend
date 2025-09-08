@@ -3,7 +3,7 @@ import { checkmarkDoneOutline, alertCircleOutline, ellipsisVertical } from 'ioni
 import React, { useState } from 'react';
 import { IonList, IonItem, IonLabel } from '@ionic/react';
 import { Alert } from '../types/Alert';
-
+import './Notificaciones.css'
 interface NotificacionesPopoverProps {
     alerts: Alert[];
     cameraNames: {[key:number]: string},
@@ -53,15 +53,15 @@ export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,varia
 
   return (
     <>
-      <IonList style={{ maxWidth: 500, minHeight: 180, maxHeight: 450, overflowY: "auto" }}>
-        <IonItem lines='full'>
-          <IonLabel>
+      <IonList className= {variant === 'map' ? 'notificaciones-list-map' : 'notificaciones-list-sidebar'} style={{overflowY: variant === 'sidebar' ? 'auto' : 'visible'}} >
+        <IonItem className='notification-title-item' >
+          <IonLabel className="notification-title-item">
             <b>Notificaciones</b>
           </IonLabel>
         </IonItem>
         {filteredAlerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {filteredAlerts.map(alert => (
-          <IonItem key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)} lines='full'>
+          <IonItem className="notification-item" key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)}   >
             <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
               {alert.mensaje}
               {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
