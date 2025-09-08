@@ -57,19 +57,30 @@ function Historial(){
     // Carga de alertas desde backend
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [loadingAlerts, setLoadingAlerts] = useState(true);
-    const fetchAlerts = async (cameraId: number) => {
+    useEffect(() => {
+        axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`)
+        .then(response => {
+            setAlerts(response.data);
+        })
+        .catch(error => {
+            console.error('Error al obtener alertas:', error);
+        })
+    }, []);
+    const [filteredAlerts, setFilteredAlerts] = useState<Alert[]>([]);
+    const [loadingFilteredAlerts, setLoadingFilteredAlerts] = useState(true);
+    const fetchFilteredAlerts = async (cameraId: number) => {
         try {
             //console.log('Cargando alertas para cámara:', cameraId);
-            setLoadingAlerts(true);
+            setLoadingFilteredAlerts(true);
             const response = await axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/camara/${cameraId}`);
             //console.log('Respuesta de alertas:', response.data);
             //const filteredAlerts = response.data.filter(alert => alert.id_camara === cameraId);
-            setAlerts(response.data);
+            setFilteredAlerts(response.data);
         } catch (err) {
             setError('Error al cargar las alertas');
             console.error(err);
         } finally {
-            setLoadingAlerts(false);
+            setLoadingFilteredAlerts(false);
         }
     };
 
@@ -217,7 +228,7 @@ function Historial(){
     // Cargar alertas cuando cambia la cámara seleccionada
     useEffect(() => {
       if (selectedCamera) {
-        fetchAlerts(selectedCamera.id);
+        fetchFilteredAlerts(selectedCamera.id);
       }
     }, [selectedCamera]);
 
@@ -298,6 +309,7 @@ function Historial(){
                             })
                         }
                         cameraNames={cameraNames}
+                        variant="sidebar"
                         formatearFecha={formatearFecha}
                         handleAccion={async (alert, accion) => {
                             const nuevoEstado = accion === "leida" ? 1 : 2;
@@ -424,7 +436,7 @@ function Historial(){
             
                 <hr className='hr-vertical' />
                 
-                <div className={`mi-clase${alerts.length === 0 ? '-oculto' : '-visible'}`}>
+                <div className={`mi-clase${filteredAlerts.length === 0 ? '-oculto' : '-visible'}`}>
                     <IonTitle style={{ flexShrink: 0 }}>
                     Alertas de {selectedCamera ? selectedCamera.nombre : 'Ninguna cámara seleccionada'}
                     </IonTitle>
@@ -435,7 +447,7 @@ function Historial(){
                         marginTop: '10px',
                         paddingRight: '8px'
                     }}>
-                    {loadingAlerts ? (
+                    {loadingFilteredAlerts ? (
                         <div className="loading-container">
                         <IonSpinner name="crescent" />
                         <p>Cargando alertas...</p>
@@ -444,8 +456,8 @@ function Historial(){
                         <p className="error-message">{error}</p>
                     ) : (
                         <IonList style={{ paddingBottom: '20px' }}>
-                        {alerts.length > 0 ? (
-                            alerts.map((alert) => (
+                        {filteredAlerts.length > 0 ? (
+                            filteredAlerts.map((alert) => (
                             <IonItem key={alert.id}>
                                 <IonLabel>
                                 <h2>Alerta {alert.id}</h2>

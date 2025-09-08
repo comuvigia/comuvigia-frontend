@@ -58,21 +58,15 @@ function Historial(){
     // Carga de alertas desde backend
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [loadingAlerts, setLoadingAlerts] = useState(true);
-    const fetchAlerts = async (cameraId: number) => {
-      try {
-        //console.log('Cargando alertas para cámara:', cameraId);
-        setLoadingAlerts(true);
-        const response = await axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/camara/${cameraId}`);
-        //console.log('Respuesta de alertas:', response.data);
-        //const filteredAlerts = response.data.filter(alert => alert.id_camara === cameraId);
-        setAlerts(response.data);
-      } catch (err) {
-        setError('Error al cargar las alertas');
-        console.error(err);
-      } finally {
-        setLoadingAlerts(false);
-      }
-    };
+    useEffect(() => {
+        axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`)
+        .then(response => {
+            setAlerts(response.data);
+        })
+        .catch(error => {
+            console.error('Error al obtener alertas:', error);
+        })
+    }, []);
 
     // Carga de alertas no vistas desde backend
     const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
@@ -215,13 +209,6 @@ function Historial(){
       fetchCameras();
     }, []);
 
-    // Cargar alertas cuando cambia la cámara seleccionada
-    useEffect(() => {
-      if (selectedCamera) {
-        fetchAlerts(selectedCamera.id);
-      }
-    }, [selectedCamera]);
-
     // Función para descargar clip
   const downloadClip = async (key: string) => {
     setDownloadingClip(key); // Iniciar loading
@@ -299,6 +286,7 @@ function Historial(){
                     })
                     }
                     cameraNames={cameraNames}
+                    variant="sidebar"
                     formatearFecha={formatearFecha}
                     handleAccion={async (alert, accion) => {
                     const nuevoEstado = accion === "leida" ? 1 : 2;
