@@ -219,7 +219,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
                 <NotificacionesPopover
                   alerts={alerts}
                   selectedCamera={selectedCamera}
-                  cameraNames={selectedCamera.nombre}
+                  cameraNames={cameraNames!}
                   variant="map"
                   formatearFecha={formatearFecha!}
                   handleAccion={handleAccion!}

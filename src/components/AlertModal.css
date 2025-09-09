@@ -1,0 +1,19 @@
+.delete-button {
+    background: linear-gradient(to right, #807c7c, #898989);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    padding: 12px 24px;
+    align-self: flex-end;
+    transition: all 0.3s;
+}
+
+.cancel-button {
+    background: linear-gradient(to right, #807c7c, #898989);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    padding: 12px 24px;
+    align-self: flex-end;
+    transition: all 0.3s;
+}

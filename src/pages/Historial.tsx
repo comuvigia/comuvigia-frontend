@@ -23,6 +23,7 @@ import {
   checkmarkCircle,
   closeCircleOutline,
 } from 'ionicons/icons';
+import AlertModal from '../components/AlertModal';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
@@ -42,7 +43,8 @@ function Historial(){
     const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
     const [editandoDescripcion, setEditandoDescripcion] = useState(false);
     const [nuevaDescripcion, setNuevaDescripcion] = useState("");
-    const [guardando, setGuardando] = useState(false)
+    const [guardando, setGuardando] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const guardarDescripcion = async () => {
     if (!alertaSeleccionada) return;
     
@@ -365,6 +367,40 @@ function Historial(){
         return 'Resuelta';
     };
 
+    // Función para manejar el click en una alerta
+    const handleAlertClick = (alert: Alert) => {
+        setAlertaSeleccionada(alert);
+        setIsModalOpen(true);
+    };
+
+    // Función para guardar los cambios
+    const handleSaveAlert = (updatedAlert: Alert) => {
+        setAlerts(prevAlerts => 
+        prevAlerts.map(alert => 
+            alert.id === updatedAlert.id ? updatedAlert : alert
+        )
+        );
+        // Aquí también podrías hacer una llamada API para guardar en el backend
+    };
+
+    // Función para eliminar una alerta
+    const handleDeleteAlert = async (id: number) => {
+        setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
+        // Borramos del backend
+        try {
+            const response = await axios.delete(`${BACKEND_URL}/api/alertas/eliminar-alerta/${id}`);
+            console.log(`Alerta ${id} elminada correctamente:`, response.data);
+        } catch (error) {
+            console.error(`Error eliminando Alerta ${id}:`, error);
+        }
+    };
+
+    // Función para cerrar el modal
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setAlertaSeleccionada(null);
+    };
+
     return (
         <div>
             <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
@@ -557,50 +593,54 @@ function Historial(){
                     ) : error ? (
                         <p className="error-message">{error}</p>
                     ) : (
-                        <IonList style={{ padding: 0, marginTop: '20px'}}>
-                        {filteredAlerts.length > 0 ? (
-                            filteredAlerts.map((alert) => (
-                            <IonItem key={alert.id} className='camera-item'>
-                                <div 
-                                    slot="start" 
-                                    className="alert-color-indicator"
-                                    style={{ backgroundColor: getIndicatorColor(alert.score_confianza) }}
-                                />  
-                                {/*<IonLabel>
-                                <h2>Alerta {alert.id}</h2>
-                                <p>{new Date(alert.hora_suceso).toLocaleString()}</p>
-                                <p>{alert.mensaje}</p>
-                                </IonLabel>*/}
-                                <IonLabel>
-                                    <div className="alert-header">
-                                        <h2 className="alert-title">Alerta {alert.id}</h2>
-                                        <p className="alert-time">
-                                        {formatearFecha(alert.hora_suceso)}
-                                        </p>
-                                    </div>
-                                    
-                                    <p className="alert-message">{alert.mensaje}</p>
-                                    
-                                    <div className="alert-footer">
-                                        <IonChip className={`alert-score ${getScoreClass(alert.score_confianza)}`}>
-                                        <IonIcon icon={alertCircle} color='gray' />
-                                        <IonLabel>Score: {alert.score_confianza}</IonLabel>
-                                        </IonChip>
+                        <>
+                            <IonList style={{ padding: 0, marginTop: '20px'}}>
+                            {filteredAlerts.length > 0 ? (
+                                filteredAlerts.map((alert) => (
+                                <IonItem key={alert.id} className='camera-item' button onClick={() => handleAlertClick(alert)}>
+                                    <div 
+                                        slot="start" 
+                                        className="alert-color-indicator"
+                                        style={{ backgroundColor: getIndicatorColor(alert.score_confianza) }}
+                                    /> 
+                                    <IonLabel>
+                                        <div className="alert-header">
+                                            <h2 className="alert-title">Alerta {alert.id}</h2>
+                                            <p className="alert-time">
+                                            {formatearFecha(alert.hora_suceso)}
+                                            </p>
+                                        </div>
                                         
-                                        <IonChip className={`alert-state ${getStateClass(alert.estado)}`}>
-                                        <IonIcon icon={getStateIcon(alert.estado)} color='gray' />
-                                        <IonLabel>{formatEstado(alert.estado)}</IonLabel>
-                                        </IonChip>
-                                    </div>
-                                    </IonLabel>
-                            </IonItem>
-                            ))
-                        ) : (
-                            <IonItem className='camera-item'>
-                            <IonLabel>No hay alertas para esta cámara</IonLabel>
-                            </IonItem>
-                        )}
-                        </IonList>
+                                        <p className="alert-message">{alert.mensaje}</p>
+                                        
+                                        <div className="alert-footer">
+                                            <IonChip className={`alert-score ${getScoreClass(alert.score_confianza)}`}>
+                                            <IonIcon icon={alertCircle} color='gray' />
+                                            <IonLabel>Score: {alert.score_confianza}</IonLabel>
+                                            </IonChip>
+                                            
+                                            <IonChip className={`alert-state ${getStateClass(alert.estado)}`}>
+                                            <IonIcon icon={getStateIcon(alert.estado)} color='gray' />
+                                            <IonLabel>{formatEstado(alert.estado)}</IonLabel>
+                                            </IonChip>
+                                        </div>
+                                        </IonLabel>
+                                </IonItem>
+                                ))
+                            ) : (
+                                <IonItem className='camera-item'>
+                                <IonLabel>No hay alertas para esta cámara</IonLabel>
+                                </IonItem>
+                            )}
+                            </IonList>
+                            <AlertModal
+                                isOpen={isModalOpen}
+                                onClose={handleCloseModal}
+                                alert={alertaSeleccionada}
+                                onSave={handleSaveAlert}
+                                onDelete={handleDeleteAlert}
+                            />
+                        </>
                     )}
                     </div>
                 </div>
