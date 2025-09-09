@@ -109,6 +109,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
         center={defaultCenter}
         zoom={15}
         style={{ height: `calc(100vh - ${headerHeight}px)`, width: '100%' }}
+        // @ts-ignore
         whenCreated={mapInstance => { mapRef.current = mapInstance; }}
         zoomControl={false}
       >
