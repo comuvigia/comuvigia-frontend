@@ -16,7 +16,7 @@ import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
-import { camera, download } from 'ionicons/icons';
+
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -30,7 +30,6 @@ function Home() {
   const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
   const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
   const [downloadingClip, setDownloadingClip] = useState<string | null>(null);
-  const [alertsByCamera, setAlertsByCamera] = useState<Alert[]>([]);
   const [editandoDescripcion, setEditandoDescripcion] = useState(false);
   const [nuevaDescripcion, setNuevaDescripcion] = useState("");
   const [guardando, setGuardando] = useState(false)
@@ -227,8 +226,6 @@ function Home() {
     1: "Confirmada",
     2: "Falso Positivo"
   };
-
-  const vid = 'https://d1j15et697kmcj.cloudfront.net/portonazo.mp4';
 
   // Función para descargar clip
   const downloadClip = async (key: string) => {

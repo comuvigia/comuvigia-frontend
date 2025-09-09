@@ -193,6 +193,12 @@ ion-spinner {
   margin-bottom: 15px;
 }
 
+.modal-descripcion {
+    --width: 60%;
+    --height: 90%;
+    --border-radius: 3%;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .alert-header {

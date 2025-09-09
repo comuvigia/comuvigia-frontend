@@ -206,7 +206,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
             )}
           </div>
           <div className="tab-buttons">
-            <button onClick={() => setActiveTab('video')}>🎥 Video</button>
+            {/*<button onClick={() => setActiveTab('video')}>🎥 Video</button>*/}
             <button onClick={() => setActiveTab('estadisticas')}>📊 Estadísticas</button>
             <button onClick={() => setActiveTab('alertas')}>🚨 Alertas</button>
           </div>
