@@ -1,0 +1,4 @@
+.item-nav {
+    cursor: pointer;
+    --background: var(--ion-background-color);
+}

@@ -9,6 +9,8 @@ import { Tooltip } from 'react-leaflet';
 import { Alert } from '../types/Alert';
 import { NotificacionesPopover } from './Notificaciones';
 
+const BUCKET_URL = import.meta.env.VITE_BUCKET_URL;
+
 const defaultCenter: LatLngExpression = [-33.523, -70.604]; // La Florida, Chile
 
 function FixLeafletResize({ headerHeight }: { headerHeight: number }) {
@@ -156,8 +158,14 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
               >Ver transmisión
               </button>
             </Popup>
-            <Tooltip direction="top" opacity={1}>
-              <img src="public/favicon.png" className="camera-tooltip" alt="Miniatura" />
+            <Tooltip direction="left" opacity={1}>
+              {/*<img src="public/favicon.png" className="camera-tooltip" alt="Miniatura" />*/}
+              <b>{cam.nombre}</b><br />
+              Estado: <span style={{ color: getEstadoColor(cam.estado_camara) }}>{getEstado(cam.estado_camara)}</span>
+              <br />
+              Última conexión: <span>{formatDateTimeUTC(cam.ultima_conexion)}</span>
+              <br />
+              Cantidad de Alertas: <strong>{cam.total_alertas ?? 0}</strong>
             </Tooltip>
           </Marker>
         ))}
@@ -165,13 +173,38 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
       {selectedCamera && (
         <div className="camera-panel" style={{ top: headerHeight }}>
           <h2 className='camera-panel-text'>{selectedCamera.nombre}</h2>
-          <video
-            src="public\loitering.mp4"
-            controls
-            autoPlay
-            muted
-            className="camera-video"
-          />
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+            {selectedCamera.link_camara_externo !== "" ? (
+              // Caso con streaming externo: mostrar imagen
+              <>
+                <img
+                    style={{ 
+                    width: '100%', 
+                    maxHeight: 350, 
+                    objectFit: 'contain', 
+                    background: '#fff', 
+                    border: '3px solid #000', 
+                    borderLeft: 'none', 
+                    borderRight: 'none' 
+                    }}
+                    src={selectedCamera.link_camara_externo}
+                    alt="Streaming de cámara"
+                />
+              </>
+            ) : (
+              // Caso sin externo: usar link_camara en <video>
+              <>
+                <video 
+                  src={`${BUCKET_URL}${selectedCamera.link_camara}`}
+                  controls
+                  autoPlay
+                  muted
+                  className="camera-video"
+                />
+              </>
+              
+            )}
+          </div>
           <div className="tab-buttons">
             <button onClick={() => setActiveTab('video')}>🎥 Video</button>
             <button onClick={() => setActiveTab('estadisticas')}>📊 Estadísticas</button>
@@ -201,8 +234,9 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
           <p><strong>Estado:</strong> <span style={{ color: getEstadoColor(selectedCamera.estado_camara) }}>{getEstado(selectedCamera.estado_camara)}</span></p>
           <p><strong>Última conexión:</strong> {formatDateTimeUTC(selectedCamera.ultima_conexion)}</p>
           <p><strong>Alertas:</strong> {selectedCamera.total_alertas ?? 0}</p>
-
-          <button onClick={() => setSelectedCamera(null)}>Cerrar panel</button>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+            <button onClick={() => setSelectedCamera(null)}>Cerrar panel</button>
+          </div>
         </div>
       )}
     </div>

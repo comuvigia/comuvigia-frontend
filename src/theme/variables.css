@@ -26,6 +26,7 @@ ion-popover{
   --ion-color-primary-shade: #173d56;
   --ion-color-primary-tint: #326079;
   --ion-background-color: #ffffff; /* claro */
+  --ion-text-color: #000; /* claro */
 }
 
 /* Modo oscuro */
@@ -37,6 +38,7 @@ body.dark {
   --ion-color-primary-shade: #3aa7c4;
   --ion-color-primary-tint: #66d2f3;
   --ion-background-color: #000000; /* oscuro */
+  --ion-text-color: #fff; /* oscuro */
 }
 
 

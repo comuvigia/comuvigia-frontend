@@ -20,6 +20,7 @@
 
 .camera-item {
     cursor: pointer;
+    --background: var(--ion-background-color);
 }
 
 .containerHistorial {
@@ -75,12 +76,12 @@ ion-spinner {
 }
 
 .mi-clase-oculto{
-    width: -moz-available;
+    width: 100%;
     height: 500px;
 }
 
 .mi-clase-visible{
-    width: -moz-available;
+    width: 100%;
     height: 500px;
     display: flex;
     flex-direction: column;
@@ -88,6 +89,125 @@ ion-spinner {
 .hr-vertical {
     height: 500px;
     border-width: 1px;
+}
+
+.alert-list {
+  padding: 0;
+  margin-top: 0;
+}
+
+.alert-item {
+  --padding-start: 0;
+  --inner-padding-end: 16px;
+  --min-height: 100px;
+}
+
+.alert-color-indicator {
+  width: 8px;
+  height: 100%;
+  min-height: 100px;
+  margin-right: 16px;
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.alert-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--ion-color-dark);
+  margin: 0;
+}
+
+.alert-time {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin: 0;
+}
+
+.alert-message {
+  margin-bottom: 12px;
+  color: var(--ion-color-dark);
+  white-space: normal;
+}
+
+.alert-footer {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.alert-score, .alert-state {
+  margin: 0;
+}
+
+/* Estilos para los scores */
+.score-high {
+  --background: #fde7e9;
+  --color: #c53030;
+}
+
+.score-medium {
+  --background: #fff4e6;
+  --color: #e67700;
+}
+
+.score-low {
+  --background: #e6f4ee;
+  --color: #137547;
+}
+
+/* Estilos para los estados */
+.state-resolved {
+  --background: #e6f4ee;
+  --color: #137547;
+}
+
+.state-in-progress {
+  --background: #e6f0f4;
+  --color: #1B4965;
+}
+
+.state-pending {
+  --background: #f0e6f4;
+  --color: #c53030;
+}
+
+.no-alerts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: var(--ion-color-medium);
+}
+
+.no-alerts ion-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .alert-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .alert-time {
+    margin-top: 4px;
+  }
+  
+  .alert-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @media (max-width: 650px) {
@@ -102,12 +222,12 @@ ion-spinner {
         display: none;
     }
     .mi-clase-oculto{
-        width: -moz-available;
+        width: 100%;
         height: 500px;
         padding-top: 40px;
     }
     .mi-clase-visible{
-        width: -moz-available;
+        width: 100%;
         height: 500px;
         display: flex;
         flex-direction: column;

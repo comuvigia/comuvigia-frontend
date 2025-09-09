@@ -12,8 +12,20 @@ import {
     IonButton,
     IonModal,
     IonTitle,
-    IonSpinner
+    IonSpinner,
+    IonChip,
+    IonIcon
 } from '@ionic/react';
+import {
+  alertCircle,
+  time,
+  refreshCircle,
+  checkmarkCircle,
+  closeCircleOutline,
+  filter,
+  checkmarkDoneCircle,
+  trash
+} from 'ionicons/icons';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
@@ -286,6 +298,44 @@ function Historial(){
         }
     };
 
+    // Función para determinar la clase del score
+    const getScoreClass = (score: number) => {
+        if (score >= 0.6) return 'score-high';
+        if (score >= 0.4) return 'score-medium';
+        return 'score-low';
+    };
+
+    // Función para determinar la clase del estado
+    const getStateClass = (estado: number) => {
+        if (estado === 0) return 'state-resolved';
+        if (estado === 1) return 'state-in-progress';
+        if (estado === 2) return 'state-pending';
+        return 'state-resolved';
+    };
+
+    // Función para obtener el icono según el estado
+    const getStateIcon = (estado: number) => {
+        if (estado === 0) return checkmarkCircle;
+        if (estado === 1) return time;
+        if (estado === 2) return closeCircleOutline;
+        return checkmarkCircle;
+    };
+
+    // Función para obtener el color del indicador
+    const getIndicatorColor = (score: number) => {
+        if (score >= 0.6) return '#c53030';
+        if (score >= 0.4) return '#e67700';
+        return '#137547';
+    };
+
+    // Función para formatear el estado
+    const formatEstado = (estado: number) => {
+        if (estado === 0) return 'Resuelta';
+        if (estado === 1) return 'En progreso';
+        if (estado === 2) return 'Falso positivo';
+        return 'Resuelta';
+    };
+
     return (
         <div>
             <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
@@ -417,7 +467,7 @@ function Historial(){
                     ) : error ? (
                     <p className="error-message">{error}</p>
                     ) : (
-                    <IonList>
+                    <IonList style={{ padding: 0, marginTop: '20px'}}>
                         {cameras.map((camera) => (
                         <IonItem 
                             key={camera.id} 
@@ -455,19 +505,46 @@ function Historial(){
                     ) : error ? (
                         <p className="error-message">{error}</p>
                     ) : (
-                        <IonList style={{ paddingBottom: '20px' }}>
+                        <IonList style={{ padding: 0, marginTop: '20px'}}>
                         {filteredAlerts.length > 0 ? (
                             filteredAlerts.map((alert) => (
-                            <IonItem key={alert.id}>
-                                <IonLabel>
+                            <IonItem key={alert.id} className='camera-item'>
+                                <div 
+                                    slot="start" 
+                                    className="alert-color-indicator"
+                                    style={{ backgroundColor: getIndicatorColor(alert.score_confianza) }}
+                                />  
+                                {/*<IonLabel>
                                 <h2>Alerta {alert.id}</h2>
                                 <p>{new Date(alert.hora_suceso).toLocaleString()}</p>
                                 <p>{alert.mensaje}</p>
-                                </IonLabel>
+                                </IonLabel>*/}
+                                <IonLabel>
+                                    <div className="alert-header">
+                                        <h2 className="alert-title">Alerta {alert.id}</h2>
+                                        <p className="alert-time">
+                                        {formatearFecha(alert.hora_suceso)}
+                                        </p>
+                                    </div>
+                                    
+                                    <p className="alert-message">{alert.mensaje}</p>
+                                    
+                                    <div className="alert-footer">
+                                        <IonChip className={`alert-score ${getScoreClass(alert.score_confianza)}`}>
+                                        <IonIcon icon={alertCircle} color='gray' />
+                                        <IonLabel>Score: {alert.score_confianza}</IonLabel>
+                                        </IonChip>
+                                        
+                                        <IonChip className={`alert-state ${getStateClass(alert.estado)}`}>
+                                        <IonIcon icon={getStateIcon(alert.estado)} color='gray' />
+                                        <IonLabel>{formatEstado(alert.estado)}</IonLabel>
+                                        </IonChip>
+                                    </div>
+                                    </IonLabel>
                             </IonItem>
                             ))
                         ) : (
-                            <IonItem>
+                            <IonItem className='camera-item'>
                             <IonLabel>No hay alertas para esta cámara</IonLabel>
                             </IonItem>
                         )}
