@@ -386,6 +386,8 @@ function Historial(){
     // Función para eliminar una alerta
     const handleDeleteAlert = async (id: number) => {
         setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
+        setFilteredAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
+        setUnseenAlerts(prev => prev.filter(alert => alert.id !== id));
         // Borramos del backend
         try {
             const response = await axios.delete(`${BACKEND_URL}/api/alertas/eliminar-alerta/${id}`);
