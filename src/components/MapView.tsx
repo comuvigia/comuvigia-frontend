@@ -143,6 +143,46 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
           console.log('Cámara con streaming externo, no se notifica al backend.');
         }
       };
+
+      const createCustomIcon = (color: string, count: number = 0) =>
+        L.divIcon({
+          className: "custom-marker",
+          html: `
+            <div style="position: relative; display: inline-block;">
+              <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png" 
+                  style="width:25px; height:41px;" />
+              ${
+                count > 0
+                  ? `<div style="
+                        position: absolute;
+                        top: -5px;
+                        right: -5px;
+                        background: red;
+                        color: white;
+                        font-size: 12px;
+                        font-weight: bold;
+                        border-radius: 50%;
+                        width: 20px;
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 2px solid var(--ion-text-color, black);
+                    ">${count}</div>`
+                  : ""
+              }
+            </div>
+          `,
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          tooltipAnchor: [16, -28],
+        });
+
+        const getUnreadAlertsCount = (camId: number) => {
+          if (!alerts) return 0;
+          return alerts.filter(a => a.id_camara === camId && a.estado === 0).length;
+        };
   
   return (
     <div className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
@@ -176,7 +216,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
           <Marker
             key={cam.id}
             position={cam.posicion as LatLngExpression}
-            icon={createIcon(getEstadoColor(cam.estado_camara))}
+            icon={createCustomIcon(getEstadoColor(cam.estado_camara), getUnreadAlertsCount(cam.id))}
           >
             <Popup className="pop-up">
               <b>{cam.nombre}</b><br />
