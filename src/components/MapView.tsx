@@ -240,14 +240,14 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
               >Ver transmisión
               </button>
             </Popup>
-            <Tooltip direction="left" opacity={1}>
+            {/*<Tooltip direction="left" opacity={1}>
               <b>{cam.nombre}</b><br />
               Estado: <span style={{ color: getEstadoColor(cam.estado_camara) }}>{getEstado(cam.estado_camara)}</span>
               <br />
               Última conexión: <span>{formatDateTimeUTC(cam.ultima_conexion)}</span>
               <br />
               Cantidad de Alertas: <strong>{cam.total_alertas ?? 0}</strong>
-            </Tooltip>
+            </Tooltip>*/}
           </Marker>
         ))}
       </MapContainer>
