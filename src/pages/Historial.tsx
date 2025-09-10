@@ -338,16 +338,16 @@ function Historial(){
 
     // Función para determinar la clase del estado
     const getStateClass = (estado: number) => {
-        if (estado === 0) return 'state-resolved';
-        if (estado === 1) return 'state-in-progress';
+        if (estado === 0) return 'state-in-progress';
+        if (estado === 1) return 'state-resolved';
         if (estado === 2) return 'state-pending';
         return 'state-resolved';
     };
 
     // Función para obtener el icono según el estado
     const getStateIcon = (estado: number) => {
-        if (estado === 0) return checkmarkCircle;
-        if (estado === 1) return time;
+        if (estado === 0) return time;
+        if (estado === 1) return checkmarkCircle;
         if (estado === 2) return closeCircleOutline;
         return checkmarkCircle;
     };
@@ -361,8 +361,8 @@ function Historial(){
 
     // Función para formatear el estado
     const formatEstado = (estado: number) => {
-        if (estado === 0) return 'Resuelta';
-        if (estado === 1) return 'En progreso';
+        if (estado === 0) return 'En progreso';
+        if (estado === 1) return 'Resuelta';
         if (estado === 2) return 'Falso positivo';
         return 'Resuelta';
     };
