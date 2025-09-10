@@ -10,6 +10,7 @@ import { Alert } from '../types/Alert';
 import { NotificacionesPopover } from './Notificaciones';
 
 const BUCKET_URL = import.meta.env.VITE_BUCKET_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const defaultCenter: LatLngExpression = [-33.523, -70.604]; // La Florida, Chile
 
@@ -103,6 +104,46 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
       iconAnchor: [12, 41],
     });
 
+   // Función para cerrar con llamada al backend
+
+
+    const handleRevisarWhitBackend = async (cam: Camera) => {
+        setSelectedCamera(cam); // Abrir el panel de la cámara seleccionada
+        if(cam.link_camara_externo === "") {
+          try {
+            // Usando fetch (recomendado si ya estás usando fetch en el backend)
+            // @ts-ignore
+            const response = await fetch(`${BACKEND_URL}/casos_prueba?delito=${encodeURIComponent(cam.link_camara)}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+            }
+
+            const result = await response.json();
+              
+            if (result.success) {
+              console.log('Notificación exitosa al backend:', result);
+            } else {
+              console.warn('La solicitud no fue exitosa:', result.message);
+            }
+          } catch (error) {
+              console.error('Error al notificar al backend', error);
+              // Opcional: Mostrar alerta al usuario
+              // alert('Error al conectar con el servidor. Intente nuevamente.');
+          } finally {
+            setSelectedCamera(null); 
+          }
+        }
+        else{
+          console.log('Cámara con streaming externo, no se notifica al backend.');
+        }
+      };
+  
   return (
     <div className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
       <MapContainer
@@ -114,7 +155,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
         zoomControl={false}
       >
   <TileLayer
-    attribution='&copy; CartoDB'
+    attribution='&copy; ComuVigIA'
     url={
       isDark
       ?  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
@@ -155,12 +196,11 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
                   borderRadius: 15,
                   cursor: 'pointer'
                 }}
-                onClick={() => setSelectedCamera(cam)}
+                onClick={() => handleRevisarWhitBackend(cam)}
               >Ver transmisión
               </button>
             </Popup>
             <Tooltip direction="left" opacity={1}>
-              {/*<img src="public/favicon.png" className="camera-tooltip" alt="Miniatura" />*/}
               <b>{cam.nombre}</b><br />
               Estado: <span style={{ color: getEstadoColor(cam.estado_camara) }}>{getEstado(cam.estado_camara)}</span>
               <br />
@@ -202,8 +242,8 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
                   muted
                   className="camera-video"
                 />
+                {/*selectedCamera.link_camara && handleRevisarWhitBackend()*/}
               </>
-              
             )}
           </div>
           <div className="tab-buttons">

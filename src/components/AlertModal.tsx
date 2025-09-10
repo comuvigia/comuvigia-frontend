@@ -87,17 +87,17 @@ const AlertModal: React.FC<AlertModalProps> = ({
         <IonContent>
           <div className="ion-padding">
             {/* Información de solo lectura */}
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">ID</IonLabel>
               <IonInput value={editedAlert.id} readonly />
             </IonItem>
 
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">ID Cámara</IonLabel>
               <IonInput value={editedAlert.id_camara} readonly />
             </IonItem>
 
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">Hora del Suceso</IonLabel>
               <IonInput 
                 value={new Date(editedAlert.hora_suceso).toLocaleString()} 
@@ -105,14 +105,14 @@ const AlertModal: React.FC<AlertModalProps> = ({
               />
             </IonItem>
 
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">Score de Confianza</IonLabel>
               <IonInput value={editedAlert.score_confianza} readonly />
               <IonNote slot="end">%</IonNote>
             </IonItem>
 
             {/* Campos editables */}
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">Mensaje</IonLabel>
               <IonInput
                 value={editedAlert.mensaje}
@@ -120,7 +120,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
               />
             </IonItem>
 
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">Tipo de Alerta</IonLabel>
               <IonSelect
                 value={editedAlert.tipo}
@@ -134,7 +134,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
               </IonSelect>
             </IonItem>
 
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">Estado</IonLabel>
               <IonSelect
                 value={editedAlert.estado}
@@ -147,7 +147,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
               </IonSelect>
             </IonItem>
 
-            <IonItem>
+            <IonItem style={{ '--background': 'transparent'}}>
               <IonLabel position="stacked">Descripción del Suceso</IonLabel>
               <IonTextarea
                 value={editedAlert.descripcion_suceso || ''}

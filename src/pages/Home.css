@@ -1,3 +1,11 @@
+ion-toast::part(button) {
+    border-radius: 20px;
+    border: 1px solid gray;
+    background: gray;
+    padding: 5px;
+    margin: 5px;
+}
+
 .global-loading{
     display: flex;
     justify-content: center;

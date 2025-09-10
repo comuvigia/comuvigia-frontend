@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import MapView from '../components/MapView';
-import { CameraModal } from '../components/CameraModal';
+//import { CameraModal } from '../components/CameraModal';
 import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
+import { videocam, close } from 'ionicons/icons';
 import {
   IonPopover,
   IonContent,
   IonButton,
   IonModal,
   IonSpinner,
-  IonTextarea
+  IonTextarea,
+  IonToast
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
@@ -23,10 +25,12 @@ const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const socket = io(BACKEND_URL);
 
 function Home() {
+  const [showToast, setShowToast] = useState(false);
+  const [lastAlert, setLastAlert] = useState<Alert | null>(null);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
-  const [modalOpen, setModalOpen] = useState(false);
+  //const [modalOpen, setModalOpen] = useState(false);
   const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
   const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
   const [downloadingClip, setDownloadingClip] = useState<string | null>(null);
@@ -123,6 +127,11 @@ function Home() {
       // Agrega la nueva alerta a la lista general y no vistas
       setAlerts(prev => [alerta, ...prev]);
       setUnseenAlerts(prev => [alerta, ...prev]);
+
+      // Muestra toast
+      setLastAlert(alerta);
+      setShowToast(true);
+
       // Incrementar contador de alertas de la cámara correspondiente
       setCameras(prevCameras =>
         prevCameras.map(c =>
@@ -137,6 +146,19 @@ function Home() {
       socket.off('nueva-alerta');
     };
   }, []);
+
+  const goToCamera = () => {
+    if (lastAlert) {
+      const camaraSeleccionada = cameras.find(c => c.id === lastAlert.id_camara);
+      if (camaraSeleccionada) {
+        setSelectedCamera(camaraSeleccionada); // aquí guardas el objeto completo
+        //setModalOpen(true);
+      } else {
+        console.warn("No se encontró la cámara con id:", lastAlert.id_camara);
+      }
+    }
+    setShowToast(false);
+  };
 
   // Manejo WebSocket para recibir nuevas descripciones
   useEffect(() => {
@@ -263,12 +285,17 @@ function Home() {
       link.remove();
       window.URL.revokeObjectURL(url);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al descargar clip:', error);
       
-      if (error.response?.data instanceof Blob) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'response' in error &&
+        (error as { response?: { data?: unknown } }).response?.data instanceof Blob
+      ) {
         try {
-          const errorText = await error.response.data.text();
+          const errorText = await (error as { response: { data: Blob } }).response.data.text();
           console.error('Error del servidor:', errorText);
         } catch (blobError) {
           console.error('No se pudo leer el error del servidor', blobError);
@@ -283,6 +310,32 @@ function Home() {
 
   return (
     <div>
+      <IonToast
+        style={{'--start': '1', marginTop: '70px', '--border-radius': '20px'}}
+        isOpen={showToast}
+        animated={true}
+        onDidDismiss={() => setShowToast(false)}
+        color={'danger'}
+        position='top'
+        cssClass={'toast-button toast-button-icon'}
+        message={lastAlert ? `Alerta en cámara ${lastAlert.id_camara}` : 'Nueva alerta'}
+        //duration={5000}
+        buttons={[
+          {
+            text: '',
+            role: 'view',
+            icon: videocam,
+            handler: goToCamera,
+          },
+          {
+            text: '',
+            side: 'end',
+            icon: close,
+            role: 'cancel',
+            handler: () => setShowToast(false),
+          }
+        ]}
+      />
       <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
       <IonPopover
         isOpen={popoverOpen}
@@ -341,7 +394,7 @@ function Home() {
           setMostrarDescripcion(true);
         }}
       />
-      <CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />
+      {/*<CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />*/}
       <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)} className="modal-descripcion">
         <IonContent className="ion-padding">
           <h2>Alerta {alertaSeleccionada?.id}</h2>
@@ -412,12 +465,18 @@ function Home() {
 
           <h2>Clip del suceso</h2>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-            <video 
-              controls 
-              autoPlay 
-              className="video-clip"
-              src={ `${CAMERA_URL}/video/play?key=${alertaSeleccionada?.clip}&format=mp4` }
-            />
+            { alertaSeleccionada?.clip ? (
+              <video 
+                controls 
+                autoPlay 
+                className="video-clip"
+                src={ `${CAMERA_URL}/video/play?key=${alertaSeleccionada?.clip}&format=mp4` }
+              />
+            ) : (
+                  <p style={{fontStyle: 'italic'}}>No hay clip disponible para esta alerta </p>
+                )
+            }
+            
           </div>
           <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}>
             <IonButton 

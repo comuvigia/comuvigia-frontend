@@ -227,7 +227,7 @@ export function BuscadorGrabaciones(){
         <div className="container">
             <header>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <IonTitle>Grabaciones</IonTitle>
+                <IonTitle>Buscador de grabaciones por cámara</IonTitle>
                 </div>
             </header>
             
