@@ -318,7 +318,7 @@ function Home() {
         color={'danger'}
         position='top'
         cssClass={'toast-button toast-button-icon'}
-        message={lastAlert ? `Alerta en cámara ${lastAlert.id_camara}` : 'Nueva alerta'}
+        message={lastAlert ? `Alerta en ${cameraNames[lastAlert.id_camara]}` : 'Nueva alerta'}
         //duration={5000}
         buttons={[
           {
