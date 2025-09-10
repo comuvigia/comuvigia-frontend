@@ -75,7 +75,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
       <IonModal isOpen={isOpen} onDidDismiss={onClose}>
         <IonHeader>
           <IonToolbar>
-            <IonTitle>Editar Alerta #{editedAlert.id}</IonTitle>
+            <IonTitle>Alerta #{editedAlert.id}</IonTitle>
             <IonButtons slot="end">
               <IonButton onClick={onClose}>
                 <IonIcon icon={close} />
@@ -117,6 +117,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
               <IonInput
                 value={editedAlert.mensaje}
                 onIonInput={(e) => handleInputChange('mensaje', e.detail.value!)}
+                readonly
               />
             </IonItem>
 
@@ -126,6 +127,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
                 value={editedAlert.tipo}
                 onIonChange={(e) => handleInputChange('tipo', e.detail.value)}
                 interface="popover"
+                disabled
               >
                 <IonSelectOption value={0}>No especificado</IonSelectOption>
                 <IonSelectOption value={1}>Merodeo</IonSelectOption>
@@ -140,6 +142,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
                 value={editedAlert.estado}
                 onIonChange={(e) => handleInputChange('estado', e.detail.value)}
                 interface="popover"
+                disabled
               >
                 <IonSelectOption value={0}>En Observación</IonSelectOption>
                 <IonSelectOption value={1}>Confirmada</IonSelectOption>
@@ -154,6 +157,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
                 rows={4}
                 onIonInput={(e) => handleInputChange('descripcion_suceso', e.detail.value!)}
                 placeholder="Agregar descripción del suceso..."
+                readonly
               />
             </IonItem>
 
@@ -169,7 +173,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
                 Eliminar
               </IonButton>
               
-              <IonButton 
+              {/*<IonButton 
                 expand="block" 
                 color="primary" 
                 style={{'--border-radius': '20px'}} 
@@ -177,7 +181,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
               >
                 <IonIcon icon={save} slot="start" />
                 Guardar
-              </IonButton>
+              </IonButton>*/}
             </div>
           </div>
         </IonContent>
