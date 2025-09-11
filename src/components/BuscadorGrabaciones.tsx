@@ -54,7 +54,7 @@ export function BuscadorGrabaciones(){
             const formattedStartDate = startDate;
             const formattedEndDate = endDate;
             // Tu llamada a la API aquí
-            const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?start_date=${formattedStartDate}&end_date=${formattedEndDate}&page=${pageNumber}&per_page=${itemsPerPage}&duration=2`);
+            const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?start_date=${formattedStartDate}&end_date=${formattedEndDate}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=2`);
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
@@ -141,7 +141,7 @@ export function BuscadorGrabaciones(){
     useEffect(() => {
         if (recordings.length > 0 && selectedCamera) {
             recordings.forEach(recording => {
-            loadThumbnail(selectedCamera, recording.time);
+            loadThumbnail(selectedCamera, recording.start_time);
             });
         }
     }, [recordings, selectedCamera]);
@@ -273,10 +273,11 @@ export function BuscadorGrabaciones(){
                 No hay videos disponibles
                 </div>
             ) : (
-                recordings.map(recording => (
+                recordings.map((recording, index) => (
                 <div key={recording.id} className="result-item">
                     <div className="thumbnail">
                     <img 
+                        style={{borderRadius: '20px'}}
                         src={getThumbnailUrl(selectedCamera, recording.start_time)} 
                         alt={`Grabación ${new Date(recording.time).toLocaleString()}`}
                         onError={(e) => {
@@ -285,14 +286,16 @@ export function BuscadorGrabaciones(){
                         }}
                     />
                     </div>
-                    <div className="date-time">{new Date(recording.end_time).toLocaleString()}</div>
+                    <div className="date-time"> video_{recording.id}</div>
                     <div className="duration">
-                    <span className="value">{parseFloat(String(recording.duration_seconds/60)).toFixed(2)} min</span>
-                    <span className="label">Duración</span>
+                    {/*<span className="value">{parseFloat(String(recording.duration_seconds/60)).toFixed(2)} min</span>
+                    <span className="label">Duración</span>*/}
                     </div>
                     <div className="size">
-                    <span className="value">{recording.size_mb} MB</span>
-                    <span className="label">Tamaño</span>
+                    {/*<span className="value">{recording.size_mb} MB</span>
+                    <span className="label">Tamaño</span>*/}
+                        <span className="value">{new Date(recording.end_time).toLocaleString()}</span>
+                        <span className="label">Fecha</span>
                     </div>
                     <div className="download-section">
                         <DownloadButton

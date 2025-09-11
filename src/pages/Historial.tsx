@@ -545,7 +545,7 @@ function Historial(){
                     </IonButton>
                     </div>
                 </IonContent>
-                </IonModal>
+            </IonModal>
             <div className="containerHistorial">
                 <div style={{ width: '500px', paddingRight: '15px' }}>
                     <IonTitle>Cámaras</IonTitle>
