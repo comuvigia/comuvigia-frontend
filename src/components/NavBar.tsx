@@ -13,16 +13,17 @@ import {
   IonTitle,
   IonMenuButton
 } from '@ionic/react';
-import { notificationsOutline, personOutline, menuOutline } from 'ionicons/icons';
+import { notificationsOutline, personOutline, menuOutline, addCircleOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router';
 import './NavBar.css';
 
 interface NavBarProps {
     unseenCount: number;
-    onShowNotifications: (e: React.MouseEvent) => void;
+    onShowNotifications?: (e: React.MouseEvent) => void;
+    onShowMantenedores?: (e: React.MouseEvent) => void;
 }
 
-export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
+export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }: NavBarProps) {
   const history = useHistory();
   return (
     <>
@@ -62,6 +63,9 @@ export function Navbar({ unseenCount, onShowNotifications }: NavBarProps) {
           </div>
           
           <IonButtons slot="end">
+            <IonButton onClick={onShowMantenedores}>
+              <IonIcon icon={addCircleOutline} />
+            </IonButton>
             <IonButton onClick={onShowNotifications}>
               <IonIcon icon={notificationsOutline} />
               {unseenCount > 0 && <IonBadge color="danger">{unseenCount}</IonBadge>}

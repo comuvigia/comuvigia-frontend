@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { CameraModal } from '../components/CameraModal';
 import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
@@ -363,8 +362,6 @@ function Reportes(){
                     />
                 </IonContent>
             </IonPopover>
-
-            <CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />
             
             <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)} className="modal-descripcion">
                     <IonContent className="ion-padding">
@@ -474,7 +471,7 @@ function Reportes(){
                         </IonButton>
                       </div>
                     </IonContent>
-                  </IonModal>
+            </IonModal>
             
             {/* Contenedor principal con scroll */}
             <div style={{ 

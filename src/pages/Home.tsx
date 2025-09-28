@@ -4,7 +4,7 @@ import MapView from '../components/MapView';
 import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
-import { videocam, close } from 'ionicons/icons';
+import { videocam, close, add } from 'ionicons/icons';
 import {
   IonPopover,
   IonContent,
@@ -12,9 +12,14 @@ import {
   IonModal,
   IonSpinner,
   IonTextarea,
-  IonToast
+  IonToast,
+  IonFab,
+  IonFabButton,
+  IonIcon
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
+import { MantenedoresPopover } from '../components/MantenedoresPopover';
+import Cameras from '../components/Cameras';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
@@ -29,6 +34,9 @@ function Home() {
   const [lastAlert, setLastAlert] = useState<Alert | null>(null);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [popoverOpenMantenedores, setPopoverOpenMantenedores] = useState(false);
+  const [popoverEvent, setPopoverEvent] = useState<React.MouseEvent | null>(null);
+  const [activeModal, setActiveModal] = useState<'cameras' | 'users' | 'alerts' | null>(null);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
   //const [modalOpen, setModalOpen] = useState(false);
   const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
@@ -194,6 +202,11 @@ function Home() {
     setEvent(e.nativeEvent);
     setPopoverOpen(true);
   };
+  // Handler para mostrar popover en el sitio del click (el icono de mantenedores)
+  const handleShowMantenedores = (e: React.MouseEvent) => {
+    setEvent(e.nativeEvent);
+    setPopoverOpenMantenedores(true);
+  };
   
   // Handler para ver descripción de alerta
   const handleVerDescripcion = (alerta: Alert) => {
@@ -308,6 +321,31 @@ function Home() {
     }
   };
 
+  const handleClosePopover = () => {
+    setPopoverOpenMantenedores(false);
+    setPopoverEvent(null);
+  };
+
+  const handleOpenModal = (modalType: 'cameras' | 'users' | 'alerts') => {
+    setActiveModal(modalType);
+  };
+
+  const handleCloseModal = () => {
+    setActiveModal(null);
+  };
+
+  const handleSaveCamera = (camera: Camera) => {
+    // Lógica para guardar/actualizar cámara
+    console.log('Guardar cámara:', camera);
+    // Aquí deberías hacer la llamada a tu API
+  };
+
+  const handleDeleteCamera = (id: number) => {
+    // Lógica para eliminar cámara
+    console.log('Eliminar cámara:', id);
+    // Aquí deberías hacer la llamada a tu API
+  };
+
   return (
     <div>
       <IonToast
@@ -336,7 +374,49 @@ function Home() {
           }
         ]}
       />
-      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
+      <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{paddingBottom: '50px', paddingLeft: '20px'}}>
+        <IonFabButton onClick={handleShowMantenedores}>
+          <IonIcon icon={add} />
+        </IonFabButton>
+      </IonFab>
+      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores}/>
+      <IonPopover
+        isOpen={popoverOpenMantenedores}
+        //event={event}
+        //onDidDismiss={() => setPopoverOpenMantenedores(false)}
+        event={popoverEvent}
+        onDidDismiss={handleClosePopover}
+        side="top"
+        alignment="end"        
+      >
+        <div style={{ position: 'relative', zIndex: 1000 }}>
+          <MantenedoresPopover
+            cameras={cameras}
+            nombreMantenedor='Cámaras'
+            tipoMantenedor={1}
+            selectedCamera={selectedCamera ? { id: selectedCamera.id } : undefined}
+            variant="sidebar"
+            formatearFecha={formatearFecha}
+            onClose={handleClosePopover}
+            onOpenModal={handleOpenModal}
+          />
+        </div>
+      </IonPopover>
+
+      {/* Modal de Cámaras */}
+      <Cameras
+        isOpen={activeModal === 'cameras'}
+        onClose={handleCloseModal}
+        cameras={cameras}
+        onSave={handleSaveCamera}
+        onDelete={handleDeleteCamera}
+      />
+  
+
+      {/* Futuros modales para usuarios y alertas */}
+      {/* <UsersModal isOpen={activeModal === 'users'} onClose={handleCloseModal} /> */}
+      {/* <AlertsModal isOpen={activeModal === 'alerts'} onClose={handleCloseModal} /> */}
+
       <IonPopover
         isOpen={popoverOpen}
         event={event}
@@ -394,6 +474,7 @@ function Home() {
           setMostrarDescripcion(true);
         }}
       />
+    
       {/*<CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />*/}
       <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)} className="modal-descripcion">
         <IonContent className="ion-padding">

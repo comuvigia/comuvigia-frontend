@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { IonList, IonItem, IonLabel } from '@ionic/react';
 import { Alert } from '../types/Alert';
 import './Notificaciones.css'
+
 interface NotificacionesPopoverProps {
     alerts: Alert[];
     cameraNames: {[key:number]: string},

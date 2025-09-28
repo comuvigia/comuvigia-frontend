@@ -32,6 +32,9 @@ ion-toast::part(button) {
 .video-clip{
     width: 50%;
 }
+.popover-mantenedores {
+    --width: 300px !important;
+}
 
 @media (max-width: 480px) {
     .modal-descripcion {
