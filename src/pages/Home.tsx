@@ -382,8 +382,6 @@ function Home() {
       <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores}/>
       <IonPopover
         isOpen={popoverOpenMantenedores}
-        //event={event}
-        //onDidDismiss={() => setPopoverOpenMantenedores(false)}
         event={popoverEvent}
         onDidDismiss={handleClosePopover}
         side="top"
@@ -421,8 +419,8 @@ function Home() {
         isOpen={popoverOpen}
         event={event}
         onDidDismiss={() => setPopoverOpen(false)}
-        side="bottom"  // Aparece debajo del icono
-        alignment="end" // Ajusta al lado derecho del botón
+        side="bottom"
+        alignment="end"
         
       >
         <IonContent class='custom-content'>
@@ -449,9 +447,10 @@ function Home() {
           />
         </IonContent>
       </IonPopover>
+      
       <MapView
-        cameras={cameras}   // ya la tienes
-        selectedCamera={selectedCamera}           // pasar la cámara seleccionada
+        cameras={cameras}
+        selectedCamera={selectedCamera}     
         alerts={
               [...alerts].sort((a, b) => {
                 // Se ordena por estado: no vistas (estado === 0) primero

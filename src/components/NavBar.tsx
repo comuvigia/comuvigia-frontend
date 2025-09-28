@@ -32,7 +32,7 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }:
         <IonHeader>
           <IonToolbar>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/comuvigia.png" alt="Logo" style={{ height: '35px'}}/>
+              <img src="/comuvigia.png" alt="Logo" style={{ height: '50px'}}/>
             </div>
           </IonToolbar>
         </IonHeader>
@@ -59,13 +59,15 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }:
           </IonButtons>
           
           <div style={{ display: 'flex', alignItems: 'center' }}>
-              <img onClick={() => history.push('/home')} src="/comuvigia.png" alt="Logo" style={{ height: '35px', paddingLeft: '10px', cursor: 'pointer'}} />
+              <img onClick={() => history.push('/home')} src="/comuvigia.png" alt="Logo" style={{ height: '50px', paddingLeft: '10px', cursor: 'pointer'}} />
           </div>
           
           <IonButtons slot="end">
+            {/*
             <IonButton onClick={onShowMantenedores}>
               <IonIcon icon={addCircleOutline} />
             </IonButton>
+            */}
             <IonButton onClick={onShowNotifications}>
               <IonIcon icon={notificationsOutline} />
               {unseenCount > 0 && <IonBadge color="danger">{unseenCount}</IonBadge>}

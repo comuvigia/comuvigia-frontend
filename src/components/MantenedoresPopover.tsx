@@ -30,8 +30,6 @@ export function MantenedoresPopover({
     onClose,
     onOpenModal
 }: MantenedoresPopoverProps){
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'cameras' | 'users' | 'alerts' | null>(null);
 
   const handleItemClick = (modalType: 'cameras' | 'users' | 'alerts') => {
     onClose(); // Cerrar el popover primero
@@ -59,16 +57,6 @@ export function MantenedoresPopover({
           </IonLabel>
         </IonItem>
       </IonList>
-      {/*modalType === 'cameras' && (
-        <Cameras
-          isOpen={isModalOpen}
-          onClose={cerrarModal}
-          cameras={cameras}
-          onSave={handleSaveCamera}
-          onDelete={handleDeleteCamera}
-        />
-      )*/}
-      
     </>
   );
 }

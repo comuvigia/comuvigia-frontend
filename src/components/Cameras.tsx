@@ -31,10 +31,8 @@ import {
   save, 
   add, 
   create, 
-  location, 
   link, 
   wifi, 
-  eye 
 } from 'ionicons/icons';
 import { Camera } from '../types/Camera'; // Ajusta la ruta según tu estructura
 import './Cameras.css';
@@ -216,12 +214,6 @@ const Cameras: React.FC<CamerasProps> = ({
                   </IonCard>
                 ))}
               </IonList>
-
-              {/*<IonFab vertical="bottom" horizontal="end" slot="fixed">
-                <IonFabButton onClick={handleCreateCamera}>
-                  <IonIcon icon={add} />
-                </IonFabButton>
-              </IonFab>*/}
             </div>
           ) : (
             // ------------ Vista de detalle/edición ------------
@@ -230,14 +222,16 @@ const Cameras: React.FC<CamerasProps> = ({
                 <IonRow>
                   <IonCol>
                     {/* Información básica */}
-                    {/*<IonItem>
+                    {/*
+                    <IonItem>
                       <IonLabel position="stacked">ID</IonLabel>
                       <IonInput 
                         value={editedCamera?.id} 
                         readonly 
                         disabled={!isEditing}
                       />
-                    </IonItem>*/}
+                    </IonItem>
+                    */}
 
                     <IonItem>
                       <IonLabel position="stacked">Nombre *</IonLabel>
@@ -381,16 +375,6 @@ const Cameras: React.FC<CamerasProps> = ({
                           >
                             Cancelar
                           </IonButton>
-                          {/*!isCreating && (
-                            <IonButton 
-                              expand="block" 
-                              color="danger"
-                              onClick={() => setShowDeleteCamera(true)}
-                            >
-                              <IonIcon icon={trash} slot="start" />
-                              Eliminar
-                            </IonButton>
-                          )*/}
                         </>
                       )}
                     </div>
