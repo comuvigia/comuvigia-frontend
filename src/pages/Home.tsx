@@ -204,7 +204,7 @@ function Home() {
   };
   // Handler para mostrar popover en el sitio del click (el icono de mantenedores)
   const handleShowMantenedores = (e: React.MouseEvent) => {
-    setEvent(e.nativeEvent);
+    setPopoverEvent(e.nativeEvent);
     setPopoverOpenMantenedores(true);
   };
   
@@ -384,8 +384,14 @@ function Home() {
         isOpen={popoverOpenMantenedores}
         event={popoverEvent}
         onDidDismiss={handleClosePopover}
-        side="top"
-        alignment="end"        
+        
+        style={{
+          '--ion-safe-area-top': '0px',
+          '--ion-safe-area-bottom': '0px',
+          '--ion-safe-area-left': '0px',
+          '--ion-safe-area-right': '0px'
+        }}
+        className="fixed-popover"       
       >
         <div style={{ position: 'relative', zIndex: 1000 }}>
           <MantenedoresPopover

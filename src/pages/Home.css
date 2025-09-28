@@ -6,6 +6,15 @@ ion-toast::part(button) {
     margin: 5px;
 }
 
+.fixed-popover {
+  position: fixed !important;
+  top: -200px !important;
+  left: 40px !important;
+  right: auto !important;
+  transform: none !important;
+  --width: 300px !important;
+}
+
 .global-loading{
     display: flex;
     justify-content: center;
@@ -54,5 +63,24 @@ ion-toast::part(button) {
     }
     .video-clip{
         width: 80%;
+    }
+
+    .fixed-popover {
+        position: fixed !important;
+        top: -200px !important;
+        left: 20px !important;
+        right: auto !important;
+        transform: none !important;
+        }
+}
+
+@media (max-width: 480px) {
+    
+    .fixed-popover {
+        position: fixed !important;
+        top: -200px !important;
+        left: 10px !important;
+        right: auto !important;
+        transform: none !important;
     }
 }
