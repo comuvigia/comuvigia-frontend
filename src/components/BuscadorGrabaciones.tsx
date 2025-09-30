@@ -40,7 +40,7 @@ export function BuscadorGrabaciones(){
     useEffect(() => {
         const fetchCameras = async () => {
             try {
-                const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`);
+                const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`, { withCredentials: true });
                 setCameras(response.data);
                 if (response.data.length > 0) {
                     setSelectedCamera(response.data[0].id);

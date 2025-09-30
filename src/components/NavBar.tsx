@@ -16,17 +16,29 @@ import {
 import { notificationsOutline, personOutline, menuOutline, addCircleOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router';
 import './NavBar.css';
+import { useUser } from '../UserContext';
+import axios from 'axios';
 
 interface NavBarProps {
     unseenCount: number;
     onShowNotifications?: (e: React.MouseEvent) => void;
     onShowMantenedores?: (e: React.MouseEvent) => void;
-    onLogout?: () => void;
-    user: { usuario: string; rol: number; nombre: string } | null;
 }
 
-export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, onLogout, user }: NavBarProps) {
+export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }: NavBarProps) {
   const history = useHistory();
+  const { user, setUser } = useUser();
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${BACKEND_URL}/api/auth/logout`, {}, { withCredentials: true });
+      setUser(null);
+      history.replace('/login');
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <>
       {/* Menú Hamburguesa */}
@@ -76,8 +88,8 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, o
             */}
             <IonButton 
               color="danger" 
-              size="small" 
-              onClick={onLogout} 
+              size="small"
+              onClick={handleLogout} 
             >
               Cerrar sesión
             </IonButton>

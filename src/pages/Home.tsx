@@ -23,7 +23,8 @@ import Cameras from '../components/Cameras';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
-import LoginPage from '../components/LoginPage';
+import { useUser } from '../UserContext';
+import { useHistory } from 'react-router-dom';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -32,23 +33,8 @@ const socket = io(BACKEND_URL);
 
 function Home() {
 
-  // Estado de auth
-  const [user, setUser] = useState<{ usuario: string; rol: number; nombre: string } | null>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-
-  // Carga inicial de auth
-  useEffect(() => {
-    axios.get(`${BACKEND_URL}/api/auth/check`, { withCredentials: true })
-      .then(res => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setCheckingAuth(false));
-  }, []);
-
-  // Logout handler
-  const handleLogout = async () => {
-    await axios.post(`${BACKEND_URL}/api/auth/logout`, {}, { withCredentials: true });
-    setUser(null);
-  };
+  const { user, setUser } = useUser();
+  const history = useHistory();
 
   const [showToast, setShowToast] = useState(false);
   const [lastAlert, setLastAlert] = useState<Alert | null>(null);
@@ -75,7 +61,7 @@ function Home() {
     try {
       await axios.put(`${BACKEND_URL}/api/alertas/editar-descripcion/${alertaSeleccionada.id}`, {
         descripcion_suceso: nuevaDescripcion
-      }, { withCredentials: true });
+      });
       
       setAlerts(prev =>
         prev.map(a =>
@@ -111,7 +97,7 @@ function Home() {
           console.error('Error al obtener alertas:', error);
         })
     }
-  }, [user]);
+  }, []);
 
   // Carga de alertas no vistas desde backend
   const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
@@ -128,10 +114,8 @@ function Home() {
         })
         .finally(() => setLoadingAlerts(false));
     }
-    else{
-      setLoadingAlerts(false)
-    }
-  }, [user]);
+    else setLoadingAlerts(false)
+  }, []);
 
   // Carga de camaras desde backend con cantidad de alertas
   const [cameras, setCameras] = useState<Camera[]>([]);
@@ -148,7 +132,7 @@ function Home() {
         console.error('Error al obtener cámaras:', error);
       })
       .finally(() => setLoadingCameras(false));
-  }, [user]);
+  }, []);
 
   // Carga de nombre de camaras desde backend
   const [cameraNames, setCameraNames] = useState<{[key:number]:string}>({});
@@ -192,7 +176,7 @@ function Home() {
         socket.off('nueva-alerta');
       };
     }
-  }, [user]);
+  }, []);
 
   const goToCamera = () => {
     if (lastAlert) {
@@ -233,14 +217,10 @@ function Home() {
         socket.off('nueva-descripcion');
       };
     }
-  }, [user]);
-
-  // Loading de auth
-  if (checkingAuth)
-    return <div className='global-loading'><IonSpinner name="crescent" /></div>;
+  }, []);
 
   // Loading de camaras y alertas
-  if (user  && (loadingCameras || loadingAlerts || loadingCameraNames))
+  if (loadingCameras || loadingAlerts || loadingCameraNames)
     return <div className='global-loading'><IonSpinner name="crescent" /></div>;
 
   // Handler para mostrar popover en el sitio del click (la campana)
@@ -445,9 +425,6 @@ function Home() {
     }
   };
 
-  // Si no está logueado, mostrar formulario login
-  if (!user) return <LoginPage onLoginSuccess={setUser} />;
-
   return (
     <div>
       <IonToast
@@ -476,12 +453,14 @@ function Home() {
           }
         ]}
       />
-      <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '80px', marginLeft: '20px', zIndex: 1000}}>
-        <IonFabButton ref={fabButtonRef} onClick={handleShowMantenedoresRef} id="mantenedores-fab">
-          <IonIcon icon={add} />
-        </IonFabButton>
-      </IonFab>
-      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores} onLogout={handleLogout} user={user}/>
+      {user && (user.rol == 1 || user.rol == 2) && (
+        <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '80px', marginLeft: '20px', zIndex: 1000}}>
+          <IonFabButton ref={fabButtonRef} onClick={handleShowMantenedoresRef} id="mantenedores-fab">
+            <IonIcon icon={add} />
+          </IonFabButton>
+        </IonFab>
+      )}
+      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores}/>
       <IonPopover
         isOpen={popoverOpenMantenedores}
         //event={popoverEvent}
@@ -636,21 +615,23 @@ function Home() {
               ) : (
                 <p style={{ fontStyle: 'italic', color: '#888' }}>Esta alerta no tiene descripción</p>
               )}
-              <IonButton
-                expand="block"
-                onClick={() => {
-                  setEditandoDescripcion(true);
-                  setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
-                }}
-                style={{
-                  marginTop: '10px',
-                  fontSize: '1.1rem',
-                  '--border-radius': '15px',
-                  '--background': '#1B4965'
-                }}
-              >
-                Editar descripción
-              </IonButton>
+              {user && user.rol == 2 && (
+                <IonButton
+                  expand="block"
+                  onClick={() => {
+                    setEditandoDescripcion(true);
+                    setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
+                  }}
+                  style={{
+                    marginTop: '10px',
+                    fontSize: '1.1rem',
+                    '--border-radius': '15px',
+                    '--background': '#1B4965'
+                  }}
+                >
+                  Editar descripción
+                </IonButton>
+              )}
             </div>
           )}
 
