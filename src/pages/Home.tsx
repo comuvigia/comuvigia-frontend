@@ -24,7 +24,6 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
 import { useUser } from '../UserContext';
-import { useHistory } from 'react-router-dom';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -33,9 +32,7 @@ const socket = io(BACKEND_URL);
 
 function Home() {
 
-  const { user, setUser } = useUser();
-  const history = useHistory();
-
+  const { user } = useUser();
   const [showToast, setShowToast] = useState(false);
   const [lastAlert, setLastAlert] = useState<Alert | null>(null);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
