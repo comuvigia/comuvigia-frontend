@@ -9,7 +9,7 @@ import {
   IonToast
 } from '@ionic/react';
 import axios from 'axios';
-import './LoginModal.css';
+import './LoginPage.css';
 
 interface LoginModalProps {
   onLoginSuccess: (userData: any) => void;
@@ -17,7 +17,7 @@ interface LoginModalProps {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
+const LoginPage: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [mostrarToast, setMostrarToast] = useState(false);
@@ -82,4 +82,4 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
   );
 };
 
-export default LoginModal;
+export default LoginPage;
