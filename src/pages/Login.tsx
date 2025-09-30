@@ -9,20 +9,18 @@ import {
   IonToast
 } from '@ionic/react';
 import axios from 'axios';
-import './LoginPage.css';
-
-interface LoginModalProps {
-  onLoginSuccess: (userData: any) => void;
-}
+import './Login.css';
+import { useUser } from '../UserContext';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const LoginPage: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
+const Login: React.FC = () => {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [mostrarToast, setMostrarToast] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
+  const { setUser } = useUser();
   const handleLogin = async () => {
     try {
       await axios.post(
@@ -31,8 +29,7 @@ const LoginPage: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
         { withCredentials: true }
       );
       const res = await axios.get(`${BACKEND_URL}/api/auth/check`, { withCredentials: true });
-      onLoginSuccess(res.data);
-      window.location.href = '/home';
+      setUser(res.data);
     } catch (err) {
       setMensaje('Usuario o contraseña incorrecta');
       setMostrarToast(true);
@@ -82,4 +79,4 @@ const LoginPage: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
   );
 };
 
-export default LoginPage;
+export default Login;

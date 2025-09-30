@@ -1,10 +1,14 @@
 import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { UserProvider } from './UserContext';
+import { ProtectedRoute } from './ProtectedRoute';
+import { PublicRoute } from './PublicRoute';
 import Home from './pages/Home';
 import Historial from './pages/Historial';
 import Grabaciones from './pages/Grabaciones';
 import Reportes from './pages/Reportes';
+import Login from './pages/Login';
 import React from 'react';
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -40,25 +44,41 @@ setupIonicReact();
 
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-        <Route exact path="/historial">
-          <Historial />
-        </Route>
-        <Route exact path="/grabaciones">
-          <Grabaciones />
-        </Route>
-        <Route exact path="/reportes">
-          <Reportes />
-        </Route>
-      </IonRouterOutlet>
-    </IonReactRouter>
+    <UserProvider>
+      <IonReactRouter>
+        <IonRouterOutlet>
+          <PublicRoute exact path="/login">
+            <Login />
+          </PublicRoute>
+          <Route exact path="/home">
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/">
+            <Redirect to="/home" />
+          </Route>
+          <Route exact path="/historial">
+            <ProtectedRoute allowedRoles={[1, 2]}>
+              <Historial />
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/grabaciones">
+            <ProtectedRoute allowedRoles={[1, 2]}>
+              <Grabaciones />
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/reportes">
+            <ProtectedRoute allowedRoles={[1, 2]}>
+              <Reportes />
+            </ProtectedRoute>
+          </Route>
+          <Route>
+            <Redirect to="/home" />
+          </Route>
+        </IonRouterOutlet>
+      </IonReactRouter>
+    </UserProvider>
   </IonApp>
 );
 
