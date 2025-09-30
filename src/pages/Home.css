@@ -6,13 +6,25 @@ ion-toast::part(button) {
     margin: 5px;
 }
 
-.fixed-popover {
-  position: fixed !important;
-  top: -200px !important;
-  left: 40px !important;
-  right: auto !important;
-  transform: none !important;
-  --width: 300px !important;
+.mantenedores-popover {
+  --ion-safe-area-top: 0;
+  --ion-safe-area-bottom: 0;
+  --ion-safe-area-left: 0;
+  --ion-safe-area-right: 0;
+}
+ion-popover {
+  --width: auto;
+  --max-width: 90vw;
+}
+
+ion-fab {
+  z-index: 1000;
+}
+
+ion-fab-button {
+  --background: #1B4965;
+  --background-activated: #0f2d3e;
+  --background-hover: #15374f;
 }
 
 .global-loading{
@@ -36,7 +48,7 @@ ion-toast::part(button) {
 .modal-descripcion {
     --width: 60%;
     --height: 90%;
-    --border-radius: 3%;
+    --border-radius: 20px;
 }
 .video-clip{
     width: 50%;
@@ -49,6 +61,7 @@ ion-toast::part(button) {
     .modal-descripcion {
         --width: 100%;
         --height: 100%;
+        --border-radius: 20px;
     }
     .video-clip{
         width: 100%;
@@ -60,6 +73,7 @@ ion-toast::part(button) {
     .modal-descripcion {
         --width: 100%;
         --height: 100%;
+        --border-radius: 20px;
     }
     .video-clip{
         width: 80%;

@@ -72,7 +72,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
 
   return (
     <>
-      <IonModal isOpen={isOpen} onDidDismiss={onClose}>
+      <IonModal isOpen={isOpen} onDidDismiss={onClose} style={{'--border-radius': '20px'}}>
         <IonHeader>
           <IonToolbar>
             <IonTitle>Alerta #{editedAlert.id}</IonTitle>

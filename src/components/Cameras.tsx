@@ -35,13 +35,15 @@ import {
   wifi, 
 } from 'ionicons/icons';
 import { Camera } from '../types/Camera'; // Ajusta la ruta según tu estructura
+import Aviso from '../components/Aviso';
+import { useAviso } from '../hooks/useAviso';
 import './Cameras.css';
 
 interface CamerasProps {
   isOpen: boolean;
   onClose: () => void;
   cameras: Camera[];
-  onSave: (camera: Camera) => void;
+  onSave: (camera: Camera, isNew: boolean) => void;
   onDelete: (id: number) => void;
 }
 
@@ -52,7 +54,9 @@ const Cameras: React.FC<CamerasProps> = ({
   onSave,
   onDelete
 }) => {
-  const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
+  const { alertState, showError, closeAlert } = useAviso();
+  const [selectedCamera, setSelectedCamera] = useState<Camera | null>();
+  const [cameraToDelete, setCameraToDelete] = useState<Camera | null>(null);
   const [editedCamera, setEditedCamera] = useState<Camera | null>(null);
   const [showDeleteCamera, setShowDeleteCamera] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -70,8 +74,9 @@ const Cameras: React.FC<CamerasProps> = ({
 
   // Inicializar cámara para crear
   const handleCreateCamera = () => {
+    const tempId = Math.min(-1, ...cameras.map(c => c.id)) - 1;
     const newCamera: Camera = {
-      id: Math.max(0, ...cameras.map(c => c.id)) + 1,
+      id: tempId,
       nombre: '',
       posicion: [0, 0],
       direccion: '',
@@ -80,7 +85,7 @@ const Cameras: React.FC<CamerasProps> = ({
       link_camara: '',
       link_camara_externo: '',
       total_alertas: 0,
-      id_sector: 0,
+      id_sector: 1,
       zona_interes: ''
     };
     setSelectedCamera(newCamera);
@@ -114,19 +119,30 @@ const Cameras: React.FC<CamerasProps> = ({
 
   const handleSave = () => {
     if (editedCamera) {
-      onSave(editedCamera);
+      const isNewCamera = editedCamera.id < 0;
+      const cameraData = JSON.parse(JSON.stringify(editedCamera));
+      if (isNewCamera) {
+        const { id, ...newCameraData } = cameraData;
+        const cameraToSave = { ...newCameraData };
+        onSave(cameraToSave as Camera, true);
+      } else {
+        const cameraToSave = { ...cameraData };
+        onSave(cameraToSave as Camera, false);
+      }
       setIsEditing(false);
       setIsCreating(false);
       if (isCreating) {
         setSelectedCamera(null);
       }
     }
+    //mostrarAlerta('Guardado correctamente.','La cámara se guardo exitosamente en el sistema.');
   };
 
   const handleDelete = () => {
-    if (selectedCamera) {
-      onDelete(selectedCamera.id);
-      setSelectedCamera(null);
+    if (cameraToDelete) {
+      onDelete(cameraToDelete.id);
+      setShowDeleteCamera(false);
+      setCameraToDelete(null);
     }
   };
 
@@ -150,6 +166,16 @@ const Cameras: React.FC<CamerasProps> = ({
     }
   };
 
+  const mostrarAlerta = (principal: string, titulo: string) => {
+      showError(principal, {
+      type: 'success',
+      title: titulo,
+      style: 'detailed',
+      duration: 5000,
+      autoClose: false
+      });
+  };
+
   return (
     <>
       <IonModal isOpen={isOpen} onDidDismiss={onClose} className="cameras-modal">
@@ -157,7 +183,7 @@ const Cameras: React.FC<CamerasProps> = ({
           <IonToolbar>
             <IonTitle>
               {isCreating ? 'Nueva Cámara' : 
-               selectedCamera ? `Cámara ${selectedCamera.nombre}` : 'Mantenedor de Cámaras'}
+               selectedCamera ? `Cámara ${selectedCamera.nombre}` : 'Cámaras'}
             </IonTitle>
             <IonButtons slot="end">
               <IonButton onClick={onClose}>
@@ -168,6 +194,15 @@ const Cameras: React.FC<CamerasProps> = ({
         </IonHeader>
         
         <IonContent>
+          <Aviso
+            isOpen={alertState.isOpen}
+            type={alertState.type}
+            title={alertState.title}
+            message={alertState.message}
+            onClose={closeAlert}
+            style={alertState.style}
+            duration={alertState.duration}
+          />
           {!selectedCamera ? (
             // ------------ Vista de lista ------------
             <div className="cameras-list">
@@ -197,11 +232,11 @@ const Cameras: React.FC<CamerasProps> = ({
                             </IonLabel>
                           </IonCol>
                           <IonCol size="4" className="" style={{display:'flex', justifyContent:'space-between', flexDirection:'column-reverse', alignItems:'end'}}>
-                            <IonBadge color="warning">{camera.total_alertas} alertas</IonBadge>
+                            <IonBadge color="warning">{(camera.total_alertas || 0)} alertas</IonBadge>
                             <IonItem lines='none'>
                               <IonButton 
                                 color="danger"
-                                onClick={(e) => {e.stopPropagation(); setShowDeleteCamera(true);}}
+                                onClick={(e) => {e.stopPropagation(); setCameraToDelete(camera); setShowDeleteCamera(true);}}
                                 style={{'--border-radius':'20px'}}
                               >
                                 <IonIcon icon={trash} slot="start" style={{margin:'0'}}/>
@@ -289,10 +324,9 @@ const Cameras: React.FC<CamerasProps> = ({
                     <IonItem>
                       <IonLabel position="stacked">Sector</IonLabel>
                       <IonSelect
-                        value={editedCamera?.id_sector}
+                        value={editedCamera?.id_sector || 1}
                         onIonChange={(e) => handleInputChange('id_sector', e.detail.value)}
                         //disabled={!isEditing}
-                        placeholder="Selecciona un sector"
                         >
                         <IonSelectOption value={1}>Sector 1</IonSelectOption>
                         <IonSelectOption value={2}>Sector 2</IonSelectOption>
@@ -389,9 +423,12 @@ const Cameras: React.FC<CamerasProps> = ({
       {/* Alerta de eliminación */}
       <IonAlert
         isOpen={showDeleteCamera}
-        onDidDismiss={() => setShowDeleteCamera(false)}
+        onDidDismiss={() => {
+          setShowDeleteCamera(false);
+          setCameraToDelete(null);
+        }}
         header={'Eliminar Cámara'}
-        message={`¿Estás seguro de que quieres eliminar la cámara "${selectedCamera?.nombre}"? Esta acción no se puede deshacer.`}
+        message={`¿Estás seguro de que quieres eliminar la cámara "${cameraToDelete?.nombre}"? Esta acción no se puede deshacer.`}
         buttons={[
           {
             text: 'Cancelar',

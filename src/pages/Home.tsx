@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import MapView from '../components/MapView';
 //import { CameraModal } from '../components/CameraModal';
 import { Navbar } from '../components/NavBar';
@@ -45,6 +45,8 @@ function Home() {
   const [editandoDescripcion, setEditandoDescripcion] = useState(false);
   const [nuevaDescripcion, setNuevaDescripcion] = useState("");
   const [guardando, setGuardando] = useState(false)
+  const fabButtonRef = useRef<HTMLIonFabButtonElement>(null);
+
   const guardarDescripcion = async () => {
   if (!alertaSeleccionada) return;
   
@@ -204,8 +206,28 @@ function Home() {
   };
   // Handler para mostrar popover en el sitio del click (el icono de mantenedores)
   const handleShowMantenedores = (e: React.MouseEvent) => {
+    // Prevenir comportamiento por defecto
+    e.preventDefault();
+    e.stopPropagation();
+    
     setPopoverEvent(e.nativeEvent);
     setPopoverOpenMantenedores(true);
+  };
+
+  // Handler alternativo usando referencia
+  const handleShowMantenedoresRef = () => {
+    if (fabButtonRef.current) {
+      const rect = fabButtonRef.current.getBoundingClientRect();
+      const event = new CustomEvent('click', {
+        detail: {
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2,
+        }
+      }) as unknown as React.MouseEvent;
+      
+      setPopoverEvent(event as unknown as React.MouseEvent);
+      setPopoverOpenMantenedores(true);
+    }
   };
   
   // Handler para ver descripción de alerta
@@ -334,17 +356,52 @@ function Home() {
     setActiveModal(null);
   };
 
-  const handleSaveCamera = (camera: Camera) => {
-    // Lógica para guardar/actualizar cámara
-    console.log('Guardar cámara:', camera);
-    // Aquí deberías hacer la llamada a tu API
+  const handleSaveCamera = async (camera: Camera, isNew: boolean) => {
+    try {
+      if (isNew) {
+        console.log('Creando nueva cámara: ', camera);
+        const response = await axios.post(`${BACKEND_URL}/api/camaras`, camera);
+        console.log('Cámara creada exitosamente:', response.data);
+        setCameras(prev => [...prev, response.data]);
+        // presentToast('Cámara creada exitosamente', 'success');
+      } else {
+        console.log('Actualizando cámara existente: ', camera);
+        const response = await axios.patch(`${BACKEND_URL}/api/camaras/${camera.id}`, camera);
+        console.log('Cámara actualizada exitosamente:', response.data);
+        setCameras(prev => prev.map(c => 
+          c.id === camera.id ? response.data : c
+        ));
+        // presentToast('Cámara actualizada exitosamente', 'success');
+      }
+    } catch (error) {
+      console.error(`Error ${isNew ? 'creando' : 'actualizando'} cámara:`, error);
+      // Manejo de errores
+      // presentToast('Error', 'error');
+    }
   };
 
-  const handleDeleteCamera = (id: number) => {
-    // Lógica para eliminar cámara
-    console.log('Eliminar cámara:', id);
-    // Aquí deberías hacer la llamada a tu API
+  const handleDeleteCamera = async (id: number) => {
+    const cameraToDelete = cameras.find(camera => camera.id === id);
+    
+    if (!cameraToDelete) {
+      console.error('Cámara no encontrada');
+      return;
+    }
+
+    try {
+      console.log('Eliminar cámara:', id);
+      
+      const response = await axios.delete(`${BACKEND_URL}/api/camaras/${id}`);
+      
+      console.log('Cámara eliminada exitosamente:', response.data);
+      setCameras(prev => prev.filter(camera => camera.id !== id));
+      
+    } catch (error) {
+      console.log('Error eliminando cámara:', error);
+    }
   };
+
+  
 
   return (
     <div>
@@ -374,24 +431,26 @@ function Home() {
           }
         ]}
       />
-      <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{paddingBottom: '50px', paddingLeft: '20px'}}>
-        <IonFabButton onClick={handleShowMantenedores}>
+      <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '80px', marginLeft: '20px', zIndex: 1000}}>
+        <IonFabButton ref={fabButtonRef} onClick={handleShowMantenedoresRef} id="mantenedores-fab">
           <IonIcon icon={add} />
         </IonFabButton>
       </IonFab>
-      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores}/>
+      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedoresRef}/>
       <IonPopover
         isOpen={popoverOpenMantenedores}
-        event={popoverEvent}
+        //event={popoverEvent}
+        trigger="mantenedores-fab"
         onDidDismiss={handleClosePopover}
-        
+        side="top"
+        alignment="start"
+        showBackdrop={true}
+        backdropDismiss={true}
         style={{
-          '--ion-safe-area-top': '0px',
-          '--ion-safe-area-bottom': '0px',
-          '--ion-safe-area-left': '0px',
-          '--ion-safe-area-right': '0px'
+          '--width': '300px',
+          '--max-width': '90vw',
         }}
-        className="fixed-popover"       
+        className="mantenedores-popover"       
       >
         <div style={{ position: 'relative', zIndex: 1000 }}>
           <MantenedoresPopover
@@ -453,7 +512,7 @@ function Home() {
           />
         </IonContent>
       </IonPopover>
-      
+
       <MapView
         cameras={cameras}
         selectedCamera={selectedCamera}     
