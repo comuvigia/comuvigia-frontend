@@ -21,9 +21,10 @@ interface NavBarProps {
     unseenCount: number;
     onShowNotifications?: (e: React.MouseEvent) => void;
     onShowMantenedores?: (e: React.MouseEvent) => void;
+    onLogout?: () => void;
 }
 
-export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }: NavBarProps) {
+export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, onLogout }: NavBarProps) {
   const history = useHistory();
   return (
     <>
@@ -68,6 +69,13 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }:
               <IonIcon icon={addCircleOutline} />
             </IonButton>
             */}
+            <IonButton 
+              color="danger" 
+              size="small" 
+              onClick={onLogout} 
+            >
+              Cerrar sesión
+            </IonButton>
             <IonButton onClick={onShowNotifications}>
               <IonIcon icon={notificationsOutline} />
               {unseenCount > 0 && <IonBadge color="danger">{unseenCount}</IonBadge>}

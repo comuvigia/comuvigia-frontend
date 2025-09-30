@@ -1,0 +1,74 @@
+/* Fondo degradado para toda la pantalla */
+.login-page {
+  --background: linear-gradient(135deg, #1B4965, #3D8EB9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Wrapper para centrar el contenido verticalmente */
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh; /* Ocupa toda la altura de la pantalla */
+}
+
+/* Contenedor del formulario */
+.login-container {
+  background: #fff;
+  padding: 30px 25px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Título */
+.login-title {
+  margin-bottom: 5px;
+  font-size: 1.8rem;
+  color: #1B4965;
+}
+
+/* Subtítulo */
+.login-subtitle {
+  margin-bottom: 20px;
+  color: #555;
+}
+
+/* Botón principal */
+.login-button {
+  --background: #1B4965;
+  --border-radius: 10px;
+  margin-top: 20px;
+}
+
+/* Inputs con error */
+.input-error {
+  --highlight-color-focused: #e74c3c;
+  --border-color: #e74c3c;
+}
+
+/* Ajustes para los inputs para que tengan más "aire" vertical */
+.login-container ion-item {
+  --padding-start: 12px;   /* padding izquierdo */
+  --padding-end: 12px;     /* padding derecho */
+  --min-height: 60px;      /* aumenta altura del item */
+  margin-bottom: 15px;     /* espacio entre items */
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.login-container ion-input {
+  padding: 12px 0; /* padding vertical interno */
+  font-size: 1rem;
+}
+
+/* Opcional: cambiar color del label flotante */
+.login-container ion-label {
+  font-size: 0.95rem;
+  color: #555;
+}

@@ -23,6 +23,7 @@ import Cameras from '../components/Cameras';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
+import LoginModal from '../components/LoginModal';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -30,6 +31,23 @@ const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const socket = io(BACKEND_URL);
 
 function Home() {
+
+  // Estado de auth
+  const [user, setUser] = useState<{ usuario: string; rol: number; nombre: string } | null>(null);
+
+  // Carga inicial de auth
+  useEffect(() => {
+    axios.get(`${BACKEND_URL}/api/auth/check`, { withCredentials: true })
+      .then(res => setUser(res.data))
+      .catch(() => setUser(null));
+  }, []);
+
+  // Logout handler
+  const handleLogout = async () => {
+    await axios.post(`${BACKEND_URL}/api/auth/logout`, {}, { withCredentials: true });
+    setUser(null);
+  };
+
   const [showToast, setShowToast] = useState(false);
   const [lastAlert, setLastAlert] = useState<Alert | null>(null);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
@@ -401,7 +419,8 @@ function Home() {
     }
   };
 
-  
+  // Si no está logueado, mostrar formulario login
+  if (!user) return <LoginModal onLoginSuccess={setUser} />;
 
   return (
     <div>
@@ -436,7 +455,7 @@ function Home() {
           <IonIcon icon={add} />
         </IonFabButton>
       </IonFab>
-      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedoresRef}/>
+      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores} onLogout={handleLogout}/>
       <IonPopover
         isOpen={popoverOpenMantenedores}
         //event={popoverEvent}
