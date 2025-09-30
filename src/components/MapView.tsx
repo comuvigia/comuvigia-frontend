@@ -45,16 +45,16 @@ function formatDateTimeUTC(isoString: string) {
 
 interface MapViewProps {
   cameras: Camera[];
-
   selectedCamera?: Camera | null;
   alerts?: Alert[];
   cameraNames?: { [key: number]: string };
+  user: { usuario: string; rol: number; nombre: string } | null;
   formatearFecha?: (fechaISO: string) => string;
   handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
   onVerDescripcion?: (alerta: Alert) => void;
   setSelectedCamera: (cam: Camera | null) => void;
 }
-export default function MapView({ cameras,selectedCamera,alerts,cameraNames,formatearFecha,handleAccion,onVerDescripcion ,setSelectedCamera}: MapViewProps) {
+export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user,formatearFecha,handleAccion,onVerDescripcion ,setSelectedCamera}: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const [headerHeight, setHeaderHeight] = useState(60);
   const [activeTab, setActiveTab] = useState<'video' | 'estadisticas' | 'alertas'>('video');
@@ -224,8 +224,12 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
               <br />
               Última conexión: <span>{formatDateTimeUTC(cam.ultima_conexion)}</span>
               <br />
-              Cantidad de Alertas: <strong>{cam.total_alertas ?? 0}</strong>
-              <br />
+              {user && (user.rol === 1 || user.rol === 2) && (
+                <>
+                  Cantidad de Alertas: <strong>{cam.total_alertas ?? 0}</strong>
+                  <br />
+                </>
+              )}
               <button
                 style={{
                   marginTop: 8,
@@ -286,11 +290,13 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
               </>
             )}
           </div>
-          <div className="tab-buttons">
-            {/*<button onClick={() => setActiveTab('video')}>🎥 Video</button>*/}
-            <button onClick={() => setActiveTab('estadisticas')}>📊 Estadísticas</button>
-            <button onClick={() => setActiveTab('alertas')}>🚨 Alertas</button>
-          </div>
+          {user && (user.rol == 1 || user.rol == 2) && (
+            <div className="tab-buttons">
+              {/*<button onClick={() => setActiveTab('video')}>🎥 Video</button>*/}
+              <button onClick={() => setActiveTab('estadisticas')}>📊 Estadísticas</button>
+              <button onClick={() => setActiveTab('alertas')}>🚨 Alertas</button>
+            </div>
+          )}
 
           <div className="tab-content"> 
               {activeTab === 'video' && <div>Contenido de Video (aún vacío)</div>}
@@ -314,7 +320,9 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,form
           </div>
           <p><strong>Estado:</strong> <span style={{ color: getEstadoColor(selectedCamera.estado_camara) }}>{getEstado(selectedCamera.estado_camara)}</span></p>
           <p><strong>Última conexión:</strong> {formatDateTimeUTC(selectedCamera.ultima_conexion)}</p>
-          <p><strong>Alertas:</strong> {selectedCamera.total_alertas ?? 0}</p>
+          {user && (user.rol == 1 || user.rol == 2) && (
+            <p><strong>Alertas:</strong> {selectedCamera.total_alertas ?? 0}</p>
+          )}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
             <button onClick={() => setSelectedCamera(null)}>Cerrar panel</button>
           </div>
