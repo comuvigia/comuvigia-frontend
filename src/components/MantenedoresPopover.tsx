@@ -6,6 +6,7 @@ import { Camera } from '../types/Camera';
 import Cameras from './Cameras';
 import './Notificaciones.css'
 import './MantenedoresPopover.css'
+import { useUser } from '../UserContext';
 
 interface MantenedoresPopoverProps {
     cameras: Camera[];
@@ -36,6 +37,8 @@ export function MantenedoresPopover({
     onOpenModal(modalType); // Abrir el modal correspondiente
   };
 
+  const { user } = useUser();
+
   return (
       <>
       <IonList className={variant === 'map' ? 'notificaciones-list-map' : 'notificaciones-list-sidebar'} style={{ overflowY: variant === 'sidebar' ? 'auto' : 'visible' }}>
@@ -44,12 +47,14 @@ export function MantenedoresPopover({
             <b>Mantenedores</b>
           </IonLabel>
         </IonItem>
-        <IonItem className="mantenedores-item" onClick={() => handleItemClick('users')}>
-          <IonIcon src={people} color='dark' style={{padding:'10px'}}></IonIcon>
-          <IonLabel>
-            Usuarios
-          </IonLabel>
-        </IonItem>
+        {user && user.rol==2 && (
+          <IonItem className="mantenedores-item" onClick={() => handleItemClick('users')}>
+            <IonIcon src={people} color='dark' style={{padding:'10px'}}></IonIcon>
+            <IonLabel>
+              Usuarios
+            </IonLabel>
+          </IonItem>
+        )}
         <IonItem className="mantenedores-item" onClick={() => handleItemClick('cameras')}>
           <IonIcon src={videocam} color='dark' style={{padding:'10px'}}></IonIcon>
           <IonLabel>
