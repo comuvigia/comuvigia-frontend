@@ -4,6 +4,7 @@ import MapView from '../components/MapView';
 import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
+import { User } from '../types/User';
 import { videocam, close, add } from 'ionicons/icons';
 import {
   IonPopover,
@@ -20,6 +21,7 @@ import {
 import { NotificacionesPopover } from '../components/Notificaciones';
 import { MantenedoresPopover } from '../components/MantenedoresPopover';
 import Cameras from '../components/Cameras';
+import Users from '../components/Users';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
@@ -145,6 +147,26 @@ function Home() {
       .finally(() => setLoadingCameraNames(false));
   }, []);
 
+  // Carga de usuarios desde backend
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  useEffect(() => {
+    if(!user) return;
+    
+    if(user.rol == 2){
+      axios.get<User[]>(`${BACKEND_URL}/api/usuarios`, { withCredentials: true })
+        .then(response => {
+          console.log(response.data)
+          setUsers(response.data);
+        })
+        .catch(error => {
+          console.error('Error al obtener usuarios:', error);
+        })
+        .finally(() => setLoadingUsers(false));
+    }
+    else setLoadingUsers(false);
+  }, []);
+
   // Manejo WebSocket para recibir nuevas alertas
   useEffect(() => {
     if(!user) return;
@@ -217,7 +239,7 @@ function Home() {
   }, []);
 
   // Loading de camaras y alertas
-  if (loadingCameras || loadingAlerts || loadingCameraNames)
+  if (loadingCameras || loadingAlerts || loadingCameraNames || loadingUsers)
     return <div className='global-loading'><IonSpinner name="crescent" /></div>;
 
   // Handler para mostrar popover en el sitio del click (la campana)
@@ -422,6 +444,51 @@ function Home() {
     }
   };
 
+  const handleSaveUser = async (usuario: User, isNew: boolean) => {
+    try {
+      if (isNew) {
+        //console.log('Creando nuevo usuario: ', usuario);
+        const response = await axios.post(`${BACKEND_URL}/api/usuarios/register`, usuario, { withCredentials: true });
+        //console.log('Usuario creado exitosamente:', response.data);
+        setUsers(prev => [...prev, response.data]);
+        // presentToast('Usuario creada exitosamente', 'success');
+      } else {
+        //console.log('Actualizando usuario existente: ', usuario);
+        const response = await axios.put(`${BACKEND_URL}/api/usuarios/${usuario.id}`, usuario, { withCredentials: true });
+        //console.log('Usuario actualizado exitosamente:', response.data);
+        setUsers(prev => prev.map(u => 
+          u.id === usuario.id ? response.data : u
+        ));
+        // presentToast('Usuario actualizada exitosamente', 'success');
+      }
+    } catch (error) {
+      console.error(`Error ${isNew ? 'creando' : 'actualizando'} usuario:`, error);
+      // Manejo de errores
+      // presentToast('Error', 'error');
+    }
+  };
+
+  const handleDeleteUser = async (id: number) => {
+    const userToDelete = users.find(usuario => usuario.id === id);
+    
+    if (!userToDelete) {
+      console.error('Usuario no encontrado');
+      return;
+    }
+
+    try {
+      console.log('Eliminar usuario:', id);
+      
+      const response = await axios.delete(`${BACKEND_URL}/api/usuarios/${id}`, { withCredentials: true });
+      
+      console.log('Usuario eliminado exitosamente:', response.data);
+      setUsers(prev => prev.filter(usuario => usuario.id !== id));
+      
+    } catch (error) {
+      console.log('Error eliminando usuario:', error);
+    }
+  };
+
   return (
     <div>
       <IonToast
@@ -495,7 +562,14 @@ function Home() {
         onSave={handleSaveCamera}
         onDelete={handleDeleteCamera}
       />
-  
+
+      <Users
+        isOpen={activeModal === 'users'}
+        onClose={handleCloseModal}
+        users={users}
+        onSave={handleSaveUser}
+        onDelete={handleDeleteUser}
+      />  
 
       {/* Futuros modales para usuarios y alertas */}
       {/* <UsersModal isOpen={activeModal === 'users'} onClose={handleCloseModal} /> */}

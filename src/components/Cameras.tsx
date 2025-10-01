@@ -332,7 +332,7 @@ const Cameras: React.FC<CamerasProps> = ({
                       <IonSelect
                         value={editedCamera?.id_sector || 1}
                         onIonChange={(e) => handleInputChange('id_sector', e.detail.value)}
-                        //disabled={!isEditing}
+                        disabled={!isEditing}
                         >
                         <IonSelectOption value={1}>Sector 1</IonSelectOption>
                         <IonSelectOption value={2}>Sector 2</IonSelectOption>
