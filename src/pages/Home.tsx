@@ -381,13 +381,13 @@ function Home() {
     try {
       if (isNew) {
         console.log('Creando nueva cámara: ', camera);
-        const response = await axios.post(`${BACKEND_URL}/api/camaras`, camera);
+        const response = await axios.post(`${BACKEND_URL}/api/camaras`, camera, { withCredentials: true });
         console.log('Cámara creada exitosamente:', response.data);
         setCameras(prev => [...prev, response.data]);
         // presentToast('Cámara creada exitosamente', 'success');
       } else {
         console.log('Actualizando cámara existente: ', camera);
-        const response = await axios.patch(`${BACKEND_URL}/api/camaras/${camera.id}`, camera);
+        const response = await axios.patch(`${BACKEND_URL}/api/camaras/${camera.id}`, camera, { withCredentials: true });
         console.log('Cámara actualizada exitosamente:', response.data);
         setCameras(prev => prev.map(c => 
           c.id === camera.id ? response.data : c
@@ -412,7 +412,7 @@ function Home() {
     try {
       console.log('Eliminar cámara:', id);
       
-      const response = await axios.delete(`${BACKEND_URL}/api/camaras/${id}`);
+      const response = await axios.delete(`${BACKEND_URL}/api/camaras/${id}`, { withCredentials: true });
       
       console.log('Cámara eliminada exitosamente:', response.data);
       setCameras(prev => prev.filter(camera => camera.id !== id));
