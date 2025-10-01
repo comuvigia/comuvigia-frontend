@@ -38,6 +38,7 @@ import { Camera } from '../types/Camera'; // Ajusta la ruta según tu estructura
 import Aviso from '../components/Aviso';
 import { useAviso } from '../hooks/useAviso';
 import './Cameras.css';
+import { useUser } from '../UserContext';
 
 interface CamerasProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ const Cameras: React.FC<CamerasProps> = ({
   onSave,
   onDelete
 }) => {
+  const { user } = useUser();
   const { alertState, showError, closeAlert } = useAviso();
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>();
   const [cameraToDelete, setCameraToDelete] = useState<Camera | null>(null);
@@ -211,10 +213,12 @@ const Cameras: React.FC<CamerasProps> = ({
                   <IonLabel>
                     <h2>Total de Cámaras: {cameras.length}</h2>
                   </IonLabel>
-                  <IonButton onClick={handleCreateCamera} style={{'--border-radius': '20px'}}>
-                    <IonIcon icon={add} slot="start" style={{margin:'0', paddingRight:'2px', fontWeight:'bold'}}/>
-                    Crear
-                  </IonButton>
+                  {user && user.rol==2 && (
+                    <IonButton onClick={handleCreateCamera} style={{'--border-radius': '20px'}}>
+                      <IonIcon icon={add} slot="start" style={{margin:'0', paddingRight:'2px', fontWeight:'bold'}}/>
+                      Crear
+                    </IonButton>
+                  )}
                 </IonItem>
                 {cameras.map((camera) => (
                   <IonCard key={camera.id} onClick={() => handleSelectCamera(camera)}>
@@ -233,15 +237,17 @@ const Cameras: React.FC<CamerasProps> = ({
                           </IonCol>
                           <IonCol size="4" className="" style={{display:'flex', justifyContent:'space-between', flexDirection:'column-reverse', alignItems:'end'}}>
                             <IonBadge color="warning">{(camera.total_alertas || 0)} alertas</IonBadge>
-                            <IonItem lines='none'>
-                              <IonButton 
-                                color="danger"
-                                onClick={(e) => {e.stopPropagation(); setCameraToDelete(camera); setShowDeleteCamera(true);}}
-                                style={{'--border-radius':'20px'}}
-                              >
-                                <IonIcon icon={trash} slot="start" style={{margin:'0'}}/>
-                              </IonButton>
-                            </IonItem>
+                            {user && user.rol == 2 && (
+                              <IonItem lines='none'>
+                                <IonButton 
+                                  color="danger"
+                                  onClick={(e) => {e.stopPropagation(); setCameraToDelete(camera); setShowDeleteCamera(true);}}
+                                  style={{'--border-radius':'20px'}}
+                                >
+                                  <IonIcon icon={trash} slot="start" style={{margin:'0'}}/>
+                                </IonButton>
+                              </IonItem>
+                            )}
                           </IonCol>
                         </IonRow>
                       </IonGrid>
@@ -375,14 +381,16 @@ const Cameras: React.FC<CamerasProps> = ({
                     <div className="action-buttons">
                       {!isEditing ? (
                         <>
-                          <IonButton 
-                            expand="block" 
-                            color="primary"
-                            onClick={handleEdit}
-                          >
-                            <IonIcon icon={create} slot="start" />
-                            Editar
-                          </IonButton>
+                          {user && user.rol==2 && (
+                            <IonButton 
+                              expand="block" 
+                              color="primary"
+                              onClick={handleEdit}
+                            >
+                              <IonIcon icon={create} slot="start" />
+                              Editar
+                            </IonButton>
+                          )}
                           <IonButton 
                             expand="block" 
                             color="medium"
