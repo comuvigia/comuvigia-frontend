@@ -12,7 +12,11 @@ interface CameraModalProps {
 
 export function CameraModal({ open, onClose, camera }: CameraModalProps) {
     const [esStreaming, setEsStreaming] = useState(false);
-    
+
+    useEffect(() => {
+        console.log('Modal state:', { open, camera });
+    }, [open, camera]);
+
     // Mover los hooks antes de cualquier condicional
     useEffect(() => {
         if (camera && camera.link_camara_externo) {
@@ -71,22 +75,20 @@ export function CameraModal({ open, onClose, camera }: CameraModalProps) {
             
             if (result.success) {
             console.log('Notificación exitosa al backend:', result);
+            onClose();
             } else {
             console.warn('La solicitud no fue exitosa:', result.message);
             }
 
         } catch (error) {
             console.error('Error al notificar al backend', error);
-            
             // Opcional: Mostrar alerta al usuario
-            // alert('Error al conectar con el servidor. Intente nuevamente.');
-        } finally {
-            onClose();
+            alert('Error al conectar con el servidor. Intente nuevamente.');
         }
         };
 
     return (
-        <IonModal isOpen={open} onDidDismiss={onClose}>
+        <IonModal isOpen={open} onDidDismiss={onClose} backdropDismiss={false}>
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>{camera.nombre}</IonTitle>

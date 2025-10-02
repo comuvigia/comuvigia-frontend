@@ -67,17 +67,22 @@ function Reportes(){
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<any>(null);
     const [downloadingClip, setDownloadingClip] = useState<string | null>(null);
-    const [filtros, setFiltros] = useState({
-        dias: 7,
-        agrupacion: 'day'
-    });
+    const [fechaInicio, setFechaInicio] = useState<string>(
+      new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().slice(0, 10)
+    );
+    const [fechaFin, setFechaFin] = useState<string>(
+      new Date().toISOString().slice(0, 10)
+    );
+    const [agrupacion, setAgrupacion] = useState("day");
+
+
 
     const cargarDatos = async () => {
         setLoading(true);
         setError('');
         
         try {
-            const resultado = await getEstadisticas(filtros.dias, filtros.agrupacion);
+            const resultado = await getEstadisticas(fechaInicio, fechaFin);
             setData(resultado);
         } catch (err) {
             setError('Error al cargar los datos');
@@ -91,10 +96,11 @@ function Reportes(){
         cargarDatos();
     }, []);
 
-    const getEstadisticas = async (dias: number = 7, agrupacion: string = 'month') => {
+    const getEstadisticas = async (fechaInicio: string, fechaFin: string) => {
     try {
-        const fecha_inicio = '2025-08-01T03:51:24';
-        const fecha_fin = '2025-08-30T04:51:44';
+        const fecha_inicio = fechaInicio;
+        const fecha_fin = fechaFin;
+
         const response = await fetch(
         `${BACKEND_URL}/api/alertas/estadisticas-totales?fecha_inicio=${fecha_inicio}&fecha_fin=${fecha_fin}&group=${agrupacion}`
         );
@@ -102,8 +108,8 @@ function Reportes(){
         if (!response.ok) {
             throw new Error('Error en la respuesta del servidor');
         }
-        
         return await response.json();
+
     } catch (error) {
         console.error('Error fetching estadísticas:', error);
         throw error;
@@ -559,7 +565,17 @@ function Reportes(){
                             minHeight: 'min-content',
                             overflow: 'visible'
                         }}>
-                            <ReporteEstadisticas data={data} />
+                            <ReporteEstadisticas
+                              data={data}
+                              fechaInicio={fechaInicio}
+                              fechaFin={fechaFin}
+                              setFechaInicio={setFechaInicio}
+                              setFechaFin={setFechaFin}
+                              onGenerarReporte={cargarDatos}
+                              agrupacion={agrupacion}
+                              setAgrupacion={setAgrupacion}
+                            />
+
                         </div>
                         )}
 

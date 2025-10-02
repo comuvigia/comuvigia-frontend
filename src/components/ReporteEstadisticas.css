@@ -5,6 +5,14 @@
   background: var(--ion-color-light);
 }
 
+.custom-popover {
+  --max-width: 200px;
+  --max-height: 200px;
+  left: 100px !important; 
+  align-items: end;
+  justify-content: end;
+}
+
 .stat-number {
   font-size: 2rem;
   font-weight: bold;

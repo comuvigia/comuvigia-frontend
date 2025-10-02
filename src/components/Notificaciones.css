@@ -1,9 +1,8 @@
 .notificaciones-list-sidebar{
     max-width: 750px;
     min-height: 180px;
-    max-height: 450px;
+    max-height: 400px;
     overflow-y: "auto" ;
-    
 }
 
 .notificaciones-list-map{
@@ -12,6 +11,20 @@
     overflow-y: "auto" ;
     text-align: center;
     
+}
+
+.small-segment {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: unset !important;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --min-height: 28px;
+  font-size: 10px;
+}
+.compact-segment {
+  justify-content: flex-start;
+  overflow-x: auto;
 }
 
 .notification-item{

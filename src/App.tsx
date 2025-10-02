@@ -6,6 +6,7 @@ import Historial from './pages/Historial';
 import Grabaciones from './pages/Grabaciones';
 import Reportes from './pages/Reportes';
 import React from 'react';
+import { ToastProvider } from "./components/ToastProvider";
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -39,27 +40,29 @@ import './theme/variables.css';
 setupIonicReact();
 
 const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-        <Route exact path="/historial">
-          <Historial />
-        </Route>
-        <Route exact path="/grabaciones">
-          <Grabaciones />
-        </Route>
-        <Route exact path="/reportes">
-          <Reportes />
-        </Route>
-      </IonRouterOutlet>
-    </IonReactRouter>
-  </IonApp>
+  <ToastProvider>
+    <IonApp>
+      <IonReactRouter>
+        <IonRouterOutlet>
+          <Route exact path="/home">
+            <Home />
+          </Route>
+          <Route exact path="/">
+            <Redirect to="/home" />
+          </Route>
+          <Route exact path="/historial">
+            <Historial />
+          </Route>
+          <Route exact path="/grabaciones">
+            <Grabaciones />
+          </Route>
+          <Route exact path="/reportes">
+            <Reportes />
+          </Route>
+        </IonRouterOutlet>
+      </IonReactRouter>
+    </IonApp>
+  </ToastProvider>
 );
 
 export default App;

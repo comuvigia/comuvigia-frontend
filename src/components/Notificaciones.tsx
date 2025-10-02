@@ -1,9 +1,20 @@
 import { IonButton, IonIcon, IonActionSheet } from '@ionic/react';
 import { checkmarkDoneOutline, alertCircleOutline, ellipsisVertical } from 'ionicons/icons';
-import React, { useState } from 'react';
-import { IonList, IonItem, IonLabel } from '@ionic/react';
+import React, { useState, useEffect } from 'react';
+import { settingsOutline } from 'ionicons/icons';
+import { 
+  IonList, 
+  IonItem, 
+  IonLabel,
+  IonSegment,
+  IonSegmentButton, 
+} from '@ionic/react';
 import { Alert } from '../types/Alert';
 import './Notificaciones.css'
+import { RulesType, EditRules } from './RulesRiesgoModal';
+
+const STORAGE_KEY = "reglas";
+
 interface NotificacionesPopoverProps {
     alerts: Alert[];
     cameraNames: {[key:number]: string},
@@ -18,8 +29,34 @@ interface NotificacionesPopoverProps {
 export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,variant, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  const [reglas, setReglas] = useState<RulesType[]>([
+    { tipoAlerta: ["1"], horaInicio: "23:59", horaFin: "23:59", score: 100, sector: "", riesgo: "bajo" },
+    { tipoAlerta: ["2"], horaInicio: "23:59", horaFin: "23:59", score: 100, sector: "", riesgo: "medio" },
+    { tipoAlerta: ["3"], horaInicio: "23:59", horaFin: "23:59", score: 100, sector: "", riesgo: "alto" },
+    { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 90, sector: "", riesgo: "critico" },
+  ]);
 
-  const filteredAlerts = selectedCamera
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      setReglas(JSON.parse(saved));
+    } else {
+      setReglas([
+        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "bajo" },
+        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "medio" },
+        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "alto" },
+        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "critico" },
+      ]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (reglas.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(reglas));
+    }
+  }, [reglas]);
+
+  let filteredAlerts = selectedCamera
   ? alerts.filter(a => a.id_camara === selectedCamera.id)
   : alerts;
   
@@ -39,6 +76,9 @@ export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,varia
     2: "Falso Positivo"
   };
 
+  const [selectedTab, setSelectedTab] = useState<'all' | 'bajo' | 'medio' | 'alto' | 'critico'>('all');
+
+
   const getScoreColor = (score: number) => {
     if (score <= 0.4) return 'success';
     if (score <= 0.6) return 'warning';
@@ -51,14 +91,64 @@ export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,varia
     // Aquí va tu lógica
   };
 
+  const calcularRiesgo = (alerta: Alert) => {
+    let valores = [0, 0, 0, 0]; // Para cada regla: bajo, medio, alto, crítico
+
+    for (let i = 0; i < reglas.length; i++) {
+      if (reglas[i].tipoAlerta.some(tipo => Number(tipo) === alerta.tipo)) {
+        valores[i]+=3;
+      }
+
+      const fechaAlerta = new Date(alerta.hora_suceso);
+      const horaAlerta = fechaAlerta.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+      if (reglas[i].horaInicio <= horaAlerta && horaAlerta <= reglas[i].horaFin) {
+        valores[i]++;
+      }
+      if (alerta.score_confianza >= (reglas[i].score/100)) {
+        valores[i]++;
+      }
+    }
+
+    const maxIndex = valores.indexOf(Math.max(...valores));
+    alerta.riesgo = reglas[maxIndex].riesgo;
+  };
+
+  // Filtro por pestaña (riesgo)
+  if (selectedTab !== 'all') {
+    filteredAlerts = filteredAlerts.filter(a => {
+        calcularRiesgo(a); // actualiza alerta.riesgo
+        return a.riesgo?.toLowerCase() === selectedTab;
+    });
+  }
+
+
   return (
     <>
-      <IonList className= {variant === 'map' ? 'notificaciones-list-map' : 'notificaciones-list-sidebar'} style={{overflowY: variant === 'sidebar' ? 'auto' : 'visible'}} >
         <IonItem className='notification-title-item' >
           <IonLabel className="notification-title-item">
             <b>Notificaciones</b>
           </IonLabel>
+          <EditRules reglas={reglas} setReglas={setReglas} />
         </IonItem>
+        <IonSegment value={selectedTab} onIonChange={e => setSelectedTab(e.detail.value as any)} className="compact-segment">
+        <IonSegmentButton value="all" className="small-segment">
+          <IonLabel>Todos</IonLabel>
+        </IonSegmentButton>
+        <IonSegmentButton value="critico" className="small-segment">
+          <IonLabel>Crítico</IonLabel>
+        </IonSegmentButton>
+        <IonSegmentButton value="alto" className="small-segment">
+          <IonLabel>Alto</IonLabel>
+        </IonSegmentButton>
+        <IonSegmentButton value="medio" className="small-segment">
+          <IonLabel>Medio</IonLabel>
+        </IonSegmentButton>
+        <IonSegmentButton value="bajo" className="small-segment">
+          <IonLabel>Bajo</IonLabel>
+        </IonSegmentButton>
+      </IonSegment>
+
+      <IonList className= {variant === 'map' ? 'notificaciones-list-map' : 'notificaciones-list-sidebar'} style={{overflowY: variant === 'sidebar' ? 'auto' : 'visible'}} >
         {filteredAlerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
         {filteredAlerts.map(alert => (
           <IonItem className="notification-item" key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)}   >
