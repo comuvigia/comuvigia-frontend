@@ -1,7 +1,17 @@
-import { IonButton, IonIcon, IonActionSheet } from '@ionic/react';
-import { checkmarkDoneOutline, alertCircleOutline, ellipsisVertical } from 'ionicons/icons';
+import {
+  IonList,
+  IonItem,
+  IonLabel,
+  IonButton,
+  IonIcon,
+  IonActionSheet,
+  IonBadge, 
+  IonSegment,
+  IonSegmentButton 
+  
+} from '@ionic/react';
+import { checkmarkDoneOutline, alertCircleOutline, ellipsisVertical, videocamOff, alertCircle, warning } from 'ionicons/icons';
 import React, { useState } from 'react';
-import { IonList, IonItem, IonLabel } from '@ionic/react';
 import { Alert } from '../types/Alert';
 import './Notificaciones.css'
 
@@ -13,16 +23,37 @@ interface NotificacionesPopoverProps {
     formatearFecha: (fechaISO: string) => string;
     handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
     onVerDescripcion: (alert: Alert) => void;
-    
+    mostrarCamarasCaidas?: boolean;
 }
 
-export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,variant, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
+type FilterType = 'alertas' | 'camaras_caidas';
+
+export function NotificacionesPopover({ 
+  alerts,
+  selectedCamera,
+  cameraNames,
+  variant,
+  formatearFecha,
+  handleAccion,
+  onVerDescripcion,
+  mostrarCamarasCaidas = false
+ }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  const [filterType, setFilterType] = useState<FilterType>('alertas');
 
-  const filteredAlerts = selectedCamera
+  const cameraFilteredAlerts  = selectedCamera
   ? alerts.filter(a => a.id_camara === selectedCamera.id)
   : alerts;
+
+  // Separar alertas en dos grupos
+  const alertasNormales = cameraFilteredAlerts.filter(alert => alert.tipo === 1 || alert.tipo === 2 || alert.tipo === 3);
+  const camarasCaidas = cameraFilteredAlerts.filter(alert => alert.tipo === 4);
+
+  // Determinar qué alertas mostrar
+  const alertsToShow = mostrarCamarasCaidas 
+    ? (filterType === 'alertas' ? alertasNormales : camarasCaidas)
+    : alertasNormales; // Comportamiento original: solo alertas normales
   
   const abrirMenu = (alert: Alert) => {
     setSelectedAlert(alert);
@@ -60,9 +91,65 @@ export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,varia
             <b>Notificaciones</b>
           </IonLabel>
         </IonItem>
-        {filteredAlerts.length === 0 && <IonItem>No hay notificaciones</IonItem>}
-        {filteredAlerts.map(alert => (
+        {mostrarCamarasCaidas && (
+          <IonItem>
+            <IonSegment 
+              value={filterType} 
+              onIonChange={e => setFilterType(e.detail.value as FilterType)}
+              style={{width: '100%'}}
+            >
+              <IonSegmentButton value="alertas" style={{height: 'fit-content'}}>
+                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                  <div style={{display: 'flex'}}>
+                    <IonIcon icon={alertCircle} style={{paddingRight: '5px', fontSize: '22px'}}/>
+                  </div>
+                  <div style={{display: 'flex'}}>
+                    <IonLabel>Alertas</IonLabel>
+                  </div>
+                  <div style={{display: 'flex', paddingLeft:'5px'}}>
+                    <IonBadge color="warning" style={{marginLeft: '4px'}}>{alertasNormales.length}</IonBadge>
+                  </div>
+                </div>
+              </IonSegmentButton>
+              
+              <IonSegmentButton value="camaras_caidas" style={{height: 'fit-content'}}>
+                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                  <div style={{display: 'flex'}}>
+                    <IonIcon icon={videocamOff} style={{paddingRight: '5px', fontSize: '22px'}}/>
+                  </div>
+                  <div style={{display: 'flex'}}>
+                    <IonLabel>Cámaras</IonLabel>
+                  </div>
+                  <div style={{display: 'flex', paddingLeft:'5px'}}>
+                    <IonBadge color="danger" style={{marginLeft: '4px'}}>{camarasCaidas.length}</IonBadge>
+                  </div>
+                </div>
+              </IonSegmentButton>
+            </IonSegment>
+          </IonItem>
+        )}
+        {alertsToShow.length === 0 && (
+          <IonItem>
+            <IonLabel>
+              <p style={{textAlign: 'center', color: 'var(--ion-color-medium)'}}>
+                {mostrarCamarasCaidas 
+                  ? (filterType === 'alertas' 
+                      ? 'No hay alertas de movimiento u objetos' 
+                      : 'No hay cámaras caídas')
+                  : 'No hay notificaciones'
+                }
+              </p>
+            </IonLabel>
+          </IonItem>
+        )}
+        {alertsToShow.map(alert => (
           <IonItem className="notification-item" key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)}   >
+            <IonIcon 
+              icon={alert.tipo === 4 ? videocamOff : alertCircle} 
+              slot="start"
+              color={alert.tipo === 4 ? 'warning' : 'warning'}
+              style={{marginRight: '8px'}}
+            />
             <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
               {alert.mensaje}
               {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}

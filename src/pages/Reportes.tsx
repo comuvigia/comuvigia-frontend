@@ -384,6 +384,7 @@ function Reportes(){
                             await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
                         }}
                         onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
+                        mostrarCamarasCaidas={true}
                     />
                 </IonContent>
             </IonPopover>
