@@ -41,11 +41,16 @@ const Login: React.FC = () => {
       <IonContent className="login-page" fullscreen>
         <div className="login-wrapper">
           <div className="login-container">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <img src="/comuvigia.png" alt="Logo" style={{padding: '20px'}}/>
+            </div>
+            {/*
             <h2 className="login-title">Bienvenido a ComuVigIA</h2>
             <p className="login-subtitle">Inicia sesión para continuar</p>
+            */}
 
             <IonItem className={mensaje ? 'input-error' : ''}>
-              <IonLabel position="floating">Usuario</IonLabel>
+              <IonLabel position="stacked">Usuario</IonLabel>
               <IonInput
                 value={usuario}
                 onIonInput={(e) => setUsuario(e.detail.value!)}
@@ -53,7 +58,7 @@ const Login: React.FC = () => {
             </IonItem>
 
             <IonItem className={mensaje ? 'input-error' : ''}>
-              <IonLabel position="floating">Contraseña</IonLabel>
+              <IonLabel position="stacked">Contraseña</IonLabel>
               <IonInput
                 type="password"
                 value={contrasena}
@@ -64,7 +69,6 @@ const Login: React.FC = () => {
             <IonButton expand="block" onClick={handleLogin} className="login-button">
               Entrar
             </IonButton>
-
             <IonToast
               isOpen={mostrarToast}
               message={mensaje}
@@ -73,6 +77,7 @@ const Login: React.FC = () => {
               onDidDismiss={() => setMostrarToast(false)}
             />
           </div>
+          <p style={{fontSize: 'small'}}>© 2025 Comuvigia. Todos los derechos reservados.</p>
         </div>
       </IonContent>
     </IonPage>

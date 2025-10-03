@@ -13,7 +13,7 @@ import {
   IonTitle,
   IonMenuButton
 } from '@ionic/react';
-import { notificationsOutline, personOutline, menuOutline, addCircleOutline } from 'ionicons/icons';
+import { notificationsOutline, personOutline, menuOutline, addCircleOutline, exitOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router';
 import './NavBar.css';
 import { useUser } from '../UserContext';
@@ -86,19 +86,20 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }:
               <IonIcon icon={addCircleOutline} />
             </IonButton>
             */}
-            <IonButton 
-              color="danger" 
-              size="small"
-              onClick={handleLogout} 
-            >
-              Cerrar sesión
-            </IonButton>
             {user && (user.rol == 1 || user.rol == 2) && (
               <IonButton onClick={onShowNotifications}>
                 <IonIcon icon={notificationsOutline} />
                 {unseenCount > 0 && <IonBadge color="danger">{unseenCount}</IonBadge>}
               </IonButton>
             )}
+            <IonButton 
+              //color="danger" 
+              //size="large"
+              style={{fontSize: '19px'}}
+              onClick={handleLogout} 
+            >
+              <IonIcon icon={exitOutline} size='medium'/>
+            </IonButton>
           </IonButtons>
         
         </IonToolbar>
