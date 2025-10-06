@@ -10,10 +10,11 @@ import {
   IonSegmentButton 
   
 } from '@ionic/react';
-import { checkmarkDoneOutline, alertCircleOutline, ellipsisVertical, videocamOff, alertCircle, warning } from 'ionicons/icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {settingsOutline, checkmarkDoneOutline, alertCircleOutline, ellipsisVertical, videocamOff, alertCircle, warning } from 'ionicons/icons';
 import { Alert } from '../types/Alert';
 import './Notificaciones.css'
+import { RulesType, EditRules } from './RulesRiesgoModal';
 
 interface NotificacionesPopoverProps {
     alerts: Alert[];
@@ -41,6 +42,7 @@ export function NotificacionesPopover({
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [filterType, setFilterType] = useState<FilterType>('alertas');
+  const [reglas, setReglas] = useState<RulesType[]>([]);
 
   const cameraFilteredAlerts  = selectedCamera
   ? alerts.filter(a => a.id_camara === selectedCamera.id)
@@ -51,7 +53,7 @@ export function NotificacionesPopover({
   const camarasCaidas = cameraFilteredAlerts.filter(alert => alert.tipo === 4);
 
   // Determinar qué alertas mostrar
-  const alertsToShow = mostrarCamarasCaidas 
+  let alertsToShow = mostrarCamarasCaidas 
     ? (filterType === 'alertas' ? alertasNormales : camarasCaidas)
     : alertasNormales; // Comportamiento original: solo alertas normales
   
@@ -71,6 +73,9 @@ export function NotificacionesPopover({
     2: "Falso Positivo"
   };
 
+  const [selectedTab, setSelectedTab] = useState<'all' | 'bajo' | 'medio' | 'alto' | 'critico'>('all');
+
+
   const getScoreColor = (score: number) => {
     if (score <= 0.4) return 'success';
     if (score <= 0.6) return 'warning';
@@ -83,6 +88,37 @@ export function NotificacionesPopover({
     // Aquí va tu lógica
   };
 
+  const calcularRiesgo = (alerta: Alert) => {
+    let valores = Array(reglas.length).fill(0); // Un cero para cada regla
+
+    for (let i = 0; i < reglas.length; i++) {
+      if (reglas[i].tipoAlerta.some(tipo => Number(tipo) === alerta.tipo)) {
+        valores[i]++;
+      }
+
+      const fechaAlerta = new Date(alerta.hora_suceso);
+      const horaAlerta = fechaAlerta.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+      if (reglas[i].horaInicio <= horaAlerta && horaAlerta <= reglas[i].horaFin) {
+        valores[i]++;
+      }
+      if (alerta.score_confianza >= (reglas[i].score/100)) {
+        valores[i]++;
+      }
+    }
+
+    const maxIndex = valores.indexOf(Math.max(...valores));
+    alerta.riesgo = reglas[maxIndex].riesgo;
+  };
+
+  // Filtro por pestaña (riesgo)
+  if (selectedTab !== 'all') {
+    alertsToShow = alertsToShow.filter(a => {
+        calcularRiesgo(a); // actualiza alerta.riesgo
+        return a.riesgo?.toLowerCase() === selectedTab.toLowerCase();
+    });
+  }
+
+
   return (
     <>
       <IonList className= {variant === 'map' ? 'notificaciones-list-map' : 'notificaciones-list-sidebar'} style={{overflowY: variant === 'sidebar' ? 'auto' : 'visible'}} >
@@ -91,6 +127,7 @@ export function NotificacionesPopover({
             <b>Notificaciones</b>
           </IonLabel>
         </IonItem>
+
         {mostrarCamarasCaidas && (
           <IonItem>
             <IonSegment 
@@ -142,24 +179,44 @@ export function NotificacionesPopover({
             </IonLabel>
           </IonItem>
         )}
+        {filterType === 'alertas' ? (
+          <>
+            <IonItem>
+                <IonSegment value={selectedTab} onIonChange={e => setSelectedTab(e.detail.value as any)} className="compact-segment">
+                  <IonSegmentButton value="all" className="small-segment"> 
+                    <IonLabel>Todos</IonLabel> </IonSegmentButton> 
+                  <IonSegmentButton value="critico" className="small-segment"> 
+                    <IonLabel>Crítico</IonLabel> </IonSegmentButton> 
+                  <IonSegmentButton value="alto" className="small-segment"> 
+                    <IonLabel>Alto</IonLabel> </IonSegmentButton> 
+                  <IonSegmentButton value="medio" className="small-segment"> 
+                    <IonLabel>Medio</IonLabel> </IonSegmentButton> 
+                  <IonSegmentButton value="bajo" className="small-segment"> 
+                    <IonLabel>Bajo</IonLabel></IonSegmentButton> 
+                </IonSegment>
+                <EditRules reglas={reglas} setReglas={setReglas} />
+            </IonItem>
+            
+          </>
+        ):null}
         {alertsToShow.map(alert => (
-          <IonItem className="notification-item" key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)}   >
-            <IonIcon 
-              icon={alert.tipo === 4 ? videocamOff : alertCircle} 
-              slot="start"
-              color={alert.tipo === 4 ? 'warning' : 'warning'}
-              style={{marginRight: '8px'}}
-            />
-            <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
-              {alert.mensaje}
-              {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
-              <p>Score: {alert.score_confianza} &nbsp; | &nbsp; {cameraNames[alert.id_camara]} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
-              <p>{formatearFecha(alert.hora_suceso)}</p>
-            </IonLabel>
-            <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>
-                <IonIcon icon={ellipsisVertical} />
-            </IonButton>
-          </IonItem>
+            <IonItem className="notification-item" key={alert.id} color={alert.estado ? undefined : getScoreColor(alert.score_confianza)}   >
+              <IonIcon 
+                icon={alert.tipo === 4 ? videocamOff : alertCircle} 
+                slot="start"
+                color={alert.tipo === 4 ? 'warning' : 'warning'}
+                style={{marginRight: '8px'}}
+              />
+              <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
+                {alert.mensaje}
+                {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
+                <p>Score: {alert.score_confianza} &nbsp; | &nbsp; {cameraNames[alert.id_camara]} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
+                <p>{formatearFecha(alert.hora_suceso)}</p>
+              </IonLabel>
+              <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>
+                  <IonIcon icon={ellipsisVertical} />
+              </IonButton>
+            </IonItem>
         ))}
       </IonList>
       {/* ActionSheet para opciones de la alerta seleccionada */}

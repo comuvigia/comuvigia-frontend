@@ -10,6 +10,7 @@ import Grabaciones from './pages/Grabaciones';
 import Reportes from './pages/Reportes';
 import Login from './pages/Login';
 import React from 'react';
+import { ToastProvider } from "./components/ToastProvider";
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -43,43 +44,43 @@ import './theme/variables.css';
 setupIonicReact();
 
 const App: React.FC = () => (
-  <IonApp>
-    <UserProvider>
-      <IonReactRouter>
-        <IonRouterOutlet>
-          <PublicRoute exact path="/login">
-            <Login />
-          </PublicRoute>
-          <Route exact path="/home">
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/home" />
-          </Route>
-          <Route exact path="/historial">
-            <ProtectedRoute allowedRoles={[1, 2]}>
+  <ToastProvider>
+    <IonApp>
+      <UserProvider>
+        <IonReactRouter>
+          <IonRouterOutlet>
+            <PublicRoute exact path="/login">
+              <Login />
+            </PublicRoute>
+            <Route exact path="/home">
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            </Route>
+            <Route exact path="/">
+              <Redirect to="/home" />
+            </Route>
+            <Route exact path="/historial">
               <Historial />
-            </ProtectedRoute>
-          </Route>
-          <Route exact path="/grabaciones">
-            <ProtectedRoute allowedRoles={[1, 2]}>
-              <Grabaciones />
-            </ProtectedRoute>
-          </Route>
-          <Route exact path="/reportes">
-            <ProtectedRoute allowedRoles={[1, 2]}>
-              <Reportes />
-            </ProtectedRoute>
-          </Route>
-          <Route>
-            <Redirect to="/home" />
-          </Route>
-        </IonRouterOutlet>
-      </IonReactRouter>
-    </UserProvider>
-  </IonApp>
+            </Route>
+            <Route exact path="/grabaciones">
+              <ProtectedRoute allowedRoles={[1, 2]}>
+                <Grabaciones />
+              </ProtectedRoute>
+            </Route>
+            <Route exact path="/reportes">
+              <ProtectedRoute allowedRoles={[1, 2]}>
+                <Reportes />
+              </ProtectedRoute>
+            </Route>
+            <Route>
+              <Redirect to="/home" />
+            </Route>
+          </IonRouterOutlet>
+        </IonReactRouter>
+      </UserProvider>
+    </IonApp>
+  </ToastProvider>
 );
 
 export default App;

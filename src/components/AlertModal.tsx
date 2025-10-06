@@ -178,7 +178,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
                 </IonButton>
               )}
               
-              {/*<IonButton 
+              {/*<IonButton
                 expand="block" 
                 color="primary" 
                 style={{'--border-radius': '20px'}} 

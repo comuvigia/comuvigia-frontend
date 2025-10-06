@@ -14,6 +14,10 @@ import {
   IonList,
   IonItem,
   IonBadge,
+  IonInput,
+  IonButton,
+  IonSelect,
+  IonSelectOption,
 } from '@ionic/react';
 import { PieChart, BarChartSector, BarChartTipo } from './Charts';
 import './ReporteEstadisticas.css';
@@ -54,9 +58,17 @@ interface EstadisticasData {
 
 interface ReporteEstadisticasProps {
   data: EstadisticasData;
+  fechaInicio: string;
+  fechaFin: string;
+  setFechaInicio: (fecha: string) => void;
+  setFechaFin: (fecha: string) => void;
+  onGenerarReporte: () => void;
+  agrupacion: string;
+  setAgrupacion: (agrupacion: string) => void;
 }
 
-const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
+const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({
+  data, fechaInicio,  fechaFin,  setFechaInicio,  setFechaFin,  onGenerarReporte, agrupacion, setAgrupacion}) => {
   const { estadisticas_totales, sectores, periodo } = data;
 
   // Datos para gráficos
@@ -103,20 +115,33 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({ data }) => {
           <IonCardContent>
             <IonGrid>
               <IonRow>
-                <IonCol size="6">
-                  <strong>Inicio:</strong><br />
-                  {new Date(periodo.fecha_inicio).toLocaleDateString()}
+                <IonCol size="4">
+                  <IonItem>
+                    <IonLabel position="stacked">Fecha inicio (dd/mm/aaaa)</IonLabel>
+                    <IonInput type="date" value={fechaInicio} onIonInput={(e: any) => setFechaInicio(e.target.value)}/>
+                  </IonItem>
                 </IonCol>
-                <IonCol size="6">
-                  <strong>Fin:</strong><br />
-                  {new Date(periodo.fecha_fin).toLocaleDateString()}
+                <IonCol size="4">
+                  <IonItem>
+                    <IonLabel position="stacked">Fecha fin (dd/mm/aaaa)</IonLabel>
+                  <IonInput type="date" value={fechaFin} onIonInput={(e: any) => setFechaFin(e.target.value)}/>
+                  </IonItem>
+                </IonCol>
+                <IonCol size="4">
+                <IonLabel>Agrupación</IonLabel>
+                <IonSelect value={agrupacion} interface="popover" interfaceOptions={{cssClass: 'custom-popover'}} 
+                  placeholder="Selecciona" onIonChange={(e) => setAgrupacion(e.detail.value)}>
+                  <IonSelectOption value="day">Día</IonSelectOption>
+                  <IonSelectOption value="week">Semana</IonSelectOption>
+                  <IonSelectOption value="month">Mes</IonSelectOption>
+                </IonSelect>
                 </IonCol>
               </IonRow>
               <IonRow>
                 <IonCol>
-                  <IonChip color="primary">
-                    <IonLabel>{periodo.dias} días</IonLabel>
-                  </IonChip>
+                  <IonButton expand="block" onClick={onGenerarReporte} style={{ marginTop: '10px' }}>
+                    Generar Reporte
+                  </IonButton>
                 </IonCol>
               </IonRow>
             </IonGrid>

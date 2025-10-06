@@ -47,6 +47,7 @@ function Historial(){
     const [nuevaDescripcion, setNuevaDescripcion] = useState("");
     const [guardando, setGuardando] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const guardarDescripcion = async () => {
     if (!alertaSeleccionada) return;
     

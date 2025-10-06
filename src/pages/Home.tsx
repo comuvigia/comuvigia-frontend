@@ -26,7 +26,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
 import { useUser } from '../UserContext';
-
+import { useToast } from "../components/ToastProvider";
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -35,7 +35,9 @@ const socket = io(BACKEND_URL);
 function Home() {
 
   const { user } = useUser();
-  const [showToast, setShowToast] = useState(false);
+  const {addToast, removeToast} = useToast();
+  const [toastId, setToastId] = useState<number | null>(null);
+  
   const [lastAlert, setLastAlert] = useState<Alert | null>(null);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -81,6 +83,7 @@ function Home() {
       setGuardando(false);
     }
   };
+
   // Carga de alertas desde backend
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
@@ -176,10 +179,11 @@ function Home() {
         // Agrega la nueva alerta a la lista general y no vistas
         setAlerts(prev => [alerta, ...prev]);
         setUnseenAlerts(prev => [alerta, ...prev]);
-  
-        // Muestra toast
         setLastAlert(alerta);
-        setShowToast(true);
+
+        // Muestra toast
+        const id = addToast(`Alerta en ${cameraNames[alerta.id_camara]}`, alerta.score_confianza);
+        setToastId(Number(id));
   
         // Incrementar contador de alertas de la cámara correspondiente
         setCameras(prevCameras =>
@@ -207,7 +211,10 @@ function Home() {
         console.warn("No se encontró la cámara con id:", lastAlert.id_camara);
       }
     }
-    setShowToast(false);
+    if (toastId !== null) {
+      removeToast(toastId);
+      setToastId(null);
+    }
   };
 
   // Manejo WebSocket para recibir nuevas descripciones
@@ -253,7 +260,7 @@ function Home() {
     e.preventDefault();
     e.stopPropagation();
     
-    setPopoverEvent(e.nativeEvent);
+    setPopoverEvent(e); 
     setPopoverOpenMantenedores(true);
   };
 
@@ -491,32 +498,6 @@ function Home() {
 
   return (
     <div>
-      <IonToast
-        style={{'--start': '1', marginTop: '70px', '--border-radius': '20px'}}
-        isOpen={showToast}
-        animated={true}
-        onDidDismiss={() => setShowToast(false)}
-        color={'danger'}
-        position='top'
-        cssClass={'toast-button toast-button-icon'}
-        message={lastAlert ? `Alerta en ${cameraNames[lastAlert.id_camara]}` : 'Nueva alerta'}
-        //duration={5000}
-        buttons={[
-          {
-            text: '',
-            role: 'view',
-            icon: videocam,
-            handler: goToCamera,
-          },
-          {
-            text: '',
-            side: 'end',
-            icon: close,
-            role: 'cancel',
-            handler: () => setShowToast(false),
-          }
-        ]}
-      />
       {user && (user.rol == 1 || user.rol == 2) && (
         <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '80px', marginLeft: '20px', zIndex: 1000}}>
           <IonFabButton ref={fabButtonRef} onClick={handleShowMantenedoresRef} id="mantenedores-fab">
