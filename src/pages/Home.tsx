@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import MapView from '../components/MapView';
 //import { CameraModal } from '../components/CameraModal';
 import { Navbar } from '../components/NavBar';
 import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
-import { videocam, close } from 'ionicons/icons';
+import { User } from '../types/User';
+import { videocam, close, add } from 'ionicons/icons';
 import {
   IonPopover,
   IonContent,
@@ -12,26 +13,37 @@ import {
   IonModal,
   IonSpinner,
   IonTextarea,
+  IonToast,
+  IonFab,
+  IonFabButton,
+  IonIcon
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
+import { MantenedoresPopover } from '../components/MantenedoresPopover';
+import Cameras from '../components/Cameras';
+import Users from '../components/Users';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Home.css';
+import { useUser } from '../UserContext';
 import { useToast } from "../components/ToastProvider";
-
-
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const socket = io(BACKEND_URL);
 
 function Home() {
+
+  const { user } = useUser();
   const {addToast, removeToast} = useToast();
   const [toastId, setToastId] = useState<number | null>(null);
   
   const [lastAlert, setLastAlert] = useState<Alert | null>(null);
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [popoverOpenMantenedores, setPopoverOpenMantenedores] = useState(false);
+  const [popoverEvent, setPopoverEvent] = useState<React.MouseEvent | null>(null);
+  const [activeModal, setActiveModal] = useState<'cameras' | 'users' | 'alerts' | null>(null);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
   //const [modalOpen, setModalOpen] = useState(false);
   const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
@@ -40,6 +52,8 @@ function Home() {
   const [editandoDescripcion, setEditandoDescripcion] = useState(false);
   const [nuevaDescripcion, setNuevaDescripcion] = useState("");
   const [guardando, setGuardando] = useState(false)
+  const fabButtonRef = useRef<HTMLIonFabButtonElement>(null);
+
   const guardarDescripcion = async () => {
   if (!alertaSeleccionada) return;
   
@@ -74,33 +88,44 @@ function Home() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
   useEffect(() => {
-    axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`)
-      .then(response => {
-        setAlerts(response.data);
-      })
-      .catch(error => {
-        console.error('Error al obtener alertas:', error);
-      })
+    if(!user) return;
+    
+    if(user.rol == 1 || user.rol == 2){
+      axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`, { withCredentials: true })
+        .then(response => {
+          setAlerts(response.data);
+        })
+        .catch(error => {
+          console.error('Error al obtener alertas:', error);
+        })
+    }
   }, []);
 
   // Carga de alertas no vistas desde backend
   const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
   useEffect(() => {
-    axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/no-vistas`)
-      .then(response => {
-        setUnseenAlerts(response.data);
-      })
-      .catch(error => {
-        console.error('Error al obtener alertas no vistas:', error);
-      })
-      .finally(() => setLoadingAlerts(false));
+    if(!user) return;
+    
+    if(user.rol == 1 || user.rol == 2){
+      axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/no-vistas`, { withCredentials: true })
+        .then(response => {
+          setUnseenAlerts(response.data);
+        })
+        .catch(error => {
+          console.error('Error al obtener alertas no vistas:', error);
+        })
+        .finally(() => setLoadingAlerts(false));
+    }
+    else setLoadingAlerts(false)
   }, []);
 
   // Carga de camaras desde backend con cantidad de alertas
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [loadingCameras, setLoadingCameras] = useState(true);
   useEffect(() => {
-    axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`)
+    if(!user) return;
+
+    axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`, { withCredentials: true })
       .then(response => {
         console.log("JSON recibido del backend:", response.data);
         setCameras(response.data);
@@ -115,7 +140,7 @@ function Home() {
   const [cameraNames, setCameraNames] = useState<{[key:number]:string}>({});
   const [loadingCameraNames, setLoadingCameraNames] = useState(true);
   useEffect(() => {
-    axios.get<{[key:number]:string}>(`${BACKEND_URL}/api/camaras/nombre-camaras`)
+    axios.get<{[key:number]:string}>(`${BACKEND_URL}/api/camaras/nombre-camaras`, { withCredentials: true })
       .then(response => {
         setCameraNames(response.data);
       })
@@ -125,31 +150,55 @@ function Home() {
       .finally(() => setLoadingCameraNames(false));
   }, []);
 
+  // Carga de usuarios desde backend
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  useEffect(() => {
+    if(!user) return;
+    
+    if(user.rol == 2){
+      axios.get<User[]>(`${BACKEND_URL}/api/usuarios`, { withCredentials: true })
+        .then(response => {
+          console.log(response.data)
+          setUsers(response.data);
+        })
+        .catch(error => {
+          console.error('Error al obtener usuarios:', error);
+        })
+        .finally(() => setLoadingUsers(false));
+    }
+    else setLoadingUsers(false);
+  }, []);
+
   // Manejo WebSocket para recibir nuevas alertas
   useEffect(() => {
-    socket.on('nueva-alerta', (alerta: Alert) => {
-      // Agrega la nueva alerta a la lista general y no vistas
-      setAlerts(prev => [alerta, ...prev]);
-      setUnseenAlerts(prev => [alerta, ...prev]);
-      setLastAlert(alerta);
+    if(!user) return;
 
-      // Muestra toast
-      const id = addToast(`Alerta en ${cameraNames[alerta.id_camara]}`, alerta.score_confianza);
-      setToastId(Number(id));
+    if(user.rol == 1 || user.rol == 2){
+      socket.on('nueva-alerta', (alerta: Alert) => {
+        // Agrega la nueva alerta a la lista general y no vistas
+        setAlerts(prev => [alerta, ...prev]);
+        setUnseenAlerts(prev => [alerta, ...prev]);
+        setLastAlert(alerta);
 
-      // Incrementar contador de alertas de la cámara correspondiente
-      setCameras(prevCameras =>
-        prevCameras.map(c =>
-          c.id === alerta.id_camara
-            ? { ...c, total_alertas: (c.total_alertas ?? 0) + 1 }
-            : c
-        )
-      );
-    });
-
-    return () => {
-      socket.off('nueva-alerta');
-    };
+        // Muestra toast
+        const id = addToast(`Alerta en ${cameraNames[alerta.id_camara]}`, alerta.score_confianza);
+        setToastId(Number(id));
+  
+        // Incrementar contador de alertas de la cámara correspondiente
+        setCameras(prevCameras =>
+          prevCameras.map(c =>
+            c.id === alerta.id_camara
+              ? { ...c, total_alertas: (c.total_alertas ?? 0) + 1 }
+              : c
+          )
+        );
+      });
+  
+      return () => {
+        socket.off('nueva-alerta');
+      };
+    }
   }, []);
 
   const goToCamera = () => {
@@ -170,37 +219,65 @@ function Home() {
 
   // Manejo WebSocket para recibir nuevas descripciones
   useEffect(() => {
-    socket.on('nueva-descripcion', (alerta: Alert) => {
-      // Actualiza alerta con descripcion nueva
-      setAlerts(prev =>
-        prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
-      );
+    if(!user) return;
 
-      // Si esa alerta estaba en no vistas, también la actualiza
-      setUnseenAlerts(prev =>
-        prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
-      );
-
-      // Si justo la alerta seleccionada es la que llegó por socket, también la refresca en el modal
-      setAlertaSeleccionada(prev =>
-        prev && prev.id === alerta.id ? { ...prev, descripcion_suceso: alerta.descripcion_suceso } : prev
-      );
-    });
-
-    return () => {
-      socket.off('nueva-descripcion');
-    };
+    if(user.rol == 1 || user.rol == 2){
+      socket.on('nueva-descripcion', (alerta: Alert) => {
+        // Actualiza alerta con descripcion nueva
+        setAlerts(prev =>
+          prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
+        );
+  
+        // Si esa alerta estaba en no vistas, también la actualiza
+        setUnseenAlerts(prev =>
+          prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
+        );
+  
+        // Si justo la alerta seleccionada es la que llegó por socket, también la refresca en el modal
+        setAlertaSeleccionada(prev =>
+          prev && prev.id === alerta.id ? { ...prev, descripcion_suceso: alerta.descripcion_suceso } : prev
+        );
+      });
+  
+      return () => {
+        socket.off('nueva-descripcion');
+      };
+    }
   }, []);
 
   // Loading de camaras y alertas
-  if (loadingCameras || loadingAlerts || loadingCameraNames)
+  if (loadingCameras || loadingAlerts || loadingCameraNames || loadingUsers)
     return <div className='global-loading'><IonSpinner name="crescent" /></div>;
-
 
   // Handler para mostrar popover en el sitio del click (la campana)
   const handleShowNotifications = (e: React.MouseEvent) => {
     setEvent(e.nativeEvent);
     setPopoverOpen(true);
+  };
+  // Handler para mostrar popover en el sitio del click (el icono de mantenedores)
+  const handleShowMantenedores = (e: React.MouseEvent) => {
+    // Prevenir comportamiento por defecto
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setPopoverEvent(e); 
+    setPopoverOpenMantenedores(true);
+  };
+
+  // Handler alternativo usando referencia
+  const handleShowMantenedoresRef = () => {
+    if (fabButtonRef.current) {
+      const rect = fabButtonRef.current.getBoundingClientRect();
+      const event = new CustomEvent('click', {
+        detail: {
+          clientX: rect.left + rect.width / 2,
+          clientY: rect.top + rect.height / 2,
+        }
+      }) as unknown as React.MouseEvent;
+      
+      setPopoverEvent(event as unknown as React.MouseEvent);
+      setPopoverOpenMantenedores(true);
+    }
   };
   
   // Handler para ver descripción de alerta
@@ -235,7 +312,7 @@ function Home() {
     try {
       await axios.post(`${BACKEND_URL}/api/alertas/marcar-vista/${alerta.id}`, {
         estado: nuevoEstado,
-      });
+      }, { withCredentials: true });
 
       setAlerts(prev =>
         prev.map(a =>
@@ -316,15 +393,175 @@ function Home() {
     }
   };
 
+  const handleClosePopover = () => {
+    setPopoverOpenMantenedores(false);
+    setPopoverEvent(null);
+  };
+
+  const handleOpenModal = (modalType: 'cameras' | 'users' | 'alerts') => {
+    setActiveModal(modalType);
+  };
+
+  const handleCloseModal = () => {
+    setActiveModal(null);
+  };
+
+  const handleSaveCamera = async (camera: Camera, isNew: boolean) => {
+    try {
+      if (isNew) {
+        console.log('Creando nueva cámara: ', camera);
+        const response = await axios.post(`${BACKEND_URL}/api/camaras`, camera, { withCredentials: true });
+        console.log('Cámara creada exitosamente:', response.data);
+        setCameras(prev => [...prev, response.data]);
+        // presentToast('Cámara creada exitosamente', 'success');
+      } else {
+        console.log('Actualizando cámara existente: ', camera);
+        const response = await axios.patch(`${BACKEND_URL}/api/camaras/${camera.id}`, camera, { withCredentials: true });
+        console.log('Cámara actualizada exitosamente:', response.data);
+        setCameras(prev => prev.map(c => 
+          c.id === camera.id ? response.data : c
+        ));
+        // presentToast('Cámara actualizada exitosamente', 'success');
+      }
+    } catch (error) {
+      console.error(`Error ${isNew ? 'creando' : 'actualizando'} cámara:`, error);
+      // Manejo de errores
+      // presentToast('Error', 'error');
+    }
+  };
+
+  const handleDeleteCamera = async (id: number) => {
+    const cameraToDelete = cameras.find(camera => camera.id === id);
+    
+    if (!cameraToDelete) {
+      console.error('Cámara no encontrada');
+      return;
+    }
+
+    try {
+      console.log('Eliminar cámara:', id);
+      
+      const response = await axios.delete(`${BACKEND_URL}/api/camaras/${id}`, { withCredentials: true });
+      
+      console.log('Cámara eliminada exitosamente:', response.data);
+      setCameras(prev => prev.filter(camera => camera.id !== id));
+      
+    } catch (error) {
+      console.log('Error eliminando cámara:', error);
+    }
+  };
+
+  const handleSaveUser = async (usuario: User, isNew: boolean) => {
+    try {
+      if (isNew) {
+        //console.log('Creando nuevo usuario: ', usuario);
+        const response = await axios.post(`${BACKEND_URL}/api/usuarios/register`, usuario, { withCredentials: true });
+        //console.log('Usuario creado exitosamente:', response.data);
+        setUsers(prev => [...prev, response.data]);
+        // presentToast('Usuario creada exitosamente', 'success');
+      } else {
+        //console.log('Actualizando usuario existente: ', usuario);
+        const response = await axios.put(`${BACKEND_URL}/api/usuarios/${usuario.id}`, usuario, { withCredentials: true });
+        //console.log('Usuario actualizado exitosamente:', response.data);
+        setUsers(prev => prev.map(u => 
+          u.id === usuario.id ? response.data : u
+        ));
+        // presentToast('Usuario actualizada exitosamente', 'success');
+      }
+    } catch (error) {
+      console.error(`Error ${isNew ? 'creando' : 'actualizando'} usuario:`, error);
+      // Manejo de errores
+      // presentToast('Error', 'error');
+    }
+  };
+
+  const handleDeleteUser = async (id: number) => {
+    const userToDelete = users.find(usuario => usuario.id === id);
+    
+    if (!userToDelete) {
+      console.error('Usuario no encontrado');
+      return;
+    }
+
+    try {
+      console.log('Eliminar usuario:', id);
+      
+      const response = await axios.delete(`${BACKEND_URL}/api/usuarios/${id}`, { withCredentials: true });
+      
+      console.log('Usuario eliminado exitosamente:', response.data);
+      setUsers(prev => prev.filter(usuario => usuario.id !== id));
+      
+    } catch (error) {
+      console.log('Error eliminando usuario:', error);
+    }
+  };
+
   return (
     <div>
-      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
+      {user && (user.rol == 1 || user.rol == 2) && (
+        <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '80px', marginLeft: '20px', zIndex: 1000}}>
+          <IonFabButton ref={fabButtonRef} onClick={handleShowMantenedoresRef} id="mantenedores-fab">
+            <IonIcon icon={add} />
+          </IonFabButton>
+        </IonFab>
+      )}
+      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores}/>
+      <IonPopover
+        isOpen={popoverOpenMantenedores}
+        //event={popoverEvent}
+        trigger="mantenedores-fab"
+        onDidDismiss={handleClosePopover}
+        side="top"
+        alignment="start"
+        showBackdrop={true}
+        backdropDismiss={true}
+        style={{
+          '--width': '300px',
+          '--max-width': '90vw',
+        }}
+        className="mantenedores-popover"       
+      >
+        <div style={{ position: 'relative', zIndex: 1000 }}>
+          <MantenedoresPopover
+            cameras={cameras}
+            nombreMantenedor='Cámaras'
+            tipoMantenedor={1}
+            selectedCamera={selectedCamera ? { id: selectedCamera.id } : undefined}
+            variant="sidebar"
+            formatearFecha={formatearFecha}
+            onClose={handleClosePopover}
+            onOpenModal={handleOpenModal}
+          />
+        </div>
+      </IonPopover>
+
+      {/* Modal de Cámaras */}
+      <Cameras
+        isOpen={activeModal === 'cameras'}
+        onClose={handleCloseModal}
+        cameras={cameras}
+        onSave={handleSaveCamera}
+        onDelete={handleDeleteCamera}
+      />
+
+      <Users
+        isOpen={activeModal === 'users'}
+        onClose={handleCloseModal}
+        users={users}
+        onSave={handleSaveUser}
+        onDelete={handleDeleteUser}
+      />  
+
+      {/* Futuros modales para usuarios y alertas */}
+      {/* <UsersModal isOpen={activeModal === 'users'} onClose={handleCloseModal} /> */}
+      {/* <AlertsModal isOpen={activeModal === 'alerts'} onClose={handleCloseModal} /> */}
+
       <IonPopover
         isOpen={popoverOpen}
         event={event}
         onDidDismiss={() => setPopoverOpen(false)}
-        side="bottom"  // Aparece debajo del icono
-        alignment="end" // Ajusta al lado derecho del botón
+        side="bottom"
+        alignment="end"
         
       >
         <IonContent class='custom-content'>
@@ -347,13 +584,14 @@ function Home() {
               await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
             }}
             onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
-            
+            mostrarCamarasCaidas={true}
           />
         </IonContent>
       </IonPopover>
+
       <MapView
-        cameras={cameras}   // ya la tienes
-        selectedCamera={selectedCamera}           // pasar la cámara seleccionada
+        cameras={cameras}
+        selectedCamera={selectedCamera}     
         alerts={
               [...alerts].sort((a, b) => {
                 // Se ordena por estado: no vistas (estado === 0) primero
@@ -365,6 +603,7 @@ function Home() {
               })
             }         // las alertas de la cámara
         cameraNames={cameraNames}
+        user={user}
         formatearFecha={formatearFecha}
                     handleAccion={async (alert, accion) => {
               const nuevoEstado = accion === "leida" ? 1 : 2;
@@ -376,6 +615,7 @@ function Home() {
           setMostrarDescripcion(true);
         }}
       />
+    
       {/*<CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />*/}
       <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)} className="modal-descripcion">
         <IonContent className="ion-padding">
@@ -427,21 +667,23 @@ function Home() {
               ) : (
                 <p style={{ fontStyle: 'italic', color: '#888' }}>Esta alerta no tiene descripción</p>
               )}
-              <IonButton
-                expand="block"
-                onClick={() => {
-                  setEditandoDescripcion(true);
-                  setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
-                }}
-                style={{
-                  marginTop: '10px',
-                  fontSize: '1.1rem',
-                  '--border-radius': '15px',
-                  '--background': '#1B4965'
-                }}
-              >
-                Editar descripción
-              </IonButton>
+              {user && user.rol == 2 && (
+                <IonButton
+                  expand="block"
+                  onClick={() => {
+                    setEditandoDescripcion(true);
+                    setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
+                  }}
+                  style={{
+                    marginTop: '10px',
+                    fontSize: '1.1rem',
+                    '--border-radius': '15px',
+                    '--background': '#1B4965'
+                  }}
+                >
+                  Editar descripción
+                </IonButton>
+              )}
             </div>
           )}
 

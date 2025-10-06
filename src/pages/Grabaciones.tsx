@@ -16,6 +16,7 @@ import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Historial.css';
+import { useUser } from '../UserContext';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -23,6 +24,7 @@ const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const socket = io(BACKEND_URL);
 
 function Historial(){
+    const { user } = useUser();
     const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
@@ -70,7 +72,7 @@ function Historial(){
     const fetchCameras = async () => {
       try {
         setLoadingCameras(true);
-        const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/`);
+        const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/`, { withCredentials: true });
         console.log('Respuesta de cámaras:', response.data);
         setCameras(response.data);
         if (response.data.length > 0) {
@@ -88,19 +90,26 @@ function Historial(){
     const [alerts, setAlerts] = useState<Alert[]>([]);
     const [loadingAlerts, setLoadingAlerts] = useState(true);
     useEffect(() => {
-        axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`)
+      if(!user) return;
+
+      if(user.rol == 1 || user.rol == 2){
+        axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`, { withCredentials: true })
         .then(response => {
             setAlerts(response.data);
         })
         .catch(error => {
             console.error('Error al obtener alertas:', error);
         })
+      }
     }, []);
 
     // Carga de alertas no vistas desde backend
     const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
     useEffect(() => {
-        axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/no-vistas`)
+      if(!user) return;
+
+      if(user.rol == 1 || user.rol == 2){
+        axios.get<Alert[]>(`${BACKEND_URL}/api/alertas/no-vistas`,{ withCredentials: true })
         .then(response => {
             setUnseenAlerts(response.data);
         })
@@ -108,20 +117,23 @@ function Historial(){
             console.error('Error al obtener alertas no vistas:', error);
         })
         .finally(() => setLoadingAlerts(false));
+      }
+      else setLoadingAlerts(false)
     }, []);
 
     // Carga de nombre de camaras desde backend
     const [cameraNames, setCameraNames] = useState<{[key:number]:string}>({});
     const [loadingCameraNames, setLoadingCameraNames] = useState(true);
     useEffect(() => {
-    axios.get<{[key:number]:string}>(`${BACKEND_URL}/api/camaras/nombre-camaras`)
-        .then(response => {
-        setCameraNames(response.data);
-        })
-        .catch(error => {
-        console.error('Error al obtener cámaras:', error);
-        })
-        .finally(() => setLoadingCameraNames(false));
+      if(!user) return;
+      axios.get<{[key:number]:string}>(`${BACKEND_URL}/api/camaras/nombre-camaras`,{ withCredentials: true })
+          .then(response => {
+          setCameraNames(response.data);
+          })
+          .catch(error => {
+          console.error('Error al obtener cámaras:', error);
+          })
+          .finally(() => setLoadingCameraNames(false));
     }, []);
 
     // Handler para mostrar popover en el sitio del click (la campana)
@@ -166,7 +178,7 @@ function Historial(){
         try {
         await axios.post(`${BACKEND_URL}/api/alertas/marcar-vista/${alerta.id}`, {
             estado: nuevoEstado,
-        });
+        }, { withCredentials: true });
 
         setAlerts(prev =>
             prev.map(a =>
@@ -190,51 +202,60 @@ function Historial(){
 
     // Manejo WebSocket para recibir nuevas alertas
     useEffect(() => {
+      if(!user) return;
+
+      if(user.rol == 1 || user.rol == 2){
         socket.on('nueva-alerta', (alerta: Alert) => {
-        // Agrega la nueva alerta a la lista general y no vistas
-        setAlerts(prev => [alerta, ...prev]);
-        setUnseenAlerts(prev => [alerta, ...prev]);
-        // Incrementar contador de alertas de la cámara correspondiente
-        setCameras(prevCameras =>
-            prevCameras.map(c =>
-            c.id === alerta.id_camara
-                ? { ...c, total_alertas: (c.total_alertas ?? 0) + 1 }
-                : c
-            )
-        );
+          // Agrega la nueva alerta a la lista general y no vistas
+          setAlerts(prev => [alerta, ...prev]);
+          setUnseenAlerts(prev => [alerta, ...prev]);
+          // Incrementar contador de alertas de la cámara correspondiente
+          setCameras(prevCameras =>
+              prevCameras.map(c =>
+              c.id === alerta.id_camara
+                  ? { ...c, total_alertas: (c.total_alertas ?? 0) + 1 }
+                  : c
+              )
+          );
         });
 
         return () => {
-        socket.off('nueva-alerta');
-        };
+          socket.off('nueva-alerta');
+        };        
+      }
     }, []);
 
     // Manejo WebSocket para recibir nuevas descripciones
       useEffect(() => {
-        socket.on('nueva-descripcion', (alerta: Alert) => {
-          // Actualiza alerta con descripcion nueva
-          setAlerts(prev =>
-            prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
-          );
-    
-          // Si esa alerta estaba en no vistas, también la actualiza
-          setUnseenAlerts(prev =>
-            prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
-          );
-    
-          // Si justo la alerta seleccionada es la que llegó por socket, también la refresca en el modal
-          setAlertaSeleccionada(prev =>
-            prev && prev.id === alerta.id ? { ...prev, descripcion_suceso: alerta.descripcion_suceso } : prev
-          );
-        });
-    
-        return () => {
-          socket.off('nueva-descripcion');
-        };
+        if(!user) return;
+
+        if(user.rol == 1 || user.rol == 2){
+          socket.on('nueva-descripcion', (alerta: Alert) => {
+            // Actualiza alerta con descripcion nueva
+            setAlerts(prev =>
+              prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
+            );
+      
+            // Si esa alerta estaba en no vistas, también la actualiza
+            setUnseenAlerts(prev =>
+              prev.map(a => a.id === alerta.id ? { ...a, descripcion_suceso: alerta.descripcion_suceso } : a)
+            );
+      
+            // Si justo la alerta seleccionada es la que llegó por socket, también la refresca en el modal
+            setAlertaSeleccionada(prev =>
+              prev && prev.id === alerta.id ? { ...prev, descripcion_suceso: alerta.descripcion_suceso } : prev
+            );
+          });
+      
+          return () => {
+            socket.off('nueva-descripcion');
+          };
+        }
       }, []);
 
     // Cargar cámaras al montar el componente
     useEffect(() => {
+      if(!user) return;
       fetchCameras();
     }, []);
 
@@ -322,6 +343,7 @@ function Historial(){
                     await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
                     }}
                     onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
+                    mostrarCamarasCaidas={true}
                 />
             </IonContent>
             </IonPopover>

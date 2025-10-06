@@ -20,6 +20,7 @@ import {
 import { close, trash, save } from 'ionicons/icons';
 import { Alert } from '../types/Alert'; // Ajusta la ruta según tu estructura
 import './AlertModal.css';
+import { useUser } from '../UserContext';
 
 interface AlertModalProps {
   isOpen: boolean;
@@ -38,6 +39,8 @@ const AlertModal: React.FC<AlertModalProps> = ({
 }) => {
   const [editedAlert, setEditedAlert] = useState<Alert | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
+  const { user } = useUser();
 
   useEffect(() => {
     if (alert) {
@@ -72,7 +75,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
 
   return (
     <>
-      <IonModal isOpen={isOpen} onDidDismiss={onClose}>
+      <IonModal isOpen={isOpen} onDidDismiss={onClose} style={{'--border-radius': '20px'}}>
         <IonHeader>
           <IonToolbar>
             <IonTitle>Alerta #{editedAlert.id}</IonTitle>
@@ -163,15 +166,17 @@ const AlertModal: React.FC<AlertModalProps> = ({
 
             {/* Botones de acción */}
             <div className="ion-margin-top" style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-              <IonButton 
-                expand="block" 
-                color="danger"
-                style={{'--border-radius': '20px'}} 
-                onClick={() => setShowDeleteAlert(true)}
-              >
-                <IonIcon icon={trash} slot="start" />
-                Eliminar
-              </IonButton>
+              {user && user.rol == 2 && (
+                <IonButton 
+                  expand="block" 
+                  color="danger"
+                  style={{'--border-radius': '20px'}} 
+                  onClick={() => setShowDeleteAlert(true)}
+                >
+                  <IonIcon icon={trash} slot="start" />
+                  Eliminar
+                </IonButton>
+              )}
               
               {/*<IonButton
                 expand="block" 

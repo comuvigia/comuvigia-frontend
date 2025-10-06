@@ -42,14 +42,35 @@ export function EditRules({ reglas, setReglas }: Props) {
     sector: '',
   });
 
-  const guardarReglaBackend = async (regla: RulesType) => {
+  const cargarReglas = async () => {
     try {
-      // Actualizar regla existente
-      await axios.post(`${BACKEND_URL}/api/reglas/actualizar`, regla, {
+      
+      const response = await axios.get<RulesType[]>(`${BACKEND_URL}/api/reglas/obtener`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
+      setReglas(response.data);
+      
+    } catch (err) {
+      console.error('Error al cargar reglas:', err);
+    }
+  };
+
+useEffect(() => {
+  if (reglas.length === 0) {
+    cargarReglas();
+  }
+}, []);
+
+  if (!reglas || reglas.length === 0) {
+    return;
+  }
+
+  const guardarReglaBackend = async (regla: RulesType) => {
+    try {
+      // Actualizar regla existente
+      await axios.post(`${BACKEND_URL}/api/reglas/actualizar`, regla, {withCredentials: true});
     } catch (err) {
       console.error('Error guardando regla:', err);
     }
@@ -58,11 +79,7 @@ export function EditRules({ reglas, setReglas }: Props) {
   const guardarnuevaReglaBackend = async (regla: RulesType) => {
     try {
         // Insertar nueva regla
-        const response = await axios.post(`${BACKEND_URL}/api/reglas/insertar`, regla, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await axios.post(`${BACKEND_URL}/api/reglas/insertar`, regla, {withCredentials: true});
         // Actualizar id de la regla recién creada
         regla.id = response.data.id;
     } catch (err) {
@@ -90,19 +107,6 @@ export function EditRules({ reglas, setReglas }: Props) {
     }
   };
 
-  const cargarReglas = async () => {
-    try {
-      const response = await axios.get<RulesType[]>(`${BACKEND_URL}/api/reglas`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      setReglas(response.data);
-    } catch (err) {
-      console.error('Error al cargar reglas:', err);
-    }
-  };
-
   const updateRegla = (field: keyof RulesType, value: any) => {
     setReglas(prev =>
       prev.map((regla, index) =>
@@ -125,11 +129,6 @@ export function EditRules({ reglas, setReglas }: Props) {
     console.log('Reglas sincronizadas con backend cerrando modal');
     setModalaux(false)
   };
-
-  useEffect(() => {
-    cargarReglas();
-  }, []);
-
 
 
   return (

@@ -196,7 +196,7 @@ ion-spinner {
 .modal-descripcion {
     --width: 60%;
     --height: 90%;
-    --border-radius: 3%;
+    --border-radius: 20px;
 }
 
 /* Responsive */

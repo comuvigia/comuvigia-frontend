@@ -212,12 +212,8 @@ button:hover {
   border-radius: 4px;
 }
 
-.video-thumbnail {
-  width: 120px;
-  height: 90px;
-  object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.thumbnail {
+  max-width: 25%;
 }
 
 .no-videos-message {
@@ -300,13 +296,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: auto;
 }
 
 /* Estructura del result-item */
 .result-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   padding: 16px;
   border: 1px solid #e0e0e0;
@@ -397,5 +393,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   #search-btn{
     margin: auto;
+  }
+  .thumbnail {
+    max-width: 50%;
   }
 }

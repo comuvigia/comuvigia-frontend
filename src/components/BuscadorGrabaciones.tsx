@@ -5,6 +5,8 @@ import {
 } from '@ionic/react';
 import axios from 'axios';
 import { Camera } from '../types/Camera';
+import Aviso from '../components/Aviso';
+import { useAviso } from '../hooks/useAviso';
 import './BuscadorGrabaciones.css';
 import '../pages/Historial.css';
 
@@ -24,12 +26,21 @@ export function BuscadorGrabaciones(){
     const [totalRecords, setTotalRecords] = useState(0);
     const [thumbnails, setThumbnails] = useState({});
     const [loadingThumbnails, setLoadingThumbnails] = useState({});
+    const { alertState, showError, closeAlert } = useAviso();
+
+    const mostrarError = (principal: string, titulo: string) => {
+        showError(principal, {
+        title: titulo,
+        style: 'detailed',
+        duration: 10000
+        });
+    };
 
     // Cargar cámaras al montar el componente
     useEffect(() => {
         const fetchCameras = async () => {
             try {
-                const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`);
+                const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`, { withCredentials: true });
                 setCameras(response.data);
                 if (response.data.length > 0) {
                     setSelectedCamera(response.data[0].id);
@@ -43,6 +54,21 @@ export function BuscadorGrabaciones(){
         fetchCameras();
     }, []);
 
+    const diferenciaFechas = (fecha1: string, fecha2: string): boolean => {
+        const date1 = new Date(fecha1);
+        const date2 = new Date(fecha2);
+        
+        if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
+            console.error('Una o ambas fechas no son válidas');
+            return false;
+        }
+        
+        const diferenciaMs = Math.abs(date2.getTime() - date1.getTime());
+        const diferenciaDias = diferenciaMs / (1000 * 60 * 60 * 24);
+        
+        return diferenciaDias <= 7;
+    };
+
     // Función para buscar grabaciones
     const searchRecordings = async (page=1) => {
         setLoading(true);
@@ -53,13 +79,22 @@ export function BuscadorGrabaciones(){
             //const formattedEndDate = `${endDate}T23:59:59`;
             const formattedStartDate = startDate;
             const formattedEndDate = endDate;
+            if(!diferenciaFechas(formattedStartDate, formattedEndDate)){
+                mostrarError('No se puede buscar un rango de fechas mayor a 7 días. Verifique el rango de fechas.','La cantidad de días seleccionada es mayor a 7');
+                throw new Error('La cantidad de días seleccionada es mayor a 7');
+            }
             // Tu llamada a la API aquí
-            const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?start_date=${formattedStartDate}&end_date=${formattedEndDate}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=2`);
+            const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate}&end_date=${formattedEndDate}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`);
             if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
+                if (response.status === 400) {
+                    throw new Error();
+                }
+                //throw new Error(`Error HTTP: ${response.status}`);
             }
             const data = await response.json();
-            
+            if(data.videos.length === 0){
+                mostrarError('No se encontraron grabaciones para el rango de fechas seleccionado.','No se encontraron grabaciones');
+            }
             setRecordings(data.videos || []);
             setTotalRecords(data.pagination.total);
             setCurrentPage(page);
@@ -97,13 +132,13 @@ export function BuscadorGrabaciones(){
 
     // Función para obtener la URL del thumbnail
     // @ts-ignore
-    const getThumbnailUrl = (cameraId, startTime) => {
-        return `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(startTime)}`;
+    const getThumbnailUrl = (cameraId, key) => {
+        return `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?source=mkv&key=${encodeURIComponent(key)}`;
     };
 
     // Función para cargar un thumbnail
     // @ts-ignore
-    const loadThumbnail = async (cameraId, timestamp) => {
+    const loadThumbnail = async (cameraId, timestamp, key) => {
         const thumbnailKey = `${cameraId}_${timestamp}`;
         
         // Si ya está cargando o ya cargado, no hacer nada
@@ -117,7 +152,7 @@ export function BuscadorGrabaciones(){
         try {
             const response = await fetch(
             //`${API_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(timestamp)}`
-            `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(timestamp)}`
+            `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?source=mkv&key=${encodeURIComponent(key)}`
             );
             
             if (response.ok) {
@@ -141,7 +176,7 @@ export function BuscadorGrabaciones(){
     useEffect(() => {
         if (recordings.length > 0 && selectedCamera) {
             recordings.forEach(recording => {
-            loadThumbnail(selectedCamera, recording.start_time);
+            loadThumbnail(selectedCamera,recording.timestamp, recording.key);
             });
         }
     }, [recordings, selectedCamera]);
@@ -184,9 +219,11 @@ export function BuscadorGrabaciones(){
 
             // Construir URL de descarga
             const params = new URLSearchParams({
-                start_time: startTime,
-                end_time: endTime,
-                format: 'mp4'
+                source: 'mkv',
+                start_time: new Date().toISOString(),
+                end_time: new Date().toISOString(),
+                //format: 'mp4',
+                key: recordingKey
             });
             
             const response = await fetch(
@@ -230,7 +267,15 @@ export function BuscadorGrabaciones(){
                 <IonTitle>Buscador de grabaciones por cámara</IonTitle>
                 </div>
             </header>
-            
+            <Aviso
+                isOpen={alertState.isOpen}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                onClose={closeAlert}
+                style={alertState.style}
+                duration={alertState.duration}
+            />
             <div className="filters">
                 <div className="filter-group">
                 <label htmlFor="camera">Cámara</label>
@@ -258,7 +303,7 @@ export function BuscadorGrabaciones(){
                             onClick={() => searchRecordings()}
                             disabled={loading || !selectedCamera}
                     >
-                        {loading ? <IonSpinner name="crescent" /> : 'Buscar'}
+                        Buscar
                     </button>
                 </div>
             </div>
@@ -270,7 +315,7 @@ export function BuscadorGrabaciones(){
             <div className="results-list">
             {recordings.length === 0 ? (
                 <div className="no-videos-message">
-                No hay videos disponibles
+                {loading ? <IonSpinner name="crescent" /> : 'No hay grabaciones disponibles'}
                 </div>
             ) : (
                 recordings.map((recording, index) => (
@@ -278,7 +323,7 @@ export function BuscadorGrabaciones(){
                     <div className="thumbnail">
                     <img 
                         style={{borderRadius: '20px'}}
-                        src={getThumbnailUrl(selectedCamera, recording.start_time)} 
+                        src={getThumbnailUrl(selectedCamera, recording.key)} 
                         alt={`Grabación ${new Date(recording.time).toLocaleString()}`}
                         onError={(e) => {
                         // Fallback si el thumbnail no está disponible
@@ -286,16 +331,15 @@ export function BuscadorGrabaciones(){
                         }}
                     />
                     </div>
-                    <div className="date-time"> video_{recording.id}</div>
+                    <div className="date-time">{new Date(recording.time).toLocaleString()}</div>
                     <div className="duration">
-                    {/*<span className="value">{parseFloat(String(recording.duration_seconds/60)).toFixed(2)} min</span>
-                    <span className="label">Duración</span>*/}
+                        {/*<span className="value">{parseFloat(String(recording.duration_seconds/60)).toFixed(2)} min</span>*/}
+                        <span className="value">~ 5 min</span>
+                        <span className="label">Duración</span>
                     </div>
                     <div className="size">
-                    {/*<span className="value">{recording.size_mb} MB</span>
-                    <span className="label">Tamaño</span>*/}
-                        <span className="value">{new Date(recording.end_time).toLocaleString()}</span>
-                        <span className="label">Fecha</span>
+                        <span className="value">{Math.round(recording.size/10**6)} MB</span>
+                        <span className="label">Tamaño</span>
                     </div>
                     <div className="download-section">
                         <DownloadButton
@@ -304,7 +348,8 @@ export function BuscadorGrabaciones(){
                             isDownloading={downloadingIds.has(recording.id)}
                             // @ts-ignore
                             onDownload={async (rec, camId) => {
-                                const filename = `grabacion_${new Date(rec.start_time).toISOString().split('T')[0]}_${new Date(rec.start_time).toISOString().split('T')[1]}.mp4`;
+                                //const filename = `grabacion_${new Date(rec.start_time).toISOString().split('T')[0]}_${new Date(rec.start_time).toISOString().split('T')[1]}.mp4`;
+                                const filename = `grabacion_${rec.time}.mp4`;
                                 await downloadVideo(camId, rec.start_time, rec.end_time, filename, rec.key, rec.id);
                             }}
                         />
