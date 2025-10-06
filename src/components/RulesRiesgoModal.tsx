@@ -4,11 +4,15 @@ import {
     IonToolbar, IonTitle, IonContent, 
     IonFooter, IonSelect, IonSelectOption, 
     IonRange, IonInput } from '@ionic/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {settingsOutline } from 'ionicons/icons';
 import './RulesRiesgoModal.css'
+import axios from 'axios';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export type RulesType = {
+  id: number; 
   riesgo: string;
   tipoAlerta: string[];
   horaInicio: string;
@@ -25,12 +29,79 @@ type Props = {
 
 export function EditRules({ reglas, setReglas }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalaux, setModalaux] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(0);
 
-  
-  if (!reglas || reglas.length === 0) {
-    return null;
-  }
+  const [nuevaRegla, setNuevaRegla] = useState<RulesType>({
+    id: 0,
+    riesgo: '',
+    tipoAlerta: [],
+    horaInicio: '00:00',
+    horaFin: '23:59',
+    score: 0,
+    sector: '',
+  });
+
+  const guardarReglaBackend = async (regla: RulesType) => {
+    try {
+      // Actualizar regla existente
+      await axios.post(`${BACKEND_URL}/api/reglas/actualizar`, regla, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    } catch (err) {
+      console.error('Error guardando regla:', err);
+    }
+  };
+
+  const guardarnuevaReglaBackend = async (regla: RulesType) => {
+    try {
+        // Insertar nueva regla
+        const response = await axios.post(`${BACKEND_URL}/api/reglas/insertar`, regla, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        // Actualizar id de la regla recién creada
+        regla.id = response.data.id;
+    } catch (err) {
+      console.error('Error guardando regla:', err);
+    }
+  };
+
+  const guardarNuevaRegla = () => {
+    try {
+      guardarnuevaReglaBackend(nuevaRegla); // guarda y asigna ID
+      setReglas(prev => [...prev, nuevaRegla]); // agrega al array de reglas
+      setModalaux(false); // cierra modal
+      setNuevaRegla({
+        id: 0,
+        riesgo: '',
+        tipoAlerta: [],
+        horaInicio: '00:00',
+        horaFin: '23:59',
+        score: 0,
+        sector: '',
+      });
+      console.log('Nueva regla creada');
+    } catch (err) {
+      console.error('Error al crear regla:', err);
+    }
+  };
+
+  const cargarReglas = async () => {
+    try {
+      const response = await axios.get<RulesType[]>(`${BACKEND_URL}/api/reglas`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setReglas(response.data);
+    } catch (err) {
+      console.error('Error al cargar reglas:', err);
+    }
+  };
 
   const updateRegla = (field: keyof RulesType, value: any) => {
     setReglas(prev =>
@@ -40,16 +111,26 @@ export function EditRules({ reglas, setReglas }: Props) {
     );
   };
 
-  const guardarReglas = () => {
-    console.log(reglas);
-    localStorage.setItem("reglas", JSON.stringify(reglas));
+  const guardarReglas = async () => {
+    for (const regla of reglas) {
+      await guardarReglaBackend(regla);
+    }
+    console.log('Reglas sincronizadas con backend');
+    setModalaux(false)
   };
-  
-  const guardarcerrarReglas = () => {
-    console.log(reglas);
-    localStorage.setItem("reglas", JSON.stringify(reglas));
+
+  const guardarcerrarReglas = async () => {
+    await guardarReglas();
     setModalOpen(false);
+    console.log('Reglas sincronizadas con backend cerrando modal');
+    setModalaux(false)
   };
+
+  useEffect(() => {
+    cargarReglas();
+  }, []);
+
+
 
   return (
     <>
@@ -57,56 +138,115 @@ export function EditRules({ reglas, setReglas }: Props) {
           <IonIcon icon={settingsOutline} />
       </IonButton>
       <IonModal isOpen={modalOpen} onDidPresent={() => { const firstInput = document.querySelector('.small-modal input, .small-modal select, .small-modal button') as HTMLElement; 
-      firstInput?.focus();}} onDidDismiss={() => setModalOpen(false)} className="small-modal">
+        firstInput?.focus();}} onDidDismiss={() => setModalOpen(false)} className="small-modal">
         <IonHeader>
           <IonToolbar>
             <IonTitle>Configurar reglas de riesgo</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding">
-          <IonItem lines="none">
-            <IonLabel>Selecciona regla</IonLabel>
-            <IonSelect value={activeIndex} interface="popover" interfaceOptions={{cssClass: 'custom-popover-rul'}} onIonChange={e => setActiveIndex(e.detail.value)}>
-            {reglas.map((r, i) => ( 
-              <IonSelectOption className="rul-opt" key={i} value={i}>{r.riesgo?.toUpperCase()}</IonSelectOption>
-            ))}
-            </IonSelect>
-          </IonItem>
-          <IonItem lines="none">
-              <IonLabel>Tipo de alerta</IonLabel>
-              <IonSelect value={reglas[activeIndex].tipoAlerta} interface="popover" interfaceOptions={{cssClass: 'custom-popover-rul'}} multiple={true} 
-              placeholder={String(reglas[activeIndex].tipoAlerta)} onIonChange={e => updateRegla("tipoAlerta", e.detail.value)}>
-                <IonSelectOption className="rul-opt" value="3">Asalto Hogar</IonSelectOption>
-                <IonSelectOption className="rul-opt" value="1">Merodeo</IonSelectOption>
-                <IonSelectOption className="rul-opt" value="2">Portonazo</IonSelectOption>
-              </IonSelect>
-          </IonItem >
-          <IonItem lines="none">
-              <IonLabel>Hora Inicio</IonLabel>
-                <IonInput type="time" value={reglas[activeIndex].horaInicio} placeholder={String(reglas[activeIndex].horaInicio)} onIonChange={e => updateRegla("horaInicio", e.detail.value!)}/>
-          </IonItem>
-          <IonItem lines="none">
-              <IonLabel>Hora Final</IonLabel>
-              <IonInput type="time" value={reglas[activeIndex].horaFin} placeholder={String(reglas[activeIndex].horaInicio)}  onIonChange={e => updateRegla("horaFin", e.detail.value!)}/>
-          </IonItem>
-          <IonItem lines="none">
-            <IonLabel>Score mínimo</IonLabel>
-            <IonInput type="number" value={reglas[activeIndex].score} placeholder={String(reglas[activeIndex].score)} onIonChange={e => updateRegla("score",e.detail.value!)} min={0} max={100}/>
-          </IonItem>
-          <IonItem lines="none">
-            <IonLabel>Sector</IonLabel>
-            <IonInput value={reglas[activeIndex].sector} placeholder={"Ingrese Sector"} onIonChange={e => updateRegla("sector", e.detail.value!)} />
-          </IonItem>
-        </IonContent>
-        <IonFooter>
-          <IonToolbar>
-            <IonButton expand="full" className="buton-rul-green" onClick={guardarReglas}>Guardar</IonButton>
-            <IonButton expand="full" className="buton-rul-blue" onClick={guardarcerrarReglas}>Cerrar y Guardar</IonButton>
-            <IonButton expand="full" className="buton-rul-red" onClick={() => setModalOpen(false)}>Cerrar</IonButton>
-          </IonToolbar>
-        </IonFooter>
-      </IonModal>
+        <IonItem>
+          <IonButton slot="end" fill="clear" color={modalaux ? 'medium' : 'primary'} onClick={() => setModalaux(prev => !prev)}>
+            {modalaux ? "Cancelar" : "Crear Regla"}
+          </IonButton>
+        </IonItem>
+        {!modalaux && (
+          <>
+            <IonContent className="ion-padding">
+              <IonItem lines="none">
+                <IonLabel>Selecciona regla</IonLabel>
+                <IonSelect value={activeIndex} interface="popover" interfaceOptions={{cssClass: 'custom-popover-rul'}} onIonChange={e => setActiveIndex(e.detail.value)}>
+                {reglas.map((r, i) => ( 
+                  <IonSelectOption className="rul-opt" key={i} value={i}>{r.riesgo?.toUpperCase()}</IonSelectOption>
+                ))}
+                </IonSelect>
+              </IonItem>
+              <IonItem lines="none">
+                  <IonLabel>Tipo de alerta</IonLabel>
+                  <IonSelect value={reglas[activeIndex].tipoAlerta} interface="popover" interfaceOptions={{cssClass: 'custom-popover-rul'}} multiple={true} 
+                  placeholder={String(reglas[activeIndex].tipoAlerta)} onIonChange={e => updateRegla("tipoAlerta", e.detail.value)}>
+                    <IonSelectOption className="rul-opt" value="3">Asalto Hogar</IonSelectOption>
+                    <IonSelectOption className="rul-opt" value="1">Merodeo</IonSelectOption>
+                    <IonSelectOption className="rul-opt" value="2">Portonazo</IonSelectOption>
+                  </IonSelect>
+              </IonItem >
+              <IonItem lines="none">
+                  <IonLabel>Hora Inicio</IonLabel>
+                    <IonInput type="time" value={reglas[activeIndex].horaInicio} placeholder={String(reglas[activeIndex].horaInicio)} onIonChange={e => updateRegla("horaInicio", e.detail.value!)}/>
+              </IonItem>
+              <IonItem lines="none">
+                  <IonLabel>Hora Final</IonLabel>
+                  <IonInput type="time" value={reglas[activeIndex].horaFin} placeholder={String(reglas[activeIndex].horaInicio)}  onIonChange={e => updateRegla("horaFin", e.detail.value!)}/>
+              </IonItem>
+              <IonItem lines="none">
+                <IonLabel>Score mínimo</IonLabel>
+                <IonInput type="number" value={reglas[activeIndex].score} placeholder={String(reglas[activeIndex].score)} onIonChange={e => updateRegla("score",e.detail.value!)} min={0} max={100}/>
+              </IonItem>
+              <IonItem lines="none">
+                <IonLabel>Sector</IonLabel>
+                <IonInput value={reglas[activeIndex].sector} placeholder={"Ingrese Sector"} onIonChange={e => updateRegla("sector", e.detail.value!)} />
+              </IonItem>
+            </IonContent>
+            <IonFooter>
+              <IonToolbar>
+                <IonButton expand="full" className="buton-rul-green" onClick={guardarReglas}>Guardar</IonButton>
+                <IonButton expand="full" className="buton-rul-blue" onClick={guardarcerrarReglas}>Cerrar y Guardar</IonButton>
+                <IonButton expand="full" className="buton-rul-red" onClick={() => setModalOpen(false)}>Cerrar</IonButton>
+              </IonToolbar>
+            </IonFooter>
+          </>
+        )}
 
+        {modalaux && (
+          <>
+            <IonContent className="ion-padding">
+              <IonItem lines="none">
+                <IonLabel>Riesgo</IonLabel>
+                <IonSelect value={nuevaRegla.riesgo} interface="popover" onIonChange={e => setNuevaRegla({ ...nuevaRegla, riesgo: e.detail.value! })}>
+                  <IonSelectOption value="bajo">Bajo</IonSelectOption>
+                  <IonSelectOption value="medio">Medio</IonSelectOption>
+                  <IonSelectOption value="alto">Alto</IonSelectOption>
+                  <IonSelectOption value="critico">Crítico</IonSelectOption>
+                </IonSelect>
+              </IonItem>
+
+              <IonItem lines="none">
+                <IonLabel>Tipo de alerta</IonLabel>
+                <IonSelect value={nuevaRegla.tipoAlerta} interface="popover" multiple={true} onIonChange={e => setNuevaRegla({ ...nuevaRegla, tipoAlerta: e.detail.value })}>
+                  <IonSelectOption value="3">Asalto Hogar</IonSelectOption>
+                  <IonSelectOption value="1">Merodeo</IonSelectOption>
+                  <IonSelectOption value="2">Portonazo</IonSelectOption>
+                </IonSelect>
+              </IonItem>
+
+              <IonItem lines="none">
+                <IonLabel>Hora Inicio</IonLabel>
+                <IonInput type="time" value={nuevaRegla.horaInicio} onIonChange={e => setNuevaRegla({ ...nuevaRegla, horaInicio: e.detail.value! })}/>
+              </IonItem>
+
+              <IonItem lines="none">
+                <IonLabel>Hora Final</IonLabel>
+                <IonInput type="time" value={nuevaRegla.horaFin} onIonChange={e => setNuevaRegla({ ...nuevaRegla, horaFin: e.detail.value! })}/>
+              </IonItem>
+
+              <IonItem lines="none">
+                <IonLabel>Score mínimo</IonLabel>
+                <IonInput type="number" value={nuevaRegla.score} onIonChange={e => setNuevaRegla({ ...nuevaRegla, score: Number(e.detail.value!) })} min={0} max={100}/>
+              </IonItem>
+
+              <IonItem lines="none">
+                <IonLabel>Sector</IonLabel>
+                <IonInput value={nuevaRegla.sector} onIonChange={e => setNuevaRegla({ ...nuevaRegla, sector: e.detail.value! })}/>
+              </IonItem>
+            </IonContent>
+
+            <IonFooter>
+              <IonToolbar>
+                <IonButton expand="full" className="buton-rul-green" onClick={guardarNuevaRegla}>Guardar Nueva Regla</IonButton>
+              </IonToolbar>
+            </IonFooter>
+          </>
+        )}
+      </IonModal>
     </>
   );
 }

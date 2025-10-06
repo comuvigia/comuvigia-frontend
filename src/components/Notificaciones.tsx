@@ -13,8 +13,6 @@ import { Alert } from '../types/Alert';
 import './Notificaciones.css'
 import { RulesType, EditRules } from './RulesRiesgoModal';
 
-const STORAGE_KEY = "reglas";
-
 interface NotificacionesPopoverProps {
     alerts: Alert[];
     cameraNames: {[key:number]: string},
@@ -29,32 +27,7 @@ interface NotificacionesPopoverProps {
 export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,variant, formatearFecha, handleAccion, onVerDescripcion }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
-  const [reglas, setReglas] = useState<RulesType[]>([
-    { tipoAlerta: ["1"], horaInicio: "23:59", horaFin: "23:59", score: 100, sector: "", riesgo: "bajo" },
-    { tipoAlerta: ["2"], horaInicio: "23:59", horaFin: "23:59", score: 100, sector: "", riesgo: "medio" },
-    { tipoAlerta: ["3"], horaInicio: "23:59", horaFin: "23:59", score: 100, sector: "", riesgo: "alto" },
-    { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 90, sector: "", riesgo: "critico" },
-  ]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setReglas(JSON.parse(saved));
-    } else {
-      setReglas([
-        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "bajo" },
-        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "medio" },
-        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "alto" },
-        { tipoAlerta: [], horaInicio: "00:00", horaFin: "23:59", score: 1, sector: "", riesgo: "critico" },
-      ]);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (reglas.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(reglas));
-    }
-  }, [reglas]);
+  const [reglas, setReglas] = useState<RulesType[]>([]);
 
   let filteredAlerts = selectedCamera
   ? alerts.filter(a => a.id_camara === selectedCamera.id)
@@ -92,11 +65,11 @@ export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,varia
   };
 
   const calcularRiesgo = (alerta: Alert) => {
-    let valores = [0, 0, 0, 0]; // Para cada regla: bajo, medio, alto, crítico
+    let valores = Array(reglas.length).fill(0); // Un cero para cada regla
 
     for (let i = 0; i < reglas.length; i++) {
       if (reglas[i].tipoAlerta.some(tipo => Number(tipo) === alerta.tipo)) {
-        valores[i]+=3;
+        valores[i]++;
       }
 
       const fechaAlerta = new Date(alerta.hora_suceso);
@@ -124,28 +97,23 @@ export function NotificacionesPopover({ alerts,selectedCamera, cameraNames,varia
 
   return (
     <>
-        <IonItem className='notification-title-item' >
-          <IonLabel className="notification-title-item">
-            <b>Notificaciones</b>
-          </IonLabel>
-          <EditRules reglas={reglas} setReglas={setReglas} />
-        </IonItem>
-        <IonSegment value={selectedTab} onIonChange={e => setSelectedTab(e.detail.value as any)} className="compact-segment">
-        <IonSegmentButton value="all" className="small-segment">
-          <IonLabel>Todos</IonLabel>
-        </IonSegmentButton>
-        <IonSegmentButton value="critico" className="small-segment">
-          <IonLabel>Crítico</IonLabel>
-        </IonSegmentButton>
-        <IonSegmentButton value="alto" className="small-segment">
-          <IonLabel>Alto</IonLabel>
-        </IonSegmentButton>
-        <IonSegmentButton value="medio" className="small-segment">
-          <IonLabel>Medio</IonLabel>
-        </IonSegmentButton>
-        <IonSegmentButton value="bajo" className="small-segment">
-          <IonLabel>Bajo</IonLabel>
-        </IonSegmentButton>
+      <IonItem className='notification-title-item' >
+        <IonLabel className="notification-title-item">
+          <b>Notificaciones</b>
+        </IonLabel>
+        <EditRules reglas={reglas} setReglas={setReglas} />
+      </IonItem>
+      <IonSegment value={selectedTab} onIonChange={e => setSelectedTab(e.detail.value as any)} className="compact-segment">
+        <IonSegmentButton value="all" className="small-segment"> 
+          <IonLabel>Todos</IonLabel> </IonSegmentButton> 
+        <IonSegmentButton value="critico" className="small-segment"> 
+          <IonLabel>Crítico</IonLabel> </IonSegmentButton> 
+        <IonSegmentButton value="alto" className="small-segment"> 
+          <IonLabel>Alto</IonLabel> </IonSegmentButton> 
+        <IonSegmentButton value="medio" className="small-segment"> 
+          <IonLabel>Medio</IonLabel> </IonSegmentButton> 
+        <IonSegmentButton value="bajo" className="small-segment"> 
+          <IonLabel>Bajo</IonLabel></IonSegmentButton> 
       </IonSegment>
 
       <IonList className= {variant === 'map' ? 'notificaciones-list-map' : 'notificaciones-list-sidebar'} style={{overflowY: variant === 'sidebar' ? 'auto' : 'visible'}} >
