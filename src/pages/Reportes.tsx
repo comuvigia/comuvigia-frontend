@@ -356,6 +356,58 @@ function Reportes(){
         }
     };
 
+    // Manejo de descarga de paquete de evidencia
+    const [downloadingZip, setDownloadingZip] = useState<number | null>(null);
+    const downloadZip = async (alerta: Alert | null) => {
+      if (!alerta) return;
+      setDownloadingZip(alerta.id);
+
+      try{
+          // Buscar la cámara asociada a esta alerta
+          const camara = cameras.find(c => c.id === alerta?.id_camara);
+      
+          // Si no se encuentra la cámara, prevenir error
+          if (!camara) {
+          alert("No se encontró la cámara asociada a la alerta.");
+          return;
+          }
+      
+          // Preparar datos para enviar al backend Flask
+          const body = {
+          key: alerta?.clip,
+          descripcion: alerta?.descripcion_suceso,
+          hora_suceso: alerta?.hora_suceso,
+          ubicacion: camara.direccion,
+          nombre_camara: camara.nombre
+          };
+      
+          // Hacer la petición al backend Flask para obtener el ZIP
+          const response = await fetch(`${CAMERA_URL}/video/download_evidence`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+          });
+      
+          if (!response.ok) {
+          throw new Error('Error generando ZIP');
+          }
+      
+          // Recibir el ZIP como blob y forzar descarga
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `alerta_${alerta.id}.zip`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+      } catch (err) {
+          console.error(err);
+          alert('Error al descargar ZIP');
+      } finally {
+          setDownloadingZip(null);
+      }
+    };
+
     return (
         <div style={{ 
             height: '100vh', 
@@ -489,6 +541,23 @@ function Reportes(){
                           ) : (
                             'Descargar'
                           )}
+                        </IonButton>
+                        <IonButton 
+                            color="secondary"
+                            expand="block"
+                            onClick={() => downloadZip(alertaSeleccionada)}
+                            disabled={downloadingZip === alertaSeleccionada?.id}
+                            style={{
+                            padding: '0px 25px 15px',
+                            fontSize: '1.1rem',
+                            '--border-radius': '15px',
+                            }}
+                        >
+                            {downloadingZip === alertaSeleccionada?.id ? (
+                            <IonSpinner name="crescent" className='spinner-descarga' />
+                            ) : (
+                            'Descargar ZIP'
+                            )}
                         </IonButton>
                         <IonButton color="medium"
                           expand="block"
