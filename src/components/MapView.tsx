@@ -8,9 +8,14 @@ import './MapView.css';
 import { Tooltip } from 'react-leaflet';
 import { Alert } from '../types/Alert';
 import { NotificacionesPopover } from './Notificaciones';
+import { IonToggle } from '@ionic/react';
+import { io } from 'socket.io-client';
 
 const BUCKET_URL = import.meta.env.VITE_BUCKET_URL;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
+const socket = io(BACKEND_URL);
+const socketCam = io(CAMERA_URL);
 
 const defaultCenter: LatLngExpression = [-33.523, -70.604]; // La Florida, Chile
 
@@ -53,8 +58,9 @@ interface MapViewProps {
   handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
   onVerDescripcion?: (alerta: Alert) => void;
   setSelectedCamera: (cam: Camera | null) => void;
+  onCamerasUpdate: (cameras: Camera[]) => void;
 }
-export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user,formatearFecha,handleAccion,onVerDescripcion ,setSelectedCamera}: MapViewProps) {
+export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user,formatearFecha,handleAccion,onVerDescripcion ,setSelectedCamera, onCamerasUpdate}: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const [headerHeight, setHeaderHeight] = useState(60);
   const [activeTab, setActiveTab] = useState<'video' | 'estadisticas' | 'alertas'>('video');
@@ -104,10 +110,8 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
       iconAnchor: [12, 41],
     });
 
-   // Función para cerrar con llamada al backend
-
-
-    const handleRevisarWhitBackend = async (cam: Camera) => {
+  // Función para cerrar con llamada al backend
+  const handleRevisarWhitBackend = async (cam: Camera) => {
         setSelectedCamera(cam); // Abrir el panel de la cámara seleccionada
         if(cam.link_camara_externo === "") {
           try {
@@ -142,47 +146,141 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
         else{
           console.log('Cámara con streaming externo, no se notifica al backend.');
         }
-      };
+  };
 
-      const createCustomIcon = (color: string, count: number = 0) =>
-        L.divIcon({
-          className: "custom-marker",
-          html: `
-            <div style="position: relative; display: inline-block;">
-              <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png" 
-                  style="width:25px; height:41px;" />
-              ${
-                count > 0
-                  ? `<div style="
-                        position: absolute;
-                        top: -5px;
-                        right: -5px;
-                        background: red;
-                        color: white;
-                        font-size: 12px;
-                        font-weight: bold;
-                        border-radius: 50%;
-                        width: 20px;
-                        height: 20px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        border: 2px solid var(--ion-text-color, black);
-                    ">${count}</div>`
-                  : ""
-              }
-            </div>
-          `,
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          tooltipAnchor: [16, -28],
-        });
+  const createCustomIcon = (color: string, count: number = 0) =>
+    L.divIcon({
+      className: "custom-marker",
+      html: `
+        <div style="position: relative; display: inline-block;">
+          <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png" 
+              style="width:25px; height:41px;" />
+          ${
+            count > 0
+              ? `<div style="
+                    position: absolute;
+                    top: -5px;
+                    right: -5px;
+                    background: red;
+                    color: white;
+                    font-size: 12px;
+                    font-weight: bold;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 2px solid var(--ion-text-color, black);
+                ">${count}</div>`
+              : ""
+          }
+        </div>
+      `,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+  });
 
-        const getUnreadAlertsCount = (camId: number) => {
-          if (!alerts) return 0;
-          return alerts.filter(a => a.id_camara === camId && a.estado === 0).length;
-        };
+  const getUnreadAlertsCount = (camId: number) => {
+    if (!alerts) return 0;
+    return alerts.filter(a => a.id_camara === camId && a.estado === 0).length;
+  };
+
+  // Websocket cambio estado de cámaras
+  useEffect(() => {
+    if (!user) return;
+
+    // Escuchar actualizaciones de cámaras
+    socket.on('actualizacion-camaras', (camerasActualizadas: Camera[]) => {
+      console.log('Actualización de cámaras recibida:', camerasActualizadas);
+      
+      // Actualizar el estado de las cámaras
+      if (onCamerasUpdate) {
+        onCamerasUpdate(camerasActualizadas);
+      }
+    });
+
+    // Escuchar actualizaciones de estado individual de cámara
+    socketCam.on('estado-camara', (data: { cameraId: number; estado: boolean; ultima_conexion?: string }) => {
+      console.log('Actualización de estado de cámara:', data);
+        
+        // Actualizar solo la cámara específica
+    if (cameras && onCamerasUpdate) {
+        const updatedCameras = cameras.map(cam => 
+          cam.id === data.cameraId 
+            ? { 
+                ...cam, 
+                estado_camara: data.estado,
+                ultima_conexion: data.ultima_conexion || cam.ultima_conexion
+              } 
+            : cam
+        );
+        onCamerasUpdate(updatedCameras);
+      }
+    });
+    // Escuchar actualizaciones de estado individual de cámara
+    socket.on('estado-camara', (data: { cameraId: number; estado: boolean; ultima_conexion?: string }) => {
+      console.log('Actualización de estado de cámara:', data);
+        
+        // Actualizar solo la cámara específica
+    if (cameras && onCamerasUpdate) {
+        const updatedCameras = cameras.map(cam => 
+          cam.id === data.cameraId 
+            ? { 
+                ...cam, 
+                estado_camara: data.estado,
+                ultima_conexion: data.ultima_conexion || cam.ultima_conexion
+              } 
+            : cam
+        );
+        onCamerasUpdate(updatedCameras);
+      }
+    });
+
+    // Limpieza al desmontar el componente
+    return () => {
+      socketCam.off('estado-camara');
+      socket.off('actualizacion-alertas');
+    };
+  }, [user, cameras, onCamerasUpdate]);
+
+  const handleToggleCamera = async (cameraId: number, newStatus: boolean) => {
+    try {
+      /*let val = 0
+      // Si newStatus es true
+      if(newStatus){
+        val = 1
+      }*/
+      // Llamar a la API para cambiar el estado
+      const response = await fetch(`${CAMERA_URL}/camaras/${cameraId}/estado`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          estado: newStatus
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log(`Estado de cámara ${cameraId} actualizado a: ${newStatus}`);
+      } else {
+        console.warn('La actualización no fue exitosa:', result.message);
+        // Revertir el toggle si falla
+      }
+    } catch (error) {
+      console.error('Error al cambiar estado de cámara:', error);
+      // Revertir el toggle en caso de error
+    }
+  };
   
   return (
     <div className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
@@ -226,7 +324,18 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
               <br />
               {user && (user.rol === 1 || user.rol === 2) && (
                 <>
-                  Cantidad de Alertas: <strong>{cam.total_alertas ?? 0}</strong>
+                  Cantidad de alertas: <strong>{cam.total_alertas ?? 0}</strong>
+                  <br />
+                  <IonToggle 
+                    enableOnOffLabels={true}
+                    checked={cam.estado_camara}
+                    onIonChange={(e) => {
+                      const newStatus = e.detail.checked;
+                      handleToggleCamera(cam.id, newStatus);
+                    }}
+                  >
+                    Activar/Desactivar cámara:
+                  </IonToggle>
                   <br />
                 </>
               )}

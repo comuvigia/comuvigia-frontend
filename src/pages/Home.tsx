@@ -614,6 +614,7 @@ function Home() {
           setAlertaSeleccionada(alerta);
           setMostrarDescripcion(true);
         }}
+        onCamerasUpdate={setCameras}
       />
     
       {/*<CameraModal open={modalOpen} onClose={() => setModalOpen(false)} camera={selectedCamera} />*/}
