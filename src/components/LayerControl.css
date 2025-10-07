@@ -1,0 +1,183 @@
+.layer-control-fab-container {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+}
+
+.layer-control-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  /* Aplicando colores del ion-fab-button */
+  background: #1b4965;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.layer-control-fab:hover {
+  /* Usando color hover del ion-fab-button */
+  background: #15374f;
+  transform: scale(1.05);
+}
+
+.layer-control-fab:active {
+  /* Agregando estado activated similar a Ionic */
+  background: #0f2d3e;
+  transform: scale(0.98);
+}
+
+.layer-control-menu {
+  margin-top: 8px;
+  /* Mejorando el estilo del popover para que se parezca al IonPopover */
+  background: #fff;
+  color: #222;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  min-width: 200px;
+  max-width: 90vw;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.layer-control-menu strong {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #1b4965;
+}
+
+.layer-control-option {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.layer-control-option label {
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.heatmap-toggle-btn {
+  /* Mejorando el botón de toggle con estilos más modernos */
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.heatmap-toggle-btn:hover {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+.heatmap-toggle-btn.active {
+  /* Color activo más vibrante */
+  background: #1b4965;
+  color: #fff;
+  border: 1px solid #1b4965;
+  box-shadow: 0 2px 8px rgba(27, 73, 101, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .layer-control-fab-container {
+    top: 10px;
+    left: 10px;
+  }
+  .layer-control-fab {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+  .layer-control-menu {
+    min-width: 180px;
+    padding: 12px;
+  }
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+  .layer-control-menu {
+    background: #23272f;
+    color: #f1f1f1;
+  }
+
+  .layer-control-menu strong {
+    color: #5a9fd4;
+  }
+
+  .heatmap-toggle-btn {
+    background: #2a2e35;
+    color: #f1f1f1;
+    border: 1px solid #3a3e45;
+  }
+
+  .heatmap-toggle-btn:hover {
+    background: #32363d;
+    border-color: #4a4e55;
+  }
+
+  .heatmap-toggle-btn.active {
+    background: #1b4965;
+    color: #fff;
+    border: 1px solid #1b4965;
+  }
+}
+
+/* Inputs de fecha: adaptados al estilo general del menú */
+.fecha-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 14px;
+  margin-top: 4px;
+  background: #fff;
+  color: #333;
+  transition: border-color 0.2s ease;
+}
+
+.fecha-input:focus {
+  outline: none;
+  border-color: #1b4965;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .fecha-input {
+    background: #2a2e35;
+    border: 1px solid #3a3e45;
+    color: #f1f1f1;
+  }
+
+  .fecha-input:focus {
+    border-color: #5a9fd4;
+  }
+}
+
