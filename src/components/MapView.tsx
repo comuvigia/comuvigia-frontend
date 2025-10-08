@@ -224,8 +224,8 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
     socket.on('estado-camara', (data: { cameraId: number; estado: boolean; ultima_conexion?: string }) => {
       console.log('Actualización de estado de cámara:', data);
         
-        // Actualizar solo la cámara específica
-    if (cameras && onCamerasUpdate) {
+      // Actualizar solo la cámara específica
+      if (cameras && onCamerasUpdate) {
         const updatedCameras = cameras.map(cam => 
           cam.id === data.cameraId 
             ? { 
@@ -248,11 +248,6 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
 
   const handleToggleCamera = async (cameraId: number, newStatus: boolean) => {
     try {
-      /*let val = 0
-      // Si newStatus es true
-      if(newStatus){
-        val = 1
-      }*/
       // Llamar a la API para cambiar el estado
       const response = await fetch(`${CAMERA_URL}/camaras/${cameraId}/estado`, {
         method: 'PUT',
