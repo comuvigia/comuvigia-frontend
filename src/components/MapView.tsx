@@ -148,11 +148,15 @@ const fetchSectoresPorFecha = async (fechaInicio: string, fechaFin: string) => {
           try {
             // Usando fetch (recomendado si ya estás usando fetch en el backend)
             // @ts-ignore
-            const response = await fetch(`${BACKEND_URL}/casos_prueba?delito=${encodeURIComponent(cam.link_camara)}`, {
+            const response = await fetch(`${BACKEND_URL}/casos_prueba`, {
               method: 'POST',
               headers: {
-                  'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
               },
+              body: JSON.stringify({
+                id: cam.id, // o el valor correcto
+                link_camara: cam.link_camara
+              })
             });
 
             if (!response.ok) {
