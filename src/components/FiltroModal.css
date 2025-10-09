@@ -60,6 +60,13 @@ ion-modal.small-modal::part(content) {
   flex: 1;
 }
 
+.input-borde {
+  border: 1px solid #ccc; /* borde gris */
+  border-radius: 5px;     /* esquinas redondeadas */
+  padding: 5px 10px;      /* espacio interno */
+  background-color: #f9f9f9; /* color de fondo */
+}
+
 .small-modal ion-footer ion-toolbar {
   display: flex;
   flex-direction: column;

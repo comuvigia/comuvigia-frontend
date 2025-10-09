@@ -15,6 +15,7 @@ import {settingsOutline, checkmarkDoneOutline, alertCircleOutline, ellipsisVerti
 import { Alert } from '../types/Alert';
 import './Notificaciones.css'
 import { RulesType, EditRules } from './RulesRiesgoModal';
+import { FiltroType, EditFiltros } from './FiltroModal';
 
 interface NotificacionesPopoverProps {
     alerts: Alert[];
@@ -28,6 +29,7 @@ interface NotificacionesPopoverProps {
 }
 
 type FilterType = 'alertas' | 'camaras_caidas';
+
 
 export function NotificacionesPopover({ 
   alerts,
@@ -43,10 +45,18 @@ export function NotificacionesPopover({
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [filterType, setFilterType] = useState<FilterType>('alertas');
   const [reglas, setReglas] = useState<RulesType[]>([]);
+  const [filtro, setfiltro] = useState<FiltroType>({
+    isUsed: false, fechaInicio: null, fechaFin: null,
+    tipo: null, scoreMin: null, scoreMax: null, sector: null}
+  );
 
+
+  
   const cameraFilteredAlerts  = selectedCamera
   ? alerts.filter(a => a.id_camara === selectedCamera.id)
   : alerts;
+
+
 
   // Separar alertas en dos grupos
   const alertasNormales = cameraFilteredAlerts.filter(alert => alert.tipo === 1 || alert.tipo === 2 || alert.tipo === 3);
@@ -88,6 +98,9 @@ export function NotificacionesPopover({
     // Aquí va tu lógica
   };
 
+
+
+
   const calcularRiesgo = (alerta: Alert) => {
     let valores = Array(reglas.length).fill(0); // Un cero para cada regla
 
@@ -104,17 +117,43 @@ export function NotificacionesPopover({
       if (alerta.score_confianza >= (reglas[i].score/100)) {
         valores[i]++;
       }
+      console.log(alerta.id_sector)
+      if (alerta.id_sector == reglas[i].sector){
+        valores[i]++;
+      }
     }
 
     const maxIndex = valores.indexOf(Math.max(...valores));
     alerta.riesgo = reglas[maxIndex].riesgo;
   };
 
+  const aplicarFiltros = (alerta: Alert) => {
+    const horaSuceso = new Date(alerta.hora_suceso);
+
+    if (filtro.fechaInicio && horaSuceso < filtro.fechaInicio) return false;
+    if (filtro.fechaFin && horaSuceso > filtro.fechaFin) return false;
+
+    if (filtro.scoreMin != null && alerta.score_confianza < filtro.scoreMin) return false;
+    if (filtro.scoreMax != null && alerta.score_confianza > filtro.scoreMax) return false;
+
+    if (filtro.sector != null && alerta.id_sector !== filtro.sector) return false;
+
+    if (filtro.tipo != null && !filtro.tipo.some(tipo => tipo === alerta.tipo)) return false;
+
+    return true;
+  };
+
+
   // Filtro por pestaña (riesgo)
   if (selectedTab !== 'all') {
     alertsToShow = alertsToShow.filter(a => {
         calcularRiesgo(a); // actualiza alerta.riesgo
+        if(filtro?.isUsed) return (a.riesgo?.toLowerCase() === selectedTab.toLowerCase()) && (aplicarFiltros(a)) 
         return a.riesgo?.toLowerCase() === selectedTab.toLowerCase();
+    });
+  } else if (filtro?.isUsed) {
+    alertsToShow = alertsToShow.filter(a => {
+      return aplicarFiltros(a)
     });
   }
 
@@ -195,6 +234,7 @@ export function NotificacionesPopover({
                     <IonLabel>Bajo</IonLabel></IonSegmentButton> 
                 </IonSegment>
                 <EditRules reglas={reglas} setReglas={setReglas} />
+                <EditFiltros filtro={filtro} setFiltro={setfiltro} />
             </IonItem>
             
           </>
