@@ -43,16 +43,11 @@ export function EditRules({ reglas, setReglas }: Props) {
   });
 
   //CARGAR SECTORES DESDE LA BASE DE DATOS
-  const [sectores, setSectores] = useState<{ id: number, nombre_sector: string, descripcion: string }[]>([]);
+  const [sectores, setSectores] = useState<{ id: number, nombre_sector: String}[]>([]);
   useEffect(() => {
     const fetchSectores = async () => {
       try {
-        const response = await axios.get(`${BACKEND_URL}/api/reglas/sectores`, {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        const response = await axios.get(`${BACKEND_URL}/api/reglas/sectores`, {withCredentials: true});
         setSectores(response.data);
         console.log('Sectores cargados:', response.data);
       } catch (err) {
@@ -67,11 +62,7 @@ export function EditRules({ reglas, setReglas }: Props) {
   const cargarReglas = async () => {
     try {
       
-      const response = await axios.get<RulesType[]>(`${BACKEND_URL}/api/reglas/obtener`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await axios.get<RulesType[]>(`${BACKEND_URL}/api/reglas/obtener`, {withCredentials: true});
       setReglas(response.data);
       
     } catch (err) {
