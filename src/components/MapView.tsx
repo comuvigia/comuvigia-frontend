@@ -69,7 +69,13 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
   
   const fetchSectores = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/sectores`);
+      const url = `${BACKEND_URL}/api/sectores/alltime`;
+
+      const response = await fetch(url,
+      {
+        credentials: "include"
+      }
+      );
       if (!response.ok) throw new Error("Error al obtener sectores");
       const data = await response.json();
       setSectores(data);
@@ -78,24 +84,28 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
     }
   };
 
-const fetchSectoresPorFecha = async (fechaInicio: string, fechaFin: string) => {
-  try {
-    const params = new URLSearchParams({
-      fecha_inicio: fechaInicio,
-      fecha_fin: fechaFin
-    });
-    
-    const url = `${BACKEND_URL}/api/sectores?${params}`;
-    console.log("🔍 URL de consulta:", url);
-    
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Error al obtener sectores por rango");
-    const data = await response.json();
-    setSectores(data);
-  } catch (error) {
-    console.error("Error al cargar sectores por rango:", error);
-  }
-};
+  const fetchSectoresPorFecha = async (fechaInicio: string, fechaFin: string) => {
+    try {
+      const params = new URLSearchParams({
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin
+      });
+      
+      const url = `${BACKEND_URL}/api/sectores?${params}`;
+      console.log("🔍 URL de consulta:", url);
+      
+      const response = await fetch(url,
+        {
+          credentials: "include"
+        }
+      );
+      if (!response.ok) throw new Error("Error al obtener sectores por rango");
+      const data = await response.json();
+      setSectores(data);
+    } catch (error) {
+      console.error("Error al cargar sectores por rango:", error);
+    }
+  };
 
 
   useEffect(() => {

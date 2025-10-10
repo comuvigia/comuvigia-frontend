@@ -18,6 +18,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Reportes.css';
 import { useUser } from '../UserContext';
+import InformeDescarga from "../components/InformeDescarga";
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -598,7 +599,7 @@ function Reportes(){
                               agrupacion={agrupacion}
                               setAgrupacion={setAgrupacion}
                             />
-
+                            <InformeDescarga />
                         </div>
                         )}
 
