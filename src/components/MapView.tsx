@@ -232,11 +232,6 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
       tooltipAnchor: [16, -28],
   });
 
-  const getUnreadAlertsCount = (camId: number) => {
-    if (!alerts) return 0;
-    return alerts.filter(a => a.id_camara === camId && a.estado === 0).length;
-  };
-
   // Websocket cambio estado de cámaras
   useEffect(() => {
     if (!user) return;
@@ -326,10 +321,10 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
     }
   };
   
-        const getUnreadAlertsCount = (camId: number) => {
-          if (!alerts) return 0;
-          return alerts.filter(a => a.id_camara === camId && a.estado === 0).length;
-        };
+  const getUnreadAlertsCount = (camId: number) => {
+    if (!alerts) return 0;
+    return alerts.filter(a => a.id_camara === camId && a.estado === 0).length;
+  };
 
   const maxAlertas = Math.max(...sectores.map(s => s.total_alertas));
 

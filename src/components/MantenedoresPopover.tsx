@@ -33,7 +33,7 @@ export function MantenedoresPopover({
 }: MantenedoresPopoverProps){
 
   const handleItemClick = (modalType: 'cameras' | 'users' | 'alerts') => {
-    onClose(); // Cerrar el popover primero
+    if (onClose) onClose(); // Cerrar el popover primero
     onOpenModal(modalType); // Abrir el modal correspondiente
   };
 
