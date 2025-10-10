@@ -72,6 +72,30 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
 
   const [heatmapVisible, setHeatmapVisible] = useState(false);
   const [sectores, setSectores] = useState<Sector[]>([]);
+  const [toggleCooldown, setToggleCooldown] = useState<number>(0); // segundos restantes
+  const [isToggleLocked, setIsToggleLocked] = useState<boolean>(false);
+  const handleToggleWithCooldown = async (cameraId: number, newStatus: boolean) => {
+    if (isToggleLocked) return; // Si está bloqueado, no hacer nada
+    
+    // Bloquear inmediatamente
+    setIsToggleLocked(true);
+    setToggleCooldown(60); // 1 minuto de cooldown
+    
+    // Cambiar estado de la cámara
+    await handleToggleCamera(cameraId, newStatus);
+    
+    // Iniciar contador
+    const interval = setInterval(() => {
+      setToggleCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setIsToggleLocked(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
   
   const fetchSectores = async () => {
     try {
@@ -386,12 +410,22 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
                   <IonToggle 
                     enableOnOffLabels={true}
                     checked={cam.estado_camara}
+                    disabled={isToggleLocked}
                     onIonChange={(e) => {
                       const newStatus = e.detail.checked;
-                      handleToggleCamera(cam.id, newStatus);
+                      handleToggleWithCooldown(cam.id, newStatus);
                     }}
                   >
-                    Activar/Desactivar cámara:
+                    Activar/Desactivar cámara
+                    {isToggleLocked && (
+                      <span style={{
+                        color: 'orange', 
+                        fontSize: '12px',
+                        marginLeft: '5px'
+                      }}>
+                        (Espera {toggleCooldown}s)
+                      </span>
+                    )}
                   </IonToggle>
                   <br />
                 </>
