@@ -1,0 +1,119 @@
+.small-modal .modal-wrapper {
+  width: 500px;
+  max-width: 90%;
+  height: auto;
+  border-radius: 12px;
+  margin: auto;
+}
+
+.small-modal .modal-content {
+  padding: 10px;
+}
+
+.small-modal ion-footer ion-button {
+  width: 180px; 
+  text-align: center; 
+}
+
+ion-modal.small-modal::part(content) {
+  width: 400px;
+  max-width: 90%;
+  height: 550px;
+  border-radius: 12px;
+  margin: auto;
+}
+
+.small-modal ion-item {
+  --inner-padding-end: 0;
+  --padding-start: 0;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.custom-popover-rul {
+  --max-width: 150px;
+  height: 250px;
+  left: 50px !important; 
+  align-items: center;
+  justify-content: center;
+}
+
+.small-modal ion-popover .popover-content {
+  border-radius: 8px;
+}
+
+.rul-opt{
+    font-size: 12px;
+    height: 50px;
+}
+
+.small-modal ion-label {
+  min-width: 130px; 
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.small-modal ion-input,
+.small-modal ion-select {
+  text-align: left;
+  flex: 1;
+}
+
+.input-borde {
+  border: 1px solid #ccc; /* borde gris */
+  border-radius: 5px;     /* esquinas redondeadas */
+  padding: 5px 10px;      /* espacio interno */
+  background-color: #f9f9f9; /* color de fondo */
+}
+
+.small-modal ion-footer ion-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.small-modal ion-button {
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.buton-rul-green{
+  overflow: hidden;
+  --background: #046b08ff; 
+  --color: white;     
+  --border-radius: 8px;
+}
+
+.buton-rul-blue{
+  overflow: hidden;
+  --background: #0b046bff;  
+  --color: white;       
+  --border-radius: 8px;
+}
+
+.buton-rul-red{
+  overflow: hidden;
+  --background: #6b0404ff;
+  --color: white;         
+  --border-radius: 8px;
+}
+
+.buton-rul-gray{
+  overflow: hidden;
+  --background: rgb(94, 94, 94);
+  --color: white;  
+  --border-radius: 8px;
+}
+
+
+.icon-small{
+  padding: 0px;
+  margin: 0;   
+  font-size: 18px;
+  border: none;
+  width: 35px;
+  height: 35px;  
+}

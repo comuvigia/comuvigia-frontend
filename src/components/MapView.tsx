@@ -10,6 +10,8 @@ import { Alert } from '../types/Alert';
 import { NotificacionesPopover } from './Notificaciones';
 import { IonToggle } from '@ionic/react';
 import { io } from 'socket.io-client';
+import { SectorLayer, Sector } from "./SectorLayer";
+import { LayerControl } from "./LayerControl";
 
 const BUCKET_URL = import.meta.env.VITE_BUCKET_URL;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -67,7 +69,50 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
   const [isDark, setIsDark] = useState(
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
+
+  const [heatmapVisible, setHeatmapVisible] = useState(false);
+  const [sectores, setSectores] = useState<Sector[]>([]);
   
+  const fetchSectores = async () => {
+    try {
+      const url = `${BACKEND_URL}/api/sectores/alltime`;
+
+      const response = await fetch(url,
+      {
+        credentials: "include"
+      }
+      );
+      if (!response.ok) throw new Error("Error al obtener sectores");
+      const data = await response.json();
+      setSectores(data);
+    } catch (error) {
+      console.error("Error al cargar sectores:", error);
+    }
+  };
+
+  const fetchSectoresPorFecha = async (fechaInicio: string, fechaFin: string) => {
+    try {
+      const params = new URLSearchParams({
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin
+      });
+      
+      const url = `${BACKEND_URL}/api/sectores?${params}`;
+      console.log("🔍 URL de consulta:", url);
+      
+      const response = await fetch(url,
+        {
+          credentials: "include"
+        }
+      );
+      if (!response.ok) throw new Error("Error al obtener sectores por rango");
+      const data = await response.json();
+      setSectores(data);
+    } catch (error) {
+      console.error("Error al cargar sectores por rango:", error);
+    }
+  };
+
 
   useEffect(() => {
     const header = document.querySelector("ion-header");
@@ -117,11 +162,15 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
           try {
             // Usando fetch (recomendado si ya estás usando fetch en el backend)
             // @ts-ignore
-            const response = await fetch(`${BACKEND_URL}/casos_prueba?delito=${encodeURIComponent(cam.link_camara)}`, {
+            const response = await fetch(`${BACKEND_URL}/casos_prueba`, {
               method: 'POST',
               headers: {
-                  'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
               },
+              body: JSON.stringify({
+                id: cam.id, // o el valor correcto
+                link_camara: cam.link_camara
+              })
             });
 
             if (!response.ok) {
@@ -277,8 +326,26 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
     }
   };
   
+        const getUnreadAlertsCount = (camId: number) => {
+          if (!alerts) return 0;
+          return alerts.filter(a => a.id_camara === camId && a.estado === 0).length;
+        };
+
+  const maxAlertas = Math.max(...sectores.map(s => s.total_alertas));
+
+  const toggleHeatmap = () => setHeatmapVisible((v) => !v);
+
   return (
     <div className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
+      {/* LayerControl UI */}
+      <div className="layer-control-wrapper">
+        <LayerControl
+          heatmapVisible={heatmapVisible}
+          toggleHeatmap={toggleHeatmap}
+          onFetchSectores={fetchSectoresPorFecha} // pasa la nueva función
+        />
+      </div>
+      
       <MapContainer
         center={defaultCenter}
         zoom={15}
@@ -358,6 +425,12 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
             </Tooltip>*/}
           </Marker>
         ))}
+        {/* Renderiza todos los sectores como "Mapa de calor" si está activo */}
+        {heatmapVisible &&
+          sectores.map((sector) => (
+            <SectorLayer key={sector.id} sector={sector} visible={true} maxAlertas={maxAlertas} />
+          ))
+        }
       </MapContainer>
       {selectedCamera && (
         <div className="camera-panel" style={{ top: headerHeight }}>

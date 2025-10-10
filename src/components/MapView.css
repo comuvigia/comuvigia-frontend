@@ -21,6 +21,7 @@
 .map-layout {
   display: flex;
   height: 100%;
+  height: 100%;
   position: relative;
 }
 
@@ -130,6 +131,21 @@
   width: 70%;
 }
 
+
+
+.layer-control-wrapper {
+  position: absolute;
+  top: 10px; /* Más cerca del borde superior */
+  left: 10px;
+  z-index: 500;
+}
+
+/* Asegurar que el header tenga mayor z-index */
+ion-header {
+  z-index: 1000 !important;
+  position: relative;
+}
+
 @media (max-width: 480px) {
   .camera-panel {
     width: 100%;
@@ -148,4 +164,9 @@
   .camera-panel {
     width: 50%;
   }
+}
+
+.leaflet-interactive:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }

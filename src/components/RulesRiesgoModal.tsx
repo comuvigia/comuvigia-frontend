@@ -18,7 +18,7 @@ export type RulesType = {
   horaInicio: string;
   horaFin: string;
   score: number;
-  sector: string;
+  sector: number;
 };
 
 type Props = {
@@ -39,17 +39,30 @@ export function EditRules({ reglas, setReglas }: Props) {
     horaInicio: '00:00',
     horaFin: '23:59',
     score: 0,
-    sector: '',
+    sector: -1,
   });
 
+  //CARGAR SECTORES DESDE LA BASE DE DATOS
+  const [sectores, setSectores] = useState<{ id: number, nombre_sector: String}[]>([]);
+  useEffect(() => {
+    const fetchSectores = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/reglas/sectores`, {withCredentials: true});
+        setSectores(response.data);
+        console.log('Sectores cargados:', response.data);
+      } catch (err) {
+        console.error('Error cargando sectores:', err);
+      }
+    };
+
+    fetchSectores();
+  }, []);
+  
+  //CARGAR REGLAS DESDE LA BASE DE DATOS
   const cargarReglas = async () => {
     try {
       
-      const response = await axios.get<RulesType[]>(`${BACKEND_URL}/api/reglas/obtener`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await axios.get<RulesType[]>(`${BACKEND_URL}/api/reglas/obtener`, {withCredentials: true});
       setReglas(response.data);
       
     } catch (err) {
@@ -57,15 +70,16 @@ export function EditRules({ reglas, setReglas }: Props) {
     }
   };
 
-useEffect(() => {
-  if (reglas.length === 0) {
-    cargarReglas();
-  }
-}, []);
+  useEffect(() => {
+    if (reglas.length === 0) {
+      cargarReglas();
+    }
+  }, []);
 
   if (!reglas || reglas.length === 0) {
     return;
   }
+
 
   const guardarReglaBackend = async (regla: RulesType) => {
     try {
@@ -87,6 +101,28 @@ useEffect(() => {
     }
   };
 
+  const eliminarRegla = async () => {
+    try {
+      const reglaAux = reglas[activeIndex]
+
+      if (!reglaAux?.id) {
+        console.error('No hay una regla seleccionada para eliminar.');
+        return;
+      }
+
+      const response = await axios.delete(`${BACKEND_URL}/api/reglas/eliminar`, {
+        data: { id: reglaAux.id }, withCredentials: true});
+
+      console.log('Regla eliminada:', response.data.mensaje);
+
+      setReglas((prev) => prev.filter((r) => r.id !== reglaAux.id));
+
+    } catch (err) {
+      console.error('Error eliminando regla:', err);
+    }
+  };
+
+
   const guardarNuevaRegla = () => {
     try {
       guardarnuevaReglaBackend(nuevaRegla); // guarda y asigna ID
@@ -99,7 +135,7 @@ useEffect(() => {
         horaInicio: '00:00',
         horaFin: '23:59',
         score: 0,
-        sector: '',
+        sector: -1,
       });
       console.log('Nueva regla creada');
     } catch (err) {
@@ -133,7 +169,7 @@ useEffect(() => {
 
   return (
     <>
-      <IonButton slot="end" fill="clear" color="dark" onClick={() => setModalOpen(true)}>
+      <IonButton className='icon-small' slot="end" fill="clear" color="dark" onClick={() => setModalOpen(true)}>
           <IonIcon icon={settingsOutline} />
       </IonButton>
       <IonModal isOpen={modalOpen} onDidPresent={() => { const firstInput = document.querySelector('.small-modal input, .small-modal select, .small-modal button') as HTMLElement; 
@@ -155,7 +191,7 @@ useEffect(() => {
                 <IonLabel>Selecciona regla</IonLabel>
                 <IonSelect value={activeIndex} interface="popover" interfaceOptions={{cssClass: 'custom-popover-rul'}} onIonChange={e => setActiveIndex(e.detail.value)}>
                 {reglas.map((r, i) => ( 
-                  <IonSelectOption className="rul-opt" key={i} value={i}>{r.riesgo?.toUpperCase()}</IonSelectOption>
+                  <IonSelectOption className="rul-opt" key={i} value={i}> {`${r.id} - ${r.riesgo?.toUpperCase()}`}</IonSelectOption>
                 ))}
                 </IonSelect>
               </IonItem>
@@ -182,16 +218,23 @@ useEffect(() => {
               </IonItem>
               <IonItem lines="none">
                 <IonLabel>Sector</IonLabel>
-                <IonInput value={reglas[activeIndex].sector} placeholder={"Ingrese Sector"} onIonChange={e => updateRegla("sector", e.detail.value!)} />
+                <IonSelect value={reglas[activeIndex].sector} placeholder="Seleccione un sector" 
+                onIonChange={e => updateRegla("sector", e.detail.value)}>
+                  {sectores.map((s) => (
+                    <IonSelectOption key={s.id} value={s.id}>{s.nombre_sector}</IonSelectOption>
+                  ))}
+                </IonSelect>
               </IonItem>
             </IonContent>
             <IonFooter>
               <IonToolbar>
-                <IonButton expand="full" className="buton-rul-green" onClick={guardarReglas}>Guardar</IonButton>
-                <IonButton expand="full" className="buton-rul-blue" onClick={guardarcerrarReglas}>Cerrar y Guardar</IonButton>
-                <IonButton expand="full" className="buton-rul-red" onClick={() => setModalOpen(false)}>Cerrar</IonButton>
+                  <IonButton size="small" className="buton-rul-green" onClick={guardarReglas}>Guardar</IonButton>
+                  <IonButton size="small" className="buton-rul-blue" onClick={guardarcerrarReglas}>Cerrar y Guardar</IonButton>
+                  <IonButton size="small" className="buton-rul-red" onClick={eliminarRegla}>Eliminar</IonButton>
+                  <IonButton size="small" className="buton-rul-gray" onClick={() => setModalOpen(false)}>Cerrar</IonButton>
               </IonToolbar>
             </IonFooter>
+
           </>
         )}
 
@@ -234,8 +277,14 @@ useEffect(() => {
 
               <IonItem lines="none">
                 <IonLabel>Sector</IonLabel>
-                <IonInput value={nuevaRegla.sector} onIonChange={e => setNuevaRegla({ ...nuevaRegla, sector: e.detail.value! })}/>
+                <IonSelect value={reglas[activeIndex].sector} placeholder="Seleccione un sector" 
+                onIonChange={e => updateRegla("sector", e.detail.value)}>
+                  {sectores.map((s) => (
+                    <IonSelectOption key={s.id} value={s.id}>{s.nombre_sector}</IonSelectOption>
+                  ))}
+                </IonSelect>
               </IonItem>
+
             </IonContent>
 
             <IonFooter>

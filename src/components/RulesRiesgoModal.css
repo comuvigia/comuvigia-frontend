@@ -10,6 +10,11 @@
   padding: 10px;
 }
 
+.small-modal ion-footer ion-button {
+  width: 180px; 
+  text-align: center; 
+}
+
 ion-modal.small-modal::part(content) {
   width: 400px;
   max-width: 90%;
@@ -18,7 +23,6 @@ ion-modal.small-modal::part(content) {
   margin: auto;
 }
 
-/* Solo afecta a tu modal */
 .small-modal ion-item {
   --inner-padding-end: 0;
   --padding-start: 0;
@@ -44,7 +48,7 @@ ion-modal.small-modal::part(content) {
 }
 
 .small-modal ion-label {
-  min-width: 130px;   /* fuerza ancho fijo del label */
+  min-width: 130px; 
   font-weight: 500;
   font-size: 14px;
   color: #333;
@@ -56,7 +60,6 @@ ion-modal.small-modal::part(content) {
   flex: 1;
 }
 
-/* Footer con botones bonitos */
 .small-modal ion-footer ion-toolbar {
   display: flex;
   flex-direction: column;
@@ -71,22 +74,39 @@ ion-modal.small-modal::part(content) {
 }
 
 .buton-rul-green{
-    overflow: hidden;
-    --background: #046b08ff;   /* fondo verde */
-    --color: white;           /* texto blanco */
-    --border-radius: 8px;
+  overflow: hidden;
+  --background: #046b08ff; 
+  --color: white;     
+  --border-radius: 8px;
 }
 
 .buton-rul-blue{
-    overflow: hidden;
-    --background: #0b046bff;   /* fondo verde */
-    --color: white;           /* texto blanco */
-    --border-radius: 8px;
+  overflow: hidden;
+  --background: #0b046bff;  
+  --color: white;       
+  --border-radius: 8px;
 }
 
 .buton-rul-red{
-    overflow: hidden;
-    --background: #6b0404ff;   /* fondo verde */
-    --color: white;           /* texto blanco */
-    --border-radius: 8px;
+  overflow: hidden;
+  --background: #6b0404ff;
+  --color: white;         
+  --border-radius: 8px;
+}
+
+.buton-rul-gray{
+  overflow: hidden;
+  --background: rgb(94, 94, 94);
+  --color: white;  
+  --border-radius: 8px;
+}
+
+
+.icon-small{
+  padding: 0px;
+  margin: 0;   
+  font-size: 18px;
+  border: none;
+  width: 35px;
+  height: 35px;  
 }
