@@ -200,7 +200,7 @@ function Home() {
         socket.off('nueva-alerta');
       };
     }
-  }, []);
+  }, [cameraNames]);
 
   const goToCamera = () => {
     if (lastAlert) {
