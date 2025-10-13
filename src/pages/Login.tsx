@@ -62,20 +62,27 @@ const Login: React.FC = () => {
             <img src="/comuvigia.png" alt="Logo" style={{padding: '20px'}}/>
           </div>
 
-          <IonItem className={mensaje ? 'input-error' : ''}>
-            <IonLabel position="stacked">Usuario</IonLabel>
-            <IonInput value={usuario} onIonInput={e => setUsuario(e.detail.value!)} />
-          </IonItem>
+          <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin();
+              }}
+          >
 
-          <IonItem className={mensaje ? 'input-error' : ''}>
-            <IonLabel position="stacked">Contraseña</IonLabel>
-            <IonInput type="password" value={contrasena} onIonInput={e => setContrasena(e.detail.value!)} />
-          </IonItem>
+            <IonItem className={mensaje ? 'input-error' : ''}>
+              <IonLabel position="stacked">Usuario</IonLabel>
+              <IonInput value={usuario} onIonInput={e => setUsuario(e.detail.value!)} />
+            </IonItem>
 
-          <IonButton expand="block" onClick={handleLogin} className="login-button">
-            Entrar
-          </IonButton>
+            <IonItem className={mensaje ? 'input-error' : ''}>
+              <IonLabel position="stacked">Contraseña</IonLabel>
+              <IonInput type="password" value={contrasena} onIonInput={e => setContrasena(e.detail.value!)} />
+            </IonItem>
 
+            <IonButton expand="block" type='submit' className="login-button">
+              Entrar
+            </IonButton>
+          </form>
           <IonToast
             isOpen={mostrarToast}
             message={mensaje}
