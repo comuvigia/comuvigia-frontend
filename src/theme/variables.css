@@ -10,11 +10,12 @@ http://ionicframework.com/docs/theming/ */
 }
 body {
   font-family: 'Montserrat', sans-serif;
-  background: #1B4965 !important;
+  background: var(--ion-background-color) !important;
 }
 ion-popover{
     --width: 400px !important;
 }
+
 
 
 :root {
@@ -26,7 +27,24 @@ ion-popover{
   --ion-color-primary-shade: #173d56;
   --ion-color-primary-tint: #326079;
   --ion-background-color: #ffffff; /* claro */
+  --ion-background-color-2: #ffffff; /* oscuro */
   --ion-text-color: #000; /* claro */
+}
+
+
+/* Modo oscuro CORREGIDO */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #4cc9f0;
+    --ion-color-primary-rgb: 76, 201, 240;
+    --ion-color-primary-contrast: #000000;
+    --ion-color-primary-contrast-rgb: 0, 0, 0;
+    --ion-color-primary-shade: #3aa7c4;
+    --ion-color-primary-tint: #66d2f3;
+    --ion-background-color: #111010;
+    --card-background: #1e1e1e; /* Fondo específico para cards en modo oscuro */
+    --ion-text-color: #ffffff;
+  }
 }
 
 /* Modo oscuro */
@@ -37,7 +55,8 @@ body.dark {
   --ion-color-primary-contrast-rgb: 0, 0, 0;
   --ion-color-primary-shade: #3aa7c4;
   --ion-color-primary-tint: #66d2f3;
-  --ion-background-color: #000000; /* oscuro */
+  --ion-background-color: #111010; /* oscuro */
+  --ion-background-color-2: #ff0000; /* oscuro */
   --ion-text-color: #fff; /* oscuro */
 }
 

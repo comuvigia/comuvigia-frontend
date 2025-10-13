@@ -125,12 +125,11 @@ const InformeDescarga: React.FC = () => {
 };
 
   return (
-    <IonCard>
+    <IonCard >
       <IonCardHeader>
         <IonCardTitle>Descarga de informe</IonCardTitle>
       </IonCardHeader>
       <IonCardContent>
-        <p>Selecciona el mes y el año del informe que deseas descargar:</p>
 
         <IonItem>
           <IonLabel>Mes</IonLabel>
