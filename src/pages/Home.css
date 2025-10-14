@@ -57,6 +57,15 @@ ion-fab-button {
     --width: 300px !important;
 }
 
+.home-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #1B4965;
+}
+
 @media (max-width: 480px) {
     .modal-descripcion {
         --width: 100%;

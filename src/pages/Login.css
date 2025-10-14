@@ -49,8 +49,9 @@
   }
 }
 
-
 /* Inputs y botones */
+
+/* Ajustes para los inputs para que tengan más "aire" vertical */
 .login-container ion-item {
   --padding-start: 12px;
   --padding-end: 12px;
@@ -74,4 +75,5 @@
   --background: #1B4965;
   --border-radius: 10px;
   margin-top: 20px;
+  --color: #f0f0f0;
 }

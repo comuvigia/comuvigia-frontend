@@ -200,7 +200,7 @@ function Home() {
         socket.off('nueva-alerta');
       };
     }
-  }, []);
+  }, [cameraNames]);
 
   const goToCamera = () => {
     if (lastAlert) {
@@ -248,7 +248,15 @@ function Home() {
 
   // Loading de camaras y alertas
   if (loadingCameras || loadingAlerts || loadingCameraNames || loadingUsers)
-    return <div className='global-loading'><IonSpinner name="crescent" /></div>;
+    return (
+      <IonContent className="ion-padding ion-text-center home-loading-screen">
+        <div className="home-loading-container">
+          <img src="/comuvigia.png" alt="Logo" className="home-loading-logo" />
+          <IonSpinner name="crescent" />
+          <p>Cargando datos...</p>
+        </div>
+      </IonContent>
+    );
 
   // Handler para mostrar popover en el sitio del click (la campana)
   const handleShowNotifications = (e: React.MouseEvent) => {

@@ -246,28 +246,29 @@ const Users: React.FC<UsersProps> = ({
                       <IonInput
                         value={editedUser?.usuario}
                         onIonInput={(e) => handleInputChange('usuario', e.detail.value!)}
-                        readonly={!isCreating}
+                        readonly={!isEditing}
                         placeholder="Nombre de Usuario"
                       />
                     </IonItem>
 
-                    {isCreating && (
+                    {isEditing &&
                       <IonItem>
-                        <IonLabel position="stacked">Contraseña *</IonLabel>
+                        <IonLabel position="stacked">Contraseña {isCreating && "*"}</IonLabel>
                         <IonInput
+                          type='password'
                           value={editedUser?.contrasena}
                           onIonInput={(e) => handleInputChange('contrasena', e.detail.value!)}
                           placeholder="Contraseña"
                         />
                       </IonItem>
-                    )}
+                    }
 
                     <IonItem>
                       <IonLabel position="stacked">Nombre *</IonLabel>
                       <IonInput
                         value={editedUser?.nombre}
                         onIonInput={(e) => handleInputChange('nombre', e.detail.value!)}
-                        readonly={!isCreating}
+                        readonly={!isEditing}
                         placeholder="Nombre"
                       />
                     </IonItem>
@@ -296,7 +297,7 @@ const Users: React.FC<UsersProps> = ({
                               onClick={handleEdit}
                             >
                               <IonIcon icon={create} slot="start" />
-                              Editar Rol
+                              Editar
                             </IonButton>
                           )}
                           <IonButton 
