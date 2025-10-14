@@ -49,19 +49,7 @@
   }
 }
 
-/* Botón principal */
-.login-button {
-  --background: #1B4965;
-  --border-radius: 10px;
-  margin-top: 20px;
-  --color: #f0f0f0
-}
-
-/* Inputs con error */
-.input-error {
-  --highlight-color-focused: #e74c3c;
-  --border-color: #e74c3c;
-}
+/* Inputs y botones */
 
 /* Ajustes para los inputs para que tengan más "aire" vertical */
 .login-container ion-item {
@@ -87,4 +75,5 @@
   --background: #1B4965;
   --border-radius: 10px;
   margin-top: 20px;
+  --color: #f0f0f0;
 }
