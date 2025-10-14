@@ -248,7 +248,15 @@ function Home() {
 
   // Loading de camaras y alertas
   if (loadingCameras || loadingAlerts || loadingCameraNames || loadingUsers)
-    return <div className='global-loading'><IonSpinner name="crescent" /></div>;
+    return (
+      <IonContent className="ion-padding ion-text-center loading-screen">
+        <div className="loading-container">
+          <img src="/public/comuvigia.png" alt="Logo" className="loading-logo" />
+          <IonSpinner name="crescent" />
+          <p>Cargando datos...</p>
+        </div>
+      </IonContent>
+    );
 
   // Handler para mostrar popover en el sitio del click (la campana)
   const handleShowNotifications = (e: React.MouseEvent) => {
