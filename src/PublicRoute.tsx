@@ -14,9 +14,9 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({ children, ...rest }) =
 
   if (checkingAuth)
     return (
-      <IonContent className="ion-padding ion-text-center loading-screen">
-        <div className="loading-container">
-          <img src="/public/comuvigia.png" alt="Logo" className="loading-logo" />
+      <IonContent className="ion-padding ion-text-center auth-loading-screen">
+        <div className="auth-loading-container">
+          <img src="/comuvigia.png" alt="Logo" className="auth-loading-logo" />
           <IonSpinner name="crescent" />
           <p>Verificando autenticación...</p>
         </div>

@@ -249,9 +249,9 @@ function Home() {
   // Loading de camaras y alertas
   if (loadingCameras || loadingAlerts || loadingCameraNames || loadingUsers)
     return (
-      <IonContent className="ion-padding ion-text-center loading-screen">
-        <div className="loading-container">
-          <img src="/public/comuvigia.png" alt="Logo" className="loading-logo" />
+      <IonContent className="ion-padding ion-text-center home-loading-screen">
+        <div className="home-loading-container">
+          <img src="/comuvigia.png" alt="Logo" className="home-loading-logo" />
           <IonSpinner name="crescent" />
           <p>Cargando datos...</p>
         </div>
