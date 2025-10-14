@@ -96,23 +96,6 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
       });
     }, 1000);
   };
-  
-  const fetchSectores = async () => {
-    try {
-      const url = `${BACKEND_URL}/api/sectores/alltime`;
-
-      const response = await fetch(url,
-      {
-        credentials: "include"
-      }
-      );
-      if (!response.ok) throw new Error("Error al obtener sectores");
-      const data = await response.json();
-      setSectores(data);
-    } catch (error) {
-      console.error("Error al cargar sectores:", error);
-    }
-  };
 
   const fetchSectoresPorFecha = async (fechaInicio: string, fechaFin: string) => {
     try {
@@ -357,14 +340,15 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
   return (
     <div className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
       {/* LayerControl UI */}
-      <div className="layer-control-wrapper">
-        <LayerControl
-          heatmapVisible={heatmapVisible}
-          toggleHeatmap={toggleHeatmap}
-          onFetchSectores={fetchSectoresPorFecha} // pasa la nueva función
-        />
-      </div>
-      
+      {user && (user.rol === 1 || user.rol === 2) && (
+        <div className="layer-control-wrapper">
+          <LayerControl
+            heatmapVisible={heatmapVisible}
+            toggleHeatmap={toggleHeatmap}
+            onFetchSectores={fetchSectoresPorFecha} // pasa la nueva función
+          />
+        </div>
+      )}
       <MapContainer
         center={defaultCenter}
         zoom={15}

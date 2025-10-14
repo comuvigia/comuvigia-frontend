@@ -3,3 +3,9 @@
     --border-radius: 20px;
     cursor: pointer;
 }
+
+.notificaciones-list-map,
+.notificaciones-list-sidebar {
+  border-radius: 12px; /* puedes ajustar el valor a lo que quieras */
+  overflow: hidden;     /* para que el contenido no se salga de las esquinas redondeadas */
+}

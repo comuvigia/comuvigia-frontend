@@ -559,7 +559,7 @@ function Home() {
   return (
     <div>
       {user && (user.rol == 1 || user.rol == 2) && (
-        <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '80px', marginLeft: '20px', zIndex: 1000}}>
+        <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '30px', marginLeft: '15px', zIndex: 1000}}>
           <IonFabButton ref={fabButtonRef} onClick={handleShowMantenedoresRef} id="mantenedores-fab">
             <IonIcon icon={add} />
           </IonFabButton>

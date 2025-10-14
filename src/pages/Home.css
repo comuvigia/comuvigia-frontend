@@ -25,6 +25,11 @@ ion-fab-button {
   --background: #1B4965;
   --background-activated: #0f2d3e;
   --background-hover: #15374f;
+  transition: transform 0.2s ease, background 0.2s ease; /* transición suave */
+}
+
+ion-fab-button:hover {
+  transform: scale(1.05); /* aumenta tamaño */
 }
 
 .global-loading{
