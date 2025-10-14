@@ -1,4 +1,4 @@
-import React from 'react';
+import {React, useState} from 'react';
 import { 
   IonHeader, 
   IonToolbar, 
@@ -11,7 +11,8 @@ import {
   IonList, 
   IonItem, 
   IonTitle,
-  IonMenuButton
+  IonMenuButton,
+  IonAlert
 } from '@ionic/react';
 import { notificationsOutline, personOutline, menuOutline, addCircleOutline, exitOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router';
@@ -28,6 +29,7 @@ interface NavBarProps {
 export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }: NavBarProps) {
   const history = useHistory();
   const { user, setUser } = useUser();
+  const [showExitUser, setShowExitUser] = useState(false);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleLogout = async () => {
@@ -96,14 +98,34 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }:
               //color="danger" 
               //size="large"
               style={{fontSize: '19px'}}
-              onClick={handleLogout} 
+              onClick={() => {setShowExitUser(true)}} 
             >
               <IonIcon icon={exitOutline} size='medium'/>
             </IonButton>
           </IonButtons>
-        
         </IonToolbar>
       </IonHeader>
+      <IonAlert
+        isOpen={showExitUser}
+        onDidDismiss={() => {
+          setShowExitUser(false);
+        }}
+        header={'Salir del sistema'}
+        message={`¿Estás seguro de salir del sistema?.`}
+        buttons={[
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+            cssClass: 'alert-button-confirm',
+          },
+          {
+            text: 'Salir',
+            role: 'destructive',
+            handler: handleLogout,
+            cssClass: 'alert-button-cancel',
+          }
+        ]}
+      />
     </>
   );
 }
