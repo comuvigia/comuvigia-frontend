@@ -1,10 +1,25 @@
-/* Fondo degradado para toda la pantalla */
 .login-page {
-  --background: linear-gradient(135deg, #1B4965, #3D8EB9);
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  /* Fondo imagen + gradiente overlay */
+  background: linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0.25)),
+              url('/mapaBlanco.png') no-repeat center center;
+  background-size: cover;
 }
+
+/* Modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .login-page {
+    background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+                url('/mapaNegro.png') no-repeat center center;
+    background-size: cover;
+  }
+}
+
 
 /* Wrapper para centrar el contenido verticalmente */
 .login-wrapper {
@@ -13,12 +28,11 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: 100vh; /* Ocupa toda la altura de la pantalla */
+  min-height: 100vh;
 }
 
-/* Contenedor del formulario */
 .login-container {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
   padding: 30px 25px;
   border-radius: 15px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -27,49 +41,37 @@
   text-align: center;
 }
 
-/* Título */
-.login-title {
-  margin-bottom: 5px;
-  font-size: 1.8rem;
-  color: #1B4965;
+/* Modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .login-container {
+    background: rgba(30,30,30,0.9);
+    color: #fff;
+  }
 }
 
-/* Subtítulo */
-.login-subtitle {
-  margin-bottom: 20px;
-  color: #555;
-}
 
-/* Botón principal */
-.login-button {
-  --background: #1B4965;
-  --border-radius: 10px;
-  margin-top: 20px;
-}
-
-/* Inputs con error */
-.input-error {
-  --highlight-color-focused: #e74c3c;
-  --border-color: #e74c3c;
-}
-
-/* Ajustes para los inputs para que tengan más "aire" vertical */
+/* Inputs y botones */
 .login-container ion-item {
-  --padding-start: 12px;   /* padding izquierdo */
-  --padding-end: 12px;     /* padding derecho */
-  --min-height: 60px;      /* aumenta altura del item */
-  margin-bottom: 15px;     /* espacio entre items */
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --min-height: 60px;
+  margin-bottom: 15px;
   border-radius: 10px;
   border: 1px solid #ccc;
 }
 
 .login-container ion-input {
-  padding: 12px 0; /* padding vertical interno */
+  padding: 12px 0;
   font-size: 1rem;
 }
 
-/* Opcional: cambiar color del label flotante */
 .login-container ion-label {
   font-size: 0.95rem;
   color: #555;
+}
+
+.login-button {
+  --background: #1B4965;
+  --border-radius: 10px;
+  margin-top: 20px;
 }

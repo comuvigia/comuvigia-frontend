@@ -37,50 +37,58 @@ const Login: React.FC = () => {
   };
 
   return (
-    <IonPage>
-      <IonContent className="login-page" fullscreen>
-        <div className="login-wrapper">
-          <div className="login-container">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/comuvigia.png" alt="Logo" style={{padding: '20px'}}/>
-            </div>
-            {/*
-            <h2 className="login-title">Bienvenido a ComuVigIA</h2>
-            <p className="login-subtitle">Inicia sesión para continuar</p>
-            */}
-
-            <IonItem className={mensaje ? 'input-error' : ''}>
-              <IonLabel position="stacked">Usuario</IonLabel>
-              <IonInput
-                value={usuario}
-                onIonInput={(e) => setUsuario(e.detail.value!)}
-              />
-            </IonItem>
-
-            <IonItem className={mensaje ? 'input-error' : ''}>
-              <IonLabel position="stacked">Contraseña</IonLabel>
-              <IonInput
-                type="password"
-                value={contrasena}
-                onIonInput={(e) => setContrasena(e.detail.value!)}
-              />
-            </IonItem>
-
-            <IonButton expand="block" onClick={handleLogin} className="login-button">
-              Entrar
-            </IonButton>
-            <IonToast
-              isOpen={mostrarToast}
-              message={mensaje}
-              duration={2000}
-              color="danger"
-              onDidDismiss={() => setMostrarToast(false)}
-            />
+  <IonPage>
+    <IonContent fullscreen>
+      {/* Fondo con imagen */}
+      <div
+        className="login-background"
+        style={{
+          backgroundImage: `url(${window.matchMedia('(prefers-color-scheme: dark)').matches ? '/mapaNegro.png' : '/mapaBlanco.png'})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 0,
+        }}
+      />
+      
+      {/* Contenido del login */}
+      <div className="login-wrapper" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="login-container">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src="/comuvigia.png" alt="Logo" style={{padding: '20px'}}/>
           </div>
-          <p style={{fontSize: 'small'}}>© 2025 Comuvigia. Todos los derechos reservados.</p>
+
+          <IonItem className={mensaje ? 'input-error' : ''}>
+            <IonLabel position="stacked">Usuario</IonLabel>
+            <IonInput value={usuario} onIonInput={e => setUsuario(e.detail.value!)} />
+          </IonItem>
+
+          <IonItem className={mensaje ? 'input-error' : ''}>
+            <IonLabel position="stacked">Contraseña</IonLabel>
+            <IonInput type="password" value={contrasena} onIonInput={e => setContrasena(e.detail.value!)} />
+          </IonItem>
+
+          <IonButton expand="block" onClick={handleLogin} className="login-button">
+            Entrar
+          </IonButton>
+
+          <IonToast
+            isOpen={mostrarToast}
+            message={mensaje}
+            duration={2000}
+            color="danger"
+            onDidDismiss={() => setMostrarToast(false)}
+          />
         </div>
-      </IonContent>
-    </IonPage>
+        <p style={{fontSize: 'small'}}>© 2025 Comuvigia. Todos los derechos reservados.</p>
+      </div>
+    </IonContent>
+  </IonPage>
+
   );
 };
 
