@@ -208,9 +208,7 @@ function Reportes() {
             {/* Descarga de informe */}
             <div className="card"   style={{
                   gridColumn: '3 / 4', // columna 2
-                  gridRow: '3 / 4',    // fila 1
-                  backgroundColor: 'var(--ion-background-color-2)', // ✅ aquí
-                  
+                  gridRow: '3 / 4',    // fila 1 
                 }}>
               <InformeDescarga />
             </div>

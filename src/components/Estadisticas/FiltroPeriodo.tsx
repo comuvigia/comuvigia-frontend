@@ -26,19 +26,19 @@ const FiltroPeriodo: React.FC<FiltroPeriodoProps> = ({
     <IonCardContent>
       <IonGrid>
         <IonRow>
-          <IonCol size="4">
+          <IonCol>
             <IonItem>
               <IonLabel position="stacked">Fecha inicio</IonLabel>
               <IonInput type="date" value={fechaInicio} onIonInput={(e: any) => setFechaInicio(e.target.value)} />
             </IonItem>
           </IonCol>
-          <IonCol size="4">
+          <IonCol>
             <IonItem>
               <IonLabel position="stacked">Fecha fin</IonLabel>
               <IonInput type="date" value={fechaFin} onIonInput={(e: any) => setFechaFin(e.target.value)} />
             </IonItem>
           </IonCol>
-          <IonCol size="4">
+          <IonCol>
             <IonLabel>Agrupación</IonLabel>
             <IonSelect
               value={agrupacion}
