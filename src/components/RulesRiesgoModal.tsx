@@ -5,7 +5,7 @@ import {
     IonFooter, IonSelect, IonSelectOption, 
     IonRange, IonInput } from '@ionic/react';
 import { useState, useEffect } from 'react';
-import {settingsOutline } from 'ionicons/icons';
+import {settingsOutline, closeOutline } from 'ionicons/icons';
 import './RulesRiesgoModal.css'
 import axios from 'axios';
 
@@ -177,6 +177,9 @@ export function EditRules({ reglas, setReglas }: Props) {
         <IonHeader>
           <IonToolbar>
             <IonTitle>Configurar reglas de riesgo</IonTitle>
+            <IonButton slot="end" fill="clear" color="dark" onClick={() => setModalOpen(false)}>
+                <IonIcon icon={closeOutline} />
+            </IonButton>
           </IonToolbar>
         </IonHeader>
         <IonItem>
@@ -197,7 +200,7 @@ export function EditRules({ reglas, setReglas }: Props) {
               </IonItem>
               <IonItem lines="none">
                   <IonLabel>Tipo de alerta</IonLabel>
-                  <IonSelect value={reglas[activeIndex].tipoAlerta} interface="popover" interfaceOptions={{cssClass: 'custom-popover-rul'}} multiple={true} 
+                  <IonSelect value={reglas[activeIndex].tipoAlerta} multiple={true} 
                   placeholder={String(reglas[activeIndex].tipoAlerta)} onIonChange={e => updateRegla("tipoAlerta", e.detail.value)}>
                     <IonSelectOption className="rul-opt" value="3">Asalto Hogar</IonSelectOption>
                     <IonSelectOption className="rul-opt" value="1">Merodeo</IonSelectOption>
@@ -229,9 +232,8 @@ export function EditRules({ reglas, setReglas }: Props) {
             <IonFooter>
               <IonToolbar>
                   <IonButton size="small" className="buton-rul-green" onClick={guardarReglas}>Guardar</IonButton>
-                  <IonButton size="small" className="buton-rul-blue" onClick={guardarcerrarReglas}>Cerrar y Guardar</IonButton>
                   <IonButton size="small" className="buton-rul-red" onClick={eliminarRegla}>Eliminar</IonButton>
-                  <IonButton size="small" className="buton-rul-gray" onClick={() => setModalOpen(false)}>Cerrar</IonButton>
+                  <IonButton size="small" className="buton-rul-blue" onClick={guardarcerrarReglas}>Cerrar y Guardar</IonButton>
               </IonToolbar>
             </IonFooter>
 

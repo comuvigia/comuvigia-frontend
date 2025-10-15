@@ -374,6 +374,12 @@ function Historial(){
             ubicacion: camara.direccion,
             nombre_camara: camara.nombre
             };
+            
+            // Validar si el body tiene algún valor nulo o undefined
+            if (!body.key || !body.descripcion || !body.hora_suceso || !body.ubicacion || !body.nombre_camara) {
+            alert("No se puede realizar la descarga, inténtelo de nuevo más tarde");
+            return;
+            }
         
             // Hacer la petición al backend Flask para obtener el ZIP
             const response = await fetch(`${CAMERA_URL}/video/download_evidence`, {

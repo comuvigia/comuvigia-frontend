@@ -4,7 +4,7 @@ import {
   IonSelect, IonSelectOption, IonInput 
 } from '@ionic/react';
 import { useState, useEffect } from 'react';
-import { filterOutline } from 'ionicons/icons';
+import { filterOutline, closeOutline } from 'ionicons/icons';
 import './RulesRiesgoModal.css';
 import axios from 'axios';
 
@@ -87,13 +87,16 @@ export function EditFiltros({ filtro, setFiltro }: Props) {
                 <IonHeader>
                     <IonToolbar>
                         <IonTitle>Filtrar Notificaciones</IonTitle>
+                        <IonButton slot="end" fill="clear" color="dark" onClick={() => setModalOpen(false)}>
+                            <IonIcon icon={closeOutline} />
+                        </IonButton>
                     </IonToolbar>
                 </IonHeader>
                 
                 <IonContent className="ion-padding">
                     <IonItem lines="none">
                         <IonLabel>Tipo de alerta</IonLabel>
-                        <IonSelect className="input-borde" value={filtro.tipo} multiple={true} interface="popover" interfaceOptions={{ cssClass: 'custom-popover-rul' }} 
+                        <IonSelect value={filtro.tipo} multiple={true}
                             onIonChange={e => updateFiltro('tipo', e.detail.value)}>
                             <IonSelectOption value={3}>Asalto Hogar</IonSelectOption>
                             <IonSelectOption value={1}>Merodeo</IonSelectOption>
