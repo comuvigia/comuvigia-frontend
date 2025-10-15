@@ -1,10 +1,11 @@
+import React, { useEffect, useState } from 'react';
+
 import { 
     IonButton, IonIcon, IonItem, 
     IonLabel, IonModal, IonHeader, 
     IonToolbar, IonTitle, IonContent, 
     IonFooter, IonSelect, IonSelectOption, 
     IonRange, IonInput } from '@ionic/react';
-import { useState, useEffect } from 'react';
 import {settingsOutline, closeOutline } from 'ionicons/icons';
 import './RulesRiesgoModal.css'
 import axios from 'axios';

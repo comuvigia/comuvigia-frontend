@@ -39,6 +39,7 @@ import Aviso from '../components/Aviso';
 import { useAviso } from '../hooks/useAviso';
 import './Cameras.css';
 import { useUser } from '../UserContext';
+import axios from 'axios';
 
 interface CamerasProps {
   isOpen: boolean;
@@ -63,6 +64,22 @@ const Cameras: React.FC<CamerasProps> = ({
   const [showDeleteCamera, setShowDeleteCamera] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const [sectores, setSectores] = useState<{ id: number, nombre_sector: String}[]>([]);
+  useEffect(() => {
+    const fetchSectores = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/api/reglas/sectores`, {withCredentials: true});
+        setSectores(response.data);
+        console.log('Sectores cargados:', response.data);
+      } catch (err) {
+        console.error('Error cargando sectores:', err);
+      }
+    };
+
+    fetchSectores();
+  }, [])
   
   // Resetear estado cuando se abre/cierra el modal
   useEffect(() => {
@@ -177,6 +194,7 @@ const Cameras: React.FC<CamerasProps> = ({
       autoClose: false
       });
   };
+  
 
   return (
     <>
@@ -329,7 +347,7 @@ const Cameras: React.FC<CamerasProps> = ({
 
                     <IonItem>
                       <IonLabel position="stacked">Sector</IonLabel>
-                      <IonSelect
+                      {/*<IonSelect
                         value={editedCamera?.id_sector || 1}
                         onIonChange={(e) => handleInputChange('id_sector', e.detail.value)}
                         disabled={!isEditing}
@@ -337,6 +355,12 @@ const Cameras: React.FC<CamerasProps> = ({
                         <IonSelectOption value={1}>Sector 1</IonSelectOption>
                         <IonSelectOption value={2}>Sector 2</IonSelectOption>
                         <IonSelectOption value={3}>Sector 3</IonSelectOption>
+                      </IonSelect>*/}
+                      <IonSelect placeholder="Seleccione un sector" 
+                        onIonChange={e => {handleInputChange('id_sector', e.detail.value)}} disabled={!isEditing}>
+                          {sectores.map((s) => (
+                            <IonSelectOption key={s.id} value={s.id}>{s.nombre_sector}</IonSelectOption>
+                          ))}
                       </IonSelect>
                     </IonItem>
 
