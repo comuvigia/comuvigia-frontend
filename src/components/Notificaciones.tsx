@@ -26,6 +26,8 @@ interface NotificacionesPopoverProps {
     handleAccion: (alert: Alert, accion: 'leida' | 'falso_positivo') => void;
     onVerDescripcion: (alert: Alert) => void;
     mostrarCamarasCaidas?: boolean;
+    onMarcarTodasVistas?: () => void; // Función para marcar todas como vistas
+    unseenCount?: number; // Cantidad de alertas no vistas
 }
 
 type FilterType = 'alertas' | 'camaras_caidas';
@@ -39,7 +41,9 @@ export function NotificacionesPopover({
   formatearFecha,
   handleAccion,
   onVerDescripcion,
-  mostrarCamarasCaidas = false
+  mostrarCamarasCaidas = false,
+  onMarcarTodasVistas,
+  unseenCount = 0
  }: NotificacionesPopoverProps) {
   const [accionOpen, setAccionOpen] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
@@ -259,6 +263,34 @@ export function NotificacionesPopover({
             </IonItem>
         ))}
       </IonList>
+      {/* BOTÓN PARA MARCAR TODAS COMO VISTAS */}
+      {onMarcarTodasVistas && (
+        <IonItem style={
+          { display: 'flex',
+            justifyContent: 'center',
+            '--border-width': '0px',
+            '--background': 'transparent'
+          }}>
+          <IonButton 
+            /* slot="end" <-- ELIMINAR ESTO */
+            size="small" 
+            fill="solid" 
+            color={unseenCount > 0 ? "primary" : "medium"}
+            onClick={unseenCount > 0 ? onMarcarTodasVistas : undefined}
+            disabled={unseenCount === 0}
+            style={{
+              '--background': unseenCount > 0 ? '#1B4965' : '#cccccc',
+              '--border-radius': '15px',
+              fontSize: '0.8rem',
+              margin: '0 auto', /* Añadir 'auto' a margin para centrar horizontalmente */
+              height: '32px',
+              '--color': unseenCount > 0 ? 'white' : '#666666'
+            }}
+          >
+            Marcar como vistas ({unseenCount})
+          </IonButton>
+        </IonItem>
+      )}
       {/* ActionSheet para opciones de la alerta seleccionada */}
       <IonActionSheet
         isOpen={accionOpen}

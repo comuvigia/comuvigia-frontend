@@ -335,6 +335,23 @@ function Home() {
       console.error('Error al actualizar alerta:', error);
     }
   };
+
+    // Función para marcar todas las alertas como vistas
+  const marcarTodasComoVistas = async () => {
+    try {
+      await axios.post(`${BACKEND_URL}/api/alertas/marcar-todas-vistas`, {
+        estado: 1, // Confirmadas
+      }, { withCredentials: true });
+
+      // Actualizar el estado local
+      setAlerts(prev => prev.map(alert => ({ ...alert, estado: 1 })));
+      setUnseenAlerts([]); // Limpiar las no vistas
+      setPopoverOpen(false); // Cerrar el popover
+
+    } catch (error) {
+      console.error('Error al marcar todas las alertas como vistas:', error);
+    }
+  };
   
   // Mapeo de estados de alerta
   const estados: { [key: number]: string } = {
@@ -651,6 +668,8 @@ function Home() {
             }}
             onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
             mostrarCamarasCaidas={true}
+            onMarcarTodasVistas={marcarTodasComoVistas} // <- Agregar esta prop
+            unseenCount={unseenCountAlerts} // <- Pasar el contador de no vistas
           />
         </IonContent>
       </IonPopover>
