@@ -121,8 +121,8 @@ export function NotificacionesPopover({
       if (alerta.score_confianza >= (reglas[i].score/100)) {
         valores[i]++;
       }
-      console.log(alerta.id_sector)
-      if (alerta.id_sector == reglas[i].sector){
+      console.log(alerta.sector)
+      if (alerta.sector == reglas[i].sector){
         valores[i]++;
       }
     }
@@ -140,7 +140,7 @@ export function NotificacionesPopover({
     if (filtro.scoreMin != null && alerta.score_confianza < filtro.scoreMin) return false;
     if (filtro.scoreMax != null && alerta.score_confianza > filtro.scoreMax) return false;
 
-    if (filtro.sector != null && alerta.id_sector !== filtro.sector) return false;
+    if (filtro.sector != null && alerta.sector !== filtro.sector) return false;
 
     if (filtro.tipo != null && !filtro.tipo.some(tipo => tipo === alerta.tipo)) return false;
 
@@ -254,7 +254,7 @@ export function NotificacionesPopover({
               <IonLabel onClick={() => onVerDescripcion(alert)} style={{ cursor: 'pointer' }}>
                 {alert.mensaje}
                 {!alert.estado && <span style={{ color: 'light', marginLeft: 8, fontWeight: 600 }}>(Nuevo)</span>}
-                <p>Score: {alert.score_confianza} &nbsp; | &nbsp; {cameraNames[alert.id_camara]} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
+                <p>Score: {alert.score_confianza} &nbsp; | &nbsp; {cameraNames[alert.id_camara]} &nbsp; | &nbsp; Sector: {alert.sector} &nbsp; | &nbsp; Estado: {estados[alert.estado]}</p>
                 <p>{formatearFecha(alert.hora_suceso)}</p>
               </IonLabel>
               <IonButton fill="clear" slot="end" color={"dark"} onClick={() => abrirMenu(alert)}>

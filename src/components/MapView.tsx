@@ -511,7 +511,10 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
           <p><strong>Estado:</strong> <span style={{ color: getEstadoColor(selectedCamera.estado_camara) }}>{getEstado(selectedCamera.estado_camara)}</span></p>
           <p><strong>Última conexión:</strong> {formatDateTimeUTC(selectedCamera.ultima_conexion)}</p>
           {user && (user.rol == 1 || user.rol == 2) && (
-            <p><strong>Alertas:</strong> {selectedCamera.total_alertas ?? 0}</p>
+            <div>
+              <p><strong>Alertas:</strong> {selectedCamera.total_alertas ?? 0}</p>
+              <p><strong>Sector:</strong> {selectedCamera.id_sector ?? 0}</p>
+            </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
             <button onClick={() => setSelectedCamera(null)}>Cerrar panel</button>

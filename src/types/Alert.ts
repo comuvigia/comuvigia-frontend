@@ -9,5 +9,5 @@ export interface Alert {
     descripcion_suceso?: string | null; // Descripción del suceso (opcional, puede ser null)
     estado: number; // Estado de la alerta (0 = "En Observación", 1 = "Confirmada", 2 = "Falso Positivo")
     riesgo?: string; // Clasifica que tan riesgoso es el evento segun score, hora del suceso, sector, tipo de alerta(opcional)
-    id_sector: number // Sector donde se ubica la alerta
+    sector: number // Sector donde se ubica la alerta
 }

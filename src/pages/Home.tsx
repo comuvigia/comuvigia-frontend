@@ -95,6 +95,7 @@ function Home() {
       axios.get<Alert[]>(`${BACKEND_URL}/api/alertas`, { withCredentials: true })
         .then(response => {
           setAlerts(response.data);
+          console.log(response.data)
         })
         .catch(error => {
           console.error('Error al obtener alertas:', error);
@@ -707,7 +708,7 @@ function Home() {
       <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)} className="modal-descripcion">
         <IonContent className="ion-padding">
           <h2>Alerta {alertaSeleccionada?.id}</h2>
-          <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; {alertaSeleccionada ? cameraNames[alertaSeleccionada.id_camara] ?? `ID ${alertaSeleccionada.id_camara}` : ''} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
+          <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; {alertaSeleccionada ? cameraNames[alertaSeleccionada.id_camara] ?? `ID ${alertaSeleccionada.id_camara}` : ''} &nbsp; | &nbsp; Sector: {alertaSeleccionada?.sector} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
           <br />
           {/* Sección de descripción */}
           <h2>Descripción del suceso</h2>
