@@ -55,7 +55,7 @@ export function EditFiltros({ filtro, setFiltro }: Props) {
             }
             });
             setSectores(response.data);
-            console.log('Sectores cargados:', response.data);
+            //console.log('Sectores cargados:', response.data);
         } catch (err) {
             console.error('Error cargando sectores:', err);
         }
@@ -66,14 +66,14 @@ export function EditFiltros({ filtro, setFiltro }: Props) {
 
     const guardar = () => {
         updateFiltro('isUsed', true)
-        console.log('Filtros aplicados:', filtro);
+        //console.log('Filtros aplicados:', filtro);
         setModalOpen(false);
     };
 
     const limpiarFiltros = () => {
         updateFiltro('isUsed', false)
         setFiltro(filtroInicial);
-        console.log('Filtros limpiados');
+        //console.log('Filtros limpiados');
         setModalOpen(false);
     };
 

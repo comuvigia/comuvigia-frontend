@@ -72,7 +72,7 @@ const Cameras: React.FC<CamerasProps> = ({
       try {
         const response = await axios.get(`${BACKEND_URL}/api/reglas/sectores`, {withCredentials: true});
         setSectores(response.data);
-        console.log('Sectores cargados:', response.data);
+        //console.log('Sectores cargados:', response.data);
       } catch (err) {
         console.error('Error cargando sectores:', err);
       }

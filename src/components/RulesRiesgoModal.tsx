@@ -50,7 +50,7 @@ export function EditRules({ reglas, setReglas }: Props) {
       try {
         const response = await axios.get(`${BACKEND_URL}/api/reglas/sectores`, {withCredentials: true});
         setSectores(response.data);
-        console.log('Sectores cargados:', response.data);
+        //console.log('Sectores cargados:', response.data);
       } catch (err) {
         console.error('Error cargando sectores:', err);
       }
@@ -114,7 +114,7 @@ export function EditRules({ reglas, setReglas }: Props) {
       const response = await axios.delete(`${BACKEND_URL}/api/reglas/eliminar`, {
         data: { id: reglaAux.id }, withCredentials: true});
 
-      console.log('Regla eliminada:', response.data.mensaje);
+      //console.log('Regla eliminada:', response.data.mensaje);
 
       setReglas((prev) => prev.filter((r) => r.id !== reglaAux.id));
 
@@ -138,7 +138,7 @@ export function EditRules({ reglas, setReglas }: Props) {
         score: 0,
         sector: -1,
       });
-      console.log('Nueva regla creada');
+      //console.log('Nueva regla creada');
     } catch (err) {
       console.error('Error al crear regla:', err);
     }
@@ -156,14 +156,14 @@ export function EditRules({ reglas, setReglas }: Props) {
     for (const regla of reglas) {
       await guardarReglaBackend(regla);
     }
-    console.log('Reglas sincronizadas con backend');
+    //console.log('Reglas sincronizadas con backend');
     setModalaux(false)
   };
 
   const guardarcerrarReglas = async () => {
     await guardarReglas();
     setModalOpen(false);
-    console.log('Reglas sincronizadas con backend cerrando modal');
+    //console.log('Reglas sincronizadas con backend cerrando modal');
     setModalaux(false)
   };
 

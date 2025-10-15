@@ -128,7 +128,7 @@ function Home() {
 
     axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`, { withCredentials: true })
       .then(response => {
-        console.log("JSON recibido del backend:", response.data);
+        //console.log("JSON recibido del backend:", response.data);
         setCameras(response.data);
       })
       .catch(error => {
@@ -160,7 +160,7 @@ function Home() {
     if(user.rol == 2){
       axios.get<User[]>(`${BACKEND_URL}/api/usuarios`, { withCredentials: true })
         .then(response => {
-          console.log(response.data)
+          //console.log(response.data)
           setUsers(response.data);
         })
         .catch(error => {
@@ -179,12 +179,13 @@ function Home() {
       socket.on('nueva-alerta', (alerta: Alert) => {
         // Agrega la nueva alerta a la lista general y no vistas
         setAlerts(prev => [alerta, ...prev]);
-        setUnseenAlerts(prev => [alerta, ...prev]);
-        setLastAlert(alerta);
-
-        // Muestra toast
-        const id = addToast(`Alerta en ${cameraNames[alerta.id_camara]}`, alerta.score_confianza);
-        setToastId(Number(id));
+        if (alerta.estado === 0){
+          setUnseenAlerts(prev => [alerta, ...prev]);
+          setLastAlert(alerta);
+          // Muestra toast
+          const id = addToast(`Alerta en ${cameraNames[alerta.id_camara]}`, alerta.score_confianza);
+          setToastId(Number(id));
+        }
   
         // Incrementar contador de alertas de la cámara correspondiente
         setCameras(prevCameras =>
@@ -492,15 +493,15 @@ function Home() {
   const handleSaveCamera = async (camera: Camera, isNew: boolean) => {
     try {
       if (isNew) {
-        console.log('Creando nueva cámara: ', camera);
+        //console.log('Creando nueva cámara: ', camera);
         const response = await axios.post(`${BACKEND_URL}/api/camaras`, camera, { withCredentials: true });
-        console.log('Cámara creada exitosamente:', response.data);
+        //console.log('Cámara creada exitosamente:', response.data);
         setCameras(prev => [...prev, response.data]);
         // presentToast('Cámara creada exitosamente', 'success');
       } else {
-        console.log('Actualizando cámara existente: ', camera);
+        //console.log('Actualizando cámara existente: ', camera);
         const response = await axios.patch(`${BACKEND_URL}/api/camaras/${camera.id}`, camera, { withCredentials: true });
-        console.log('Cámara actualizada exitosamente:', response.data);
+        //console.log('Cámara actualizada exitosamente:', response.data);
         setCameras(prev => prev.map(c => 
           c.id === camera.id ? response.data : c
         ));
@@ -522,15 +523,15 @@ function Home() {
     }
 
     try {
-      console.log('Eliminar cámara:', id);
+      //console.log('Eliminar cámara:', id);
       
       const response = await axios.delete(`${BACKEND_URL}/api/camaras/${id}`, { withCredentials: true });
       
-      console.log('Cámara eliminada exitosamente:', response.data);
+      //console.log('Cámara eliminada exitosamente:', response.data);
       setCameras(prev => prev.filter(camera => camera.id !== id));
       
     } catch (error) {
-      console.log('Error eliminando cámara:', error);
+      console.error('Error eliminando cámara:', error);
     }
   };
 
@@ -567,15 +568,15 @@ function Home() {
     }
 
     try {
-      console.log('Eliminar usuario:', id);
+      //console.log('Eliminar usuario:', id);
       
       const response = await axios.delete(`${BACKEND_URL}/api/usuarios/${id}`, { withCredentials: true });
       
-      console.log('Usuario eliminado exitosamente:', response.data);
+      //console.log('Usuario eliminado exitosamente:', response.data);
       setUsers(prev => prev.filter(usuario => usuario.id !== id));
       
     } catch (error) {
-      console.log('Error eliminando usuario:', error);
+      console.error('Error eliminando usuario:', error);
     }
   };
 

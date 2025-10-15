@@ -73,7 +73,7 @@ function Historial(){
       try {
         setLoadingCameras(true);
         const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/`, { withCredentials: true });
-        console.log('Respuesta de cámaras:', response.data);
+        //console.log('Respuesta de cámaras:', response.data);
         setCameras(response.data);
         if (response.data.length > 0) {
             setSelectedCamera(response.data[0]);
@@ -208,7 +208,7 @@ function Historial(){
         socket.on('nueva-alerta', (alerta: Alert) => {
           // Agrega la nueva alerta a la lista general y no vistas
           setAlerts(prev => [alerta, ...prev]);
-          setUnseenAlerts(prev => [alerta, ...prev]);
+          if (alerta.estado === 0) setUnseenAlerts(prev => [alerta, ...prev]);
           // Incrementar contador de alertas de la cámara correspondiente
           setCameras(prevCameras =>
               prevCameras.map(c =>

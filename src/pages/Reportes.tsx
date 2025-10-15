@@ -43,7 +43,7 @@ function Reportes() {
   const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
   const [downloadingClip, setDownloadingClip] = useState<string | null>(null);
   const [downloadingZip, setDownloadingZip] = useState<number | null>(null);
-  const [alertaSeleccionada, setAlertaSeleccionada] = useState<any>(null);
+  const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
   const [editandoDescripcion, setEditandoDescripcion] = useState(false);
   const [nuevaDescripcion, setNuevaDescripcion] = useState("");
   const [guardando, setGuardando] = useState(false)
@@ -181,7 +181,7 @@ function Reportes() {
 
     axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`, { withCredentials: true })
       .then(response => {
-        console.log("JSON recibido del backend:", response.data);
+        //console.log("JSON recibido del backend:", response.data);
         setCameras(response.data);
       })
       .catch(error => {
@@ -213,7 +213,7 @@ function Reportes() {
     if(user.rol == 2){
       axios.get<User[]>(`${BACKEND_URL}/api/usuarios`, { withCredentials: true })
         .then(response => {
-          console.log(response.data)
+          //console.log(response.data)
           setUsers(response.data);
         })
         .catch(error => {
@@ -232,12 +232,14 @@ function Reportes() {
       socket.on('nueva-alerta', (alerta: Alert) => {
         // Agrega la nueva alerta a la lista general y no vistas
         setAlerts(prev => [alerta, ...prev]);
-        setUnseenAlerts(prev => [alerta, ...prev]);
-        setLastAlert(alerta);
+        if (alerta.estado === 0){
+          setUnseenAlerts(prev => [alerta, ...prev]);
+          setLastAlert(alerta);
 
-        // Muestra toast
-        const id = addToast(`Alerta en ${cameraNames[alerta.id_camara]}`, alerta.score_confianza);
-        setToastId(Number(id));
+          // Muestra toast
+          const id = addToast(`Alerta en ${cameraNames[alerta.id_camara]}`, alerta.score_confianza);
+          setToastId(Number(id));
+        }
   
         // Incrementar contador de alertas de la cámara correspondiente
         setCameras(prevCameras =>
@@ -490,7 +492,7 @@ function Reportes() {
 
   return (
     <div className="reportes-page">
-      <Navbar unseenCount={0} onShowNotifications={handleShowNotifications} />
+      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
 
       {/* Popover de notificaciones */}
       <IonPopover

@@ -238,7 +238,7 @@ function Historial(){
             socket.on('nueva-alerta', (alerta: Alert) => {
                 // Agrega la nueva alerta a la lista general y no vistas
                 setAlerts(prev => [alerta, ...prev]);
-                setUnseenAlerts(prev => [alerta, ...prev]);
+                if (alerta.estado === 0) setUnseenAlerts(prev => [alerta, ...prev]);
                 // Incrementar contador de alertas de la cámara correspondiente
                 setCameras(prevCameras =>
                     prevCameras.map(c =>
@@ -470,7 +470,7 @@ function Historial(){
         // Borramos del backend
         try {
             const response = await axios.delete(`${BACKEND_URL}/api/alertas/eliminar-alerta/${id}`, { withCredentials: true });
-            console.log(`Alerta ${id} elminada correctamente:`, response.data);
+            //console.log(`Alerta ${id} elminada correctamente:`, response.data);
         } catch (error) {
             console.error(`Error eliminando Alerta ${id}:`, error);
         }
