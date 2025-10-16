@@ -61,7 +61,7 @@ const App: React.FC = () => (
               <Redirect to="/home" />
             </Route>
             <Route exact path="/historial">
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={[1, 2]}>
                 <Historial />
               </ProtectedRoute>
             </Route>
