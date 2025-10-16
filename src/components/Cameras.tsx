@@ -367,7 +367,7 @@ const Cameras: React.FC<CamerasProps> = ({
                     {/* URLs */}
                     <IonItem>
                       <IonLabel position="stacked">
-                        <IonIcon icon={link} /> URL Interna
+                        <IonIcon icon={link} /> URL Cámara
                       </IonLabel>
                       <IonInput
                         value={editedCamera?.link_camara || ''}
@@ -377,7 +377,7 @@ const Cameras: React.FC<CamerasProps> = ({
                       />
                     </IonItem>
 
-                    <IonItem>
+                    {/*<IonItem>
                       <IonLabel position="stacked">
                         <IonIcon icon={link} /> URL Externa
                       </IonLabel>
@@ -387,7 +387,7 @@ const Cameras: React.FC<CamerasProps> = ({
                         readonly={!isEditing}
                         placeholder="https://..."
                       />
-                    </IonItem>
+                    </IonItem>*/}
 
                     {/* Zona de interés */}
                     <IonItem>
