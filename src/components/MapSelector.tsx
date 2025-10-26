@@ -4,6 +4,7 @@ import { IonModal, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonB
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap, ZoomControl } from 'react-leaflet';
 import L, { LatLngExpression, LatLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import axios from 'axios';
 
 // Fix para los iconos de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -16,7 +17,7 @@ L.Icon.Default.mergeOptions({
 interface MapSelectorProps {
   isOpen: boolean;
   onClose: () => void;
-  onPositionSelect: (lat: number, lng: number) => void;
+  onPositionSelect: (lat: number, lng: number, ubicacion: string) => void;
   initialPosition: [number, number];
 }
 
@@ -122,7 +123,20 @@ const MapSelector: React.FC<MapSelectorProps> = ({
   }, []);
 
   const handleConfirm = () => {
-    onPositionSelect(position[0], position[1]);
+    const lat = position[0].toString().replace(',', '.');;
+    const long = position[1].toString().replace(',', '.');;
+    axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&addressdetails=1`)
+    .then(response => {
+      console.log(response.data)
+      if(response.status === 200){
+        const ubicacion = response.data.name;
+        console.log("Ubicación obtenida:", ubicacion);
+        onPositionSelect(position[0], position[1], ubicacion);
+      }
+    })
+    .catch(error => {
+      console.error('Error al obtener ubicación open street map:', error);
+    })
     onClose();
   };
 
@@ -137,7 +151,7 @@ const MapSelector: React.FC<MapSelectorProps> = ({
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <div style={{ height: '70vh', width: '100%', position: 'relative' }}>
+        <div style={{ height: '38vh', width: '100%', position: 'relative' }}>
           <MapContainer
             center={initialPosition}
             zoom={13}

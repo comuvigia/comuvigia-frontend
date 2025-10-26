@@ -205,11 +205,12 @@ const Cameras: React.FC<CamerasProps> = ({
       <MapSelector
         isOpen={showMapSelector}
         onClose={() => setShowMapSelector(false)}
-        onPositionSelect={(lat, lng) => {
+        onPositionSelect={(lat, lng, ubicacion) => {
           if (editedCamera) {
             setEditedCamera({
               ...editedCamera,
-              posicion: [lat, lng]
+              posicion: [lat, lng],
+              direccion: ubicacion
             });
           }
         }}
@@ -329,28 +330,6 @@ const Cameras: React.FC<CamerasProps> = ({
                       />
                     </IonItem>
 
-                    {/* Posición */}
-                    {/*<IonItem>
-                      <IonLabel position="stacked">Posición (Lat, Lng)</IonLabel>
-                      <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                        <IonInput
-                          value={editedCamera?.posicion[0]}
-                          onIonInput={(e) => handlePositionChange(0, e.detail.value!)}
-                          readonly={!isEditing}
-                          placeholder="Latitud"
-                          type="number"
-                          style={{ flex: 1 }}
-                        />
-                        <IonInput
-                          value={editedCamera?.posicion[1]}
-                          onIonInput={(e) => handlePositionChange(1, e.detail.value!)}
-                          readonly={!isEditing}
-                          placeholder="Longitud"
-                          type="number"
-                          style={{ flex: 1 }}
-                        />
-                      </div>
-                    </IonItem>*/}
                     {/* Posición - Versión Mejorada */}
                     <IonItem>
                       <IonLabel position="stacked">Posición (Lat, Lng) *</IonLabel>
@@ -371,18 +350,22 @@ const Cameras: React.FC<CamerasProps> = ({
                           type="number"
                           style={{ flex: 1 }}
                         />
-                        <IonButton 
-                          fill="outline" 
-                          onClick={() => setShowMapSelector(true)}
-                          style={{'--border-radius': '8px' }}
-                        >
-                          <IonIcon icon={location} slot="start" />
-                          Mapa
-                        </IonButton>
+                        {isEditing && (
+                          <IonButton 
+                            fill="outline" 
+                            onClick={() => setShowMapSelector(true)}
+                            style={{'--border-radius': '8px' }}
+                          >
+                            <IonIcon icon={location} slot="start" />
+                            Mapa
+                          </IonButton>
+                        )}
                       </div>
-                      <IonNote color="medium" style={{ fontSize: '12px', marginTop: '5px', marginBottom: '10px' }}>
-                        Haz clic en <b>Mapa</b> para seleccionar la ubicación de la cámara.
-                      </IonNote>
+                      {isEditing && (
+                        <IonNote color="medium" style={{ fontSize: '12px', marginTop: '5px', marginBottom: '10px' }}>
+                          Haz clic en <b>Mapa</b> para seleccionar la ubicación de la cámara.
+                        </IonNote>
+                      )}
                     </IonItem>
 
                     {/* Estado y Sector */}
