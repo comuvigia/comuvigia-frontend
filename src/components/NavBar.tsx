@@ -59,6 +59,7 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }:
               <IonItem routerLink='/historial' className='item-nav'>Historial</IonItem>
               <IonItem routerLink='/grabaciones' className='item-nav'>Grabaciones</IonItem>
               <IonItem routerLink='/reportes' className='item-nav'>Reportes</IonItem>
+              <IonItem routerLink='/feed_camaras' className='item-nav'>Feed Cámaras</IonItem>
               {/*<IonItem>Perfil</IonItem>
               <IonItem>Cerrar sesión</IonItem>*/}
             </IonList>
