@@ -9,6 +9,7 @@ import Historial from './pages/Historial';
 import Grabaciones from './pages/Grabaciones';
 import Reportes from './pages/Reportes';
 import Login from './pages/Login';
+import FeedCamaras from './pages/FeedCamaras';
 import React from 'react';
 import { ToastProvider } from "./components/ToastProvider";
 /* Core CSS required for Ionic components to work properly */
@@ -73,6 +74,11 @@ const App: React.FC = () => (
             <Route exact path="/reportes">
               <ProtectedRoute allowedRoles={[1, 2]}>
                 <Reportes />
+              </ProtectedRoute>
+            </Route>
+            <Route exact path="/feed_camaras">
+              <ProtectedRoute allowedRoles={[1, 2]}>
+                <FeedCamaras />
               </ProtectedRoute>
             </Route>
             <Route>
