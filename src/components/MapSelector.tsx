@@ -130,8 +130,9 @@ const MapSelector: React.FC<MapSelectorProps> = ({
       console.log(response.data)
       if(response.status === 200){
         const ubicacion = response.data.name;
-        console.log("Ubicación obtenida:", ubicacion);
-        onPositionSelect(position[0], position[1], ubicacion);
+        const ubicacion_alternativa = response.data.address.road;
+        console.log("Ubicaciones obtenidas:", ubicacion, ubicacion_alternativa);
+        onPositionSelect(position[0], position[1], ubicacion || ubicacion_alternativa);
       }
     })
     .catch(error => {

@@ -290,10 +290,19 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
       }
     });
 
+    socket.on('camera_deleted', (data: { cameraId: number }) => {
+      console.log('🗑️ Cámara eliminada:', data.cameraId);
+      if (cameras && onCamerasUpdate) {
+        const updatedCameras = cameras.filter(cam => cam.id !== data.cameraId);
+        onCamerasUpdate(updatedCameras);
+      }
+    });
+
     // Limpieza al desmontar el componente
     return () => {
       socketCam.off('estado-camara');
       socket.off('actualizacion-alertas');
+      socket.off('camera_deleted');
     };
   }, [user, cameras, onCamerasUpdate]);
 
