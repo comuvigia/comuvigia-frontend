@@ -23,7 +23,8 @@ import {
   IonCol,
   IonToggle,
   IonChip,
-  IonBadge
+  IonBadge,
+  IonNote
 } from '@ionic/react';
 import { 
   close, 
@@ -40,6 +41,8 @@ import { useAviso } from '../hooks/useAviso';
 import './Cameras.css';
 import { useUser } from '../UserContext';
 import axios from 'axios';
+import { location } from 'ionicons/icons';
+import MapSelector from '../components/MapSelector';
 
 interface CamerasProps {
   isOpen: boolean;
@@ -64,6 +67,7 @@ const Cameras: React.FC<CamerasProps> = ({
   const [showDeleteCamera, setShowDeleteCamera] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [showMapSelector, setShowMapSelector] = useState(false);
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [sectores, setSectores] = useState<{ id: number, nombre_sector: String}[]>([]);
@@ -94,10 +98,11 @@ const Cameras: React.FC<CamerasProps> = ({
   // Inicializar cámara para crear
   const handleCreateCamera = () => {
     const tempId = Math.min(-1, ...cameras.map(c => c.id)) - 1;
+    const initialPosition: [number, number] = [-33.523, -70.604];
     const newCamera: Camera = {
       id: tempId,
       nombre: '',
-      posicion: [0, 0],
+      posicion: initialPosition,
       direccion: '',
       estado_camara: false,
       ultima_conexion: new Date().toISOString(),
@@ -195,9 +200,22 @@ const Cameras: React.FC<CamerasProps> = ({
       });
   };
   
-
   return (
     <>
+      <MapSelector
+        isOpen={showMapSelector}
+        onClose={() => setShowMapSelector(false)}
+        onPositionSelect={(lat, lng, ubicacion) => {
+          if (editedCamera) {
+            setEditedCamera({
+              ...editedCamera,
+              posicion: [lat, lng],
+              direccion: ubicacion
+            });
+          }
+        }}
+        initialPosition={editedCamera?.posicion || [-33.523, -70.604]}
+      />
       <IonModal isOpen={isOpen} onDidDismiss={onClose} className="cameras-modal">
         <IonHeader>
           <IonToolbar>
@@ -312,10 +330,10 @@ const Cameras: React.FC<CamerasProps> = ({
                       />
                     </IonItem>
 
-                    {/* Posición */}
+                    {/* Posición - Versión Mejorada */}
                     <IonItem>
-                      <IonLabel position="stacked">Posición (Lat, Lng)</IonLabel>
-                      <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                      <IonLabel position="stacked">Posición (Lat, Lng) *</IonLabel>
+                      <div style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}>
                         <IonInput
                           value={editedCamera?.posicion[0]}
                           onIonInput={(e) => handlePositionChange(0, e.detail.value!)}
@@ -332,7 +350,22 @@ const Cameras: React.FC<CamerasProps> = ({
                           type="number"
                           style={{ flex: 1 }}
                         />
+                        {isEditing && (
+                          <IonButton 
+                            fill="outline" 
+                            onClick={() => setShowMapSelector(true)}
+                            style={{'--border-radius': '8px' }}
+                          >
+                            <IonIcon icon={location} slot="start" />
+                            Mapa
+                          </IonButton>
+                        )}
                       </div>
+                      {isEditing && (
+                        <IonNote color="medium" style={{ fontSize: '12px', marginTop: '5px', marginBottom: '10px' }}>
+                          Haz clic en <b>Mapa</b> para seleccionar la ubicación de la cámara.
+                        </IonNote>
+                      )}
                     </IonItem>
 
                     {/* Estado y Sector */}
