@@ -20,7 +20,7 @@ interface EstadisticasTotalesProps {
 }
 
 const EstadisticasTotales: React.FC<EstadisticasTotalesProps> = ({ estadisticas_totales }) => (
-  <IonCard>
+  <IonCard id='estadisticas-totales'>
     <IonCardHeader>
       <IonCardTitle>Estadísticas Totales</IonCardTitle>
     </IonCardHeader>

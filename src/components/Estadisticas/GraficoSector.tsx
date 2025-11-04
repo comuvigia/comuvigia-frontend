@@ -5,7 +5,7 @@ import { BarChartSector } from '../Charts';
 import './DetalleSectores.css'
 
 const GraficoSector: React.FC<{ data: any }> = ({ data }) => (
-  <IonCard className="centrar">
+  <IonCard id='grafico-sector' className="centrar">
     <IonCardHeader>
       <IonCardTitle>Distribución por Sector</IonCardTitle>
     </IonCardHeader>

@@ -13,7 +13,7 @@ interface Sector {
 }
 
 const DetalleSectores: React.FC<{ sectores: Sector[] }> = ({ sectores }) => (
-  <IonCard className='ion-card-detalle'>
+  <IonCard id='detalle-sectores' className='ion-card-detalle'>
     <IonCardHeader>
       <IonCardTitle>Detalle por Sectores</IonCardTitle>
     </IonCardHeader>
