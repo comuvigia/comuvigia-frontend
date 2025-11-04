@@ -252,7 +252,17 @@ export default function Historial() {
         <IonButton color="primary" onClick={handleSearch} disabled={searching}>{searching ? 'Buscando...' : 'Buscar'}</IonButton>
         <IonButton color="medium" onClick={handleClearFilters}>Limpiar filtros</IonButton>
       </div>
-
+        {filteredAlerts.length === 0 ? <h1  
+        style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      margin: 0,
+      fontSize: '1.5rem',
+      color: 'var(--ion-text-color)',
+      backgroundColor: 'var(--ion-background-color)',
+    }}>No hay alertas disponibles</h1>: 
       <div className="historial-page">
         <div className="cameras-list">
           <IonTitle>Cámaras</IonTitle>
@@ -305,6 +315,7 @@ export default function Historial() {
           </div>
         )}
       </div>
+      }
     </>
   );
 }
