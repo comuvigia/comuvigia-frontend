@@ -46,7 +46,8 @@ const DelitosLineChart: React.FC<Props> = ({ idCamara }) => {
       try {
         console.log(`${BACKEND_URL}/api/alertas/estadisticas-camara?id_camara=${idCamara}&dias=${dias}&group=${group}`);
         const response = await fetch(
-          `${BACKEND_URL}/api/alertas/estadisticas-camara?id_camara=${idCamara}&dias=${dias}&group=${group}`
+          `${BACKEND_URL}/api/alertas/estadisticas-camara?id_camara=${idCamara}&dias=${dias}&group=${group}`,
+          { credentials: 'include' }
         );
         const result = await response.json();
         console.log("📥 Datos originales:", result);
