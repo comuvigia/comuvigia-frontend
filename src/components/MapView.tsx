@@ -391,13 +391,13 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
         </div>
       )}
       {/* Botón para Localizar La Florida (Bottom-Right) */}
-      {user && (user.rol === 1 || user.rol === 2) && (
-        <div className="florida-locate-button-wrapper">
-          <IonButton onClick={handleShowFloridaPolygon} color="light" className="florida-locate-button">
-            <IonIcon slot="icon-only" icon={locateOutline} />
-          </IonButton>
-        </div>
-      )}
+      
+      <div className="florida-locate-button-wrapper">
+        <IonButton onClick={handleShowFloridaPolygon} color="light" className="florida-locate-button">
+          <IonIcon slot="icon-only" icon={locateOutline} />
+        </IonButton>
+      </div>
+      
       <MapContainer
         center={defaultCenter}
         zoom={15}
@@ -507,6 +507,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
               color: getComputedStyle(document.documentElement).getPropertyValue('--ion-color-primary').trim(),
               weight: 2,
             }}
+            interactive={false}
           />
         )}
       </MapContainer>
