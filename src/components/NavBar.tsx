@@ -26,7 +26,7 @@ interface NavBarProps {
   unseenCount: number;
   onShowNotifications?: (e: React.MouseEvent) => void;
   onShowMantenedores?: (e: React.MouseEvent) => void;
-  onShowTutorial: () => void;
+  onShowTutorial?: () => void;
   searchText?: string;
   onSearchChange?: (text: string, results: Camera[]) => void;
   searchContainerRef?: React.RefObject<HTMLDivElement | null>;
