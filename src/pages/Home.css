@@ -22,7 +22,7 @@ ion-fab {
 }
 
 ion-fab-button {
-  --background: #1B4965;
+  --background: var(--ion-color-primary);
   --background-activated: #0f2d3e;
   --background-hover: #15374f;
   transition: transform 0.2s ease, background 0.2s ease; /* transición suave */

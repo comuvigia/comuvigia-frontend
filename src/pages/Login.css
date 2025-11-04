@@ -20,8 +20,6 @@
   }
 }
 
-
-/* Wrapper para centrar el contenido verticalmente */
 .login-wrapper {
   display: flex;
   flex-direction: column;
@@ -32,48 +30,41 @@
 }
 
 .login-container {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(var(--ion-background-color-rgb), 0.9);
   padding: 30px 25px;
   border-radius: 15px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   width: 90%;
   max-width: 400px;
   text-align: center;
-}
-
-/* Modo oscuro */
-@media (prefers-color-scheme: dark) {
-  .login-container {
-    background: rgba(30,30,30,0.9);
-    color: #fff;
-  }
+  color: var(--ion-text-color);
 }
 
 /* Inputs y botones */
-
-/* Ajustes para los inputs para que tengan más "aire" vertical */
 .login-container ion-item {
   --padding-start: 12px;
   --padding-end: 12px;
   --min-height: 60px;
   margin-bottom: 15px;
   border-radius: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(var(--ion-text-color), 0.3);
+  background: transparent;
 }
 
 .login-container ion-input {
   padding: 12px 0;
   font-size: 1rem;
+  color: var(--ion-text-color);
 }
 
 .login-container ion-label {
   font-size: 0.95rem;
-  color: #555;
+  color: var(--ion-text-color);
 }
 
 .login-button {
-  --background: #1B4965;
+  --background: var(--ion-color-primary);
   --border-radius: 10px;
   margin-top: 20px;
-  --color: #f0f0f0;
+  --color: var(--ion-color-primary-contrast);
 }
