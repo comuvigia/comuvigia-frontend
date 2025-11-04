@@ -347,7 +347,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
   const toggleHeatmap = () => setHeatmapVisible((v) => !v);
 
   return (
-    <div className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
+    <div id='map-view' className="map-layout" style={{ height: `calc(100vh - ${headerHeight}px)` }}>
       {/* LayerControl UI */}
       {user && (user.rol === 1 || user.rol === 2) && (
         <div className="layer-control-wrapper">

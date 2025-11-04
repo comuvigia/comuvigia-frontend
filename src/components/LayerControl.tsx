@@ -62,6 +62,7 @@ export const LayerControl: React.FC<LayerControlProps> = ({
   return (
     <div className="layer-control-fab-container" ref={menuRef}>
       <button
+        id="heatmap-fab"
         className="layer-control-fab"
         onClick={() => setOpen((prev) => !prev)}
         aria-label="Mostrar capas"
