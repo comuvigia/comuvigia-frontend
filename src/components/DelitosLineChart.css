@@ -1,0 +1,81 @@
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* ocupa todo el espacio disponible */
+  height: auto;
+  min-height: 300px; /* para evitar colapso */
+}
+
+.chart-content {
+  flex: 1 1 auto;
+  min-height: 0; /* crucial para que ResponsiveContainer calcule bien la altura */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-svg-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.chart-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chart-buttons button {
+  padding: 6px 10px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap; /* evita que el texto se rompa */
+  transition: background .12s ease;
+}
+
+.chart-buttons button:hover {
+  background: #ddd;
+}
+
+.chart-buttons .active {
+  background: #4a90e2;
+  color: #fff;
+}
+
+.chart-loading,
+.chart-error,
+.chart-empty {
+  text-align: center;
+  color: #555;
+  padding: 1rem;
+}
+
+.chart-stats {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}

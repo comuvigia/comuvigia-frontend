@@ -12,6 +12,8 @@ import { IonToggle } from '@ionic/react';
 import { io } from 'socket.io-client';
 import { SectorLayer, Sector } from "./SectorLayer";
 import { LayerControl } from "./LayerControl";
+import DelitosLineChart from "./DelitosLineChart";
+
 
 const BUCKET_URL = import.meta.env.VITE_BUCKET_URL;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -164,45 +166,29 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
 
   // Función para cerrar con llamada al backend
   const handleRevisarWhitBackend = async (cam: Camera) => {
-        setSelectedCamera(cam); // Abrir el panel de la cámara seleccionada
-        if(cam.link_camara_externo === "") {
-          try {
-            // Usando fetch (recomendado si ya estás usando fetch en el backend)
-            // @ts-ignore
-            const response = await fetch(`${BACKEND_URL}/casos_prueba`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                id: cam.id, // o el valor correcto
-                link_camara: cam.link_camara
-              })
-            });
+    setSelectedCamera(cam); 
 
-            if (!response.ok) {
-              throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
-            }
+    setActiveTab("estadisticas");
+    if (cam.link_camara_externo === "") {
+      try {
+        const response = await fetch(`${BACKEND_URL}/casos_prueba`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: cam.id, link_camara: cam.link_camara })
+        });
 
-            const result = await response.json();
-              
-            if (result.success) {
-              console.log('Notificación exitosa al backend:', result);
-            } else {
-              console.warn('La solicitud no fue exitosa:', result.message);
-            }
-          } catch (error) {
-              console.error('Error al notificar al backend', error);
-              // Opcional: Mostrar alerta al usuario
-              // alert('Error al conectar con el servidor. Intente nuevamente.');
-          } finally {
-            setSelectedCamera(null); 
-          }
-        }
-        else{
-          console.log('Cámara con streaming externo, no se notifica al backend.');
-        }
+        const result = await response.json();
+        console.log('Notificación exitosa al backend:', result);
+      } catch (error) {
+        console.error('Error al notificar al backend', error);
+      } 
+      // ❌ elimina este:
+      // finally { setSelectedCamera(null); }
+    } else {
+      console.log('Cámara con streaming externo, no se notifica al backend.');
+    }
   };
+
 
   const createCustomIcon = (color: string, count: number = 0) =>
     L.divIcon({
@@ -490,7 +476,11 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
 
           <div className="tab-content"> 
               {activeTab === 'video' && <div>Contenido de Video (aún vacío)</div>}
-              {activeTab === 'estadisticas' && <div>Contenido de Estadísticas (aún vacío)</div>}
+              {activeTab === 'estadisticas' && <div>
+                <DelitosLineChart idCamara={selectedCamera.id} />
+                </div>}
+
+              
               {activeTab === 'alertas' && selectedCamera && alerts && (
                 <NotificacionesPopover
                   alerts={alerts}
