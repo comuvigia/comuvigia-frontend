@@ -14,7 +14,7 @@ import {
   IonMenuButton,
   IonAlert
 } from '@ionic/react';
-import { notificationsOutline, personOutline, menuOutline, addCircleOutline, exitOutline } from 'ionicons/icons';
+import { notificationsOutline, personOutline, menuOutline, addCircleOutline, exitOutline, helpCircleOutline  } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router';
 import './NavBar.css';
 import { useUser } from '../UserContext';
@@ -26,14 +26,14 @@ interface NavBarProps {
   unseenCount: number;
   onShowNotifications?: (e: React.MouseEvent) => void;
   onShowMantenedores?: (e: React.MouseEvent) => void;
+  onShowTutorial: () => void;
   searchText?: string;
   onSearchChange?: (text: string, results: Camera[]) => void;
   searchContainerRef?: React.RefObject<HTMLDivElement | null>;
   cameras?: Camera[];
 }
 
-
-export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, cameras, searchText, onSearchChange, searchContainerRef}: NavBarProps) {
+export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, onShowTutorial, cameras, searchText, onSearchChange, searchContainerRef}: NavBarProps) {
   const history = useHistory();
   const location = useLocation();
   const { user, setUser } = useUser();
@@ -81,7 +81,7 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, c
           <IonButtons slot="start">
             {/* Botón del menú hamburguesa */}
             {user && (user.rol == 1 || user.rol == 2) && (
-              <IonMenuButton autoHide={false}>
+              <IonMenuButton id='navbar-menu' autoHide={false}>
                 <IonIcon slot="icon-only" icon={menuOutline} />
               </IonMenuButton>
             )}
@@ -116,8 +116,13 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, c
             */}
             {user && (user.rol == 1 || user.rol == 2) && (
               <IonButton onClick={onShowNotifications}>
-                <IonIcon icon={notificationsOutline} />
+                <IonIcon id='notifications-icon' icon={notificationsOutline} />
                 {unseenCount > 0 && <IonBadge color="danger">{unseenCount}</IonBadge>}
+              </IonButton>
+            )}
+            {user && (user.rol == 1 || user.rol == 2) && (
+              <IonButton onClick={onShowTutorial}>
+                <IonIcon icon={helpCircleOutline} />
               </IonButton>
             )}
             <IonButton 
