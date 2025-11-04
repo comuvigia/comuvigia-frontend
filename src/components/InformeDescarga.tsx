@@ -125,7 +125,7 @@ const InformeDescarga: React.FC = () => {
 };
 
   return (
-    <IonCard >
+    <IonCard id="informe-descarga">
       <IonCardHeader>
         <IonCardTitle>Descarga de informe</IonCardTitle>
       </IonCardHeader>

@@ -30,6 +30,7 @@ import { NotificacionesPopover } from '../components/Notificaciones';
 import { io } from 'socket.io-client';
 import { useUser } from '../UserContext';
 import { useToast } from "../components/ToastProvider";
+import FeedCamarasTutorial from "../components/FeedCamarasTutorial";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const BUCKET_URL = import.meta.env.VITE_BUCKET_URL;
@@ -238,6 +239,16 @@ const FeedCamaras: React.FC = () => {
       };
     }
   }, []);
+
+  const [showTutorial, setShowTutorial] = useState(false);
+    
+  const handleShowTutorial = () => {
+      setShowTutorial(true);
+  };
+
+  const handleFinishTutorial = () => {
+      setShowTutorial(false);
+  };
 
   // Loading de camaras y alertas
   if (loadingCameras || loadingAlerts || loadingCameraNames)
@@ -455,10 +466,12 @@ const FeedCamaras: React.FC = () => {
 
   return (
     <div className="feed-page">
+      <FeedCamarasTutorial run={showTutorial} onFinish={handleFinishTutorial} />
       <Navbar
         unseenCount={unseenCountAlerts}
         onShowNotifications={handleShowNotifications}
         onShowMantenedores={handleShowMantenedores}
+        onShowTutorial={handleShowTutorial}
       />
 
       <IonPopover

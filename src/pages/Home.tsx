@@ -29,6 +29,7 @@ import { useUser } from '../UserContext';
 import { useToast } from "../components/ToastProvider";
 import SuggestionList from '../components/SuggestionList';
 import '../components/SuggestionList.css';
+import HomeTutorial from '../components/HomeTutorial';
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -279,6 +280,16 @@ function Home() {
       };
     }
   }, []);
+
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  const handleShowTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleFinishTutorial = () => {
+    setShowTutorial(false);
+  };
 
   // Loading de camaras y alertas
   if (loadingCameras || loadingAlerts || loadingCameraNames || loadingUsers)
@@ -615,6 +626,7 @@ function Home() {
 
   return (
     <div>
+      <HomeTutorial run={showTutorial} onFinish={handleFinishTutorial} />
       {user && (user.rol == 1 || user.rol == 2) && (
         <IonFab vertical="bottom" horizontal="start" slot="fixed" style={{marginBottom: '30px', marginLeft: '15px', zIndex: 1000}}>
           <IonFabButton ref={fabButtonRef} onClick={handleShowMantenedoresRef} id="mantenedores-fab">
@@ -626,6 +638,7 @@ function Home() {
         unseenCount={unseenCountAlerts} 
         onShowNotifications={handleShowNotifications} 
         onShowMantenedores={handleShowMantenedores} 
+        onShowTutorial={handleShowTutorial}
         cameras={cameras} 
         searchText={searchText}
         onSearchChange={handleSearchChange}

@@ -24,6 +24,7 @@ import { io } from 'socket.io-client';
 import axios from 'axios';
 import './Reportes.css';
 import '../components/ReporteEstadisticas.css'
+import ReportesTutorial from '../components/ReportesTutorial';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -223,6 +224,16 @@ function Reportes() {
     }
     else setLoadingUsers(false);
   }, []);
+
+  const [showTutorial, setShowTutorial] = useState(false);
+  
+  const handleShowTutorial = () => {
+      setShowTutorial(true);
+  };
+
+  const handleFinishTutorial = () => {
+      setShowTutorial(false);
+  };
 
   // Manejo WebSocket para recibir nuevas alertas
   useEffect(() => {
@@ -492,7 +503,8 @@ function Reportes() {
 
   return (
     <div className="reportes-page">
-      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
+      <ReportesTutorial run={showTutorial} onFinish={handleFinishTutorial} />
+      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowTutorial={handleShowTutorial}/>
 
       {/* Popover de notificaciones */}
       <IonPopover

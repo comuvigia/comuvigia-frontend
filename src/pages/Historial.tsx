@@ -12,6 +12,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Historial.css';
 import { useUser } from '../UserContext';
+import HistorialTutorial from '../components/HistorialTutorial';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -97,6 +98,16 @@ export default function Historial() {
     } catch (err) {
       console.error('Error al obtener alertas no vistas:', err);
     }
+  };
+
+  const [showTutorial, setShowTutorial] = useState(false);
+  
+  const handleShowTutorial = () => {
+      setShowTutorial(true);
+  };
+
+  const handleFinishTutorial = () => {
+      setShowTutorial(false);
   };
 
   // ---------- Filtro global ----------
@@ -193,9 +204,11 @@ export default function Historial() {
   // ---------- Render ----------
   return (
     <>
+      <HistorialTutorial run={showTutorial} onFinish={handleFinishTutorial} />
       <Navbar
         unseenCount={unseenAlerts.length}
         onShowNotifications={(e) => { setPopoverEvent(e.nativeEvent); setPopoverOpen(true); }}
+        onShowTutorial={handleShowTutorial}
       />
 
       <IonPopover isOpen={popoverOpen} event={popoverEvent} onDidDismiss={() => setPopoverOpen(false)} side="bottom" alignment="end">
