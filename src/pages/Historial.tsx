@@ -4,9 +4,9 @@ import { Camera } from '../types/Camera';
 import { Alert } from '../types/Alert';
 import {
   IonLabel, IonList, IonItem, IonPopover, IonContent, IonButton, IonSpinner,
-  IonChip, IonIcon, IonTitle, IonSelectOption, IonSearchbar, IonSelect
+  IonChip, IonIcon, IonTitle, IonSelectOption, IonSearchbar, IonSelect, IonTextarea
 } from '@ionic/react';
-import { alertCircle, time, checkmarkCircle, closeCircleOutline } from 'ionicons/icons';
+import { alertCircle, time, checkmarkCircle, closeCircleOutline, create, trash } from 'ionicons/icons';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import axios from 'axios';
 import { io } from 'socket.io-client';
@@ -25,7 +25,6 @@ export default function Historial() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState(['id', 'descripcion_suceso', 'mensaje']);
   const [modeOfSearch, setModeOfSearch] = useState<'or' | 'and'>('or');
-
   const [searching, setSearching] = useState(false);
 
   const [allCameras, setAllCameras] = useState<Camera[]>([]);
@@ -47,6 +46,13 @@ export default function Historial() {
   const [popoverEvent, setPopoverEvent] = useState<MouseEvent | undefined>(undefined);
 
   const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Estados para edición/eliminación
+  const [editandoDescripcion, setEditandoDescripcion] = useState(false);
+  const [nuevaDescripcion, setNuevaDescripcion] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
 
   // ---------- Fetchers ----------
   const fetchCameras = async () => {
@@ -100,15 +106,9 @@ export default function Historial() {
     }
   };
 
-  const [showTutorial, setShowTutorial] = useState(false);
-  
-  const handleShowTutorial = () => {
-      setShowTutorial(true);
-  };
-
-  const handleFinishTutorial = () => {
-      setShowTutorial(false);
-  };
+  // ---------- Tutorial ----------
+  const handleShowTutorial = () => setShowTutorial(true);
+  const handleFinishTutorial = () => setShowTutorial(false);
 
   // ---------- Filtro global ----------
   const handleSearch = async () => {
@@ -149,6 +149,44 @@ export default function Historial() {
     if (allCameras.length > 0) setSelectedCamera(allCameras[0]);
     setFilteredAlerts(allAlerts.filter(a => a.id_camara === (allCameras[0]?.id ?? 0)));
     setSelectedAlert(null);
+  };
+
+  // ---------- Handlers para editar / eliminar ----------
+  const handleEditarDescripcion = () => {
+    if (selectedAlert) {
+      setEditandoDescripcion(true);
+      setNuevaDescripcion(selectedAlert.descripcion_suceso || '');
+    }
+  };
+
+  const handleGuardarDescripcion = async () => {
+    if (!selectedAlert) return;
+    setGuardando(true);
+    try {
+      await axios.put(`${BACKEND_URL}/api/alertas/${selectedAlert.id}`, { descripcion_suceso: nuevaDescripcion }, { withCredentials: true });
+      setAlerts(prev => prev.map(a => a.id === selectedAlert.id ? { ...a, descripcion_suceso: nuevaDescripcion } : a));
+      setSelectedAlert(prev => prev ? { ...prev, descripcion_suceso: nuevaDescripcion } : null);
+      setEditandoDescripcion(false);
+    } catch (err) {
+      console.error('Error al guardar descripción:', err);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleEliminarAlerta = async () => {
+    if (!selectedAlert) return;
+    if (!window.confirm('¿Seguro que deseas eliminar esta alerta?')) return;
+    setEliminando(true);
+    try {
+      await axios.delete(`${BACKEND_URL}/api/alertas/${selectedAlert.id}`, { withCredentials: true });
+      setAlerts(prev => prev.filter(a => a.id !== selectedAlert.id));
+      setMostrarDescripcion(false);
+    } catch (err) {
+      console.error('Error al eliminar alerta:', err);
+    } finally {
+      setEliminando(false);
+    }
   };
 
   // ---------- useEffects ----------
@@ -221,7 +259,7 @@ export default function Historial() {
             cameraNames={cameraNames}
             variant="sidebar"
             formatearFecha={formatearFecha}
-            handleAccion={async (alert, accion) => { }}
+            handleAccion={async () => { }}
             onVerDescripcion={(alerta) => { setSelectedAlert(alerta); setMostrarDescripcion(true); }}
             mostrarCamarasCaidas={true}
           />
@@ -232,90 +270,145 @@ export default function Historial() {
         <IonSearchbar
           placeholder="Buscar alertas..."
           value={searchQuery}
-          onIonChange={e => {
-            const value = e.detail.value!;
+          onIonInput={e => {
+            const value = (e.target as HTMLIonSearchbarElement).value || '';
             setSearchQuery(value);
             if (!value.trim()) handleClearFilters();
           }}
-          onKeyDown={e => e.key === 'Enter' && handleSearch()}
+          onKeyDown={e => {
+            if (e.key === 'Enter') handleSearch();
+          }}
         />
+
         <IonSelect multiple value={activeFilters} onIonChange={e => setActiveFilters(e.detail.value)} interface="popover">
           <IonSelectOption value="id">ID</IonSelectOption>
           <IonSelectOption value="descripcion_suceso">Descripción</IonSelectOption>
           <IonSelectOption value="mensaje">Delito</IonSelectOption>
         </IonSelect>
 
-        <IonSelect  value={modeOfSearch} onIonChange={e => setModeOfSearch(e.detail.value)} interface="popover">
+        <IonSelect value={modeOfSearch} onIonChange={e => setModeOfSearch(e.detail.value)} interface="popover">
           <IonSelectOption value="or">OR</IonSelectOption>
           <IonSelectOption value="and">AND</IonSelectOption>
         </IonSelect>
         <IonButton color="primary" onClick={handleSearch} disabled={searching}>{searching ? 'Buscando...' : 'Buscar'}</IonButton>
         <IonButton color="medium" onClick={handleClearFilters}>Limpiar filtros</IonButton>
       </div>
-        {filteredAlerts.length === 0 ? <h1  
-        style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      margin: 0,
-      fontSize: '1.5rem',
-      color: 'var(--ion-text-color)',
-      backgroundColor: 'var(--ion-background-color)',
-    }}>No hay alertas disponibles</h1>: 
-      <div className="historial-page">
-        <div className="cameras-list">
-          <IonTitle>Cámaras</IonTitle>
-          {loadingCameras ? <div className="loading-container"><IonSpinner name="crescent" /><p>Cargando cámaras...</p></div> :
-            error ? <p className="error-message">{error}</p> :
+
+      {filteredAlerts.length === 0 ? (
+        <h1 className="no-alerts">No hay alertas disponibles</h1>
+      ) : (
+        <div className="historial-page">
+          <div className="cameras-list">
+            <IonTitle>Cámaras</IonTitle>
+            {loadingCameras ? (
+              <div className="loading-container">
+                <IonSpinner name="crescent" /><p>Cargando cámaras...</p>
+              </div>
+            ) : error ? (
+              <p className="error-message">{error}</p>
+            ) : (
               filteredCameras.map(cam => (
-                <div key={cam.id} className={`camera-item ${selectedCamera?.id === cam.id ? 'selected' : ''}`} onClick={() => setSelectedCamera(cam)}>
+                <div
+                  key={cam.id}
+                  className={`camera-item ${selectedCamera?.id === cam.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedCamera(cam)}
+                >
                   <strong>{cam.nombre}</strong>
                   <p>{cam.direccion}</p>
                 </div>
               ))
-          }
-        </div>
+            )}
+          </div>
 
-        <div className="alerts-panel">
-          <IonTitle>Alertas {selectedCamera ? `de ${selectedCamera.nombre}` : ''}</IonTitle>
-          {filteredAlerts.length === 0 ? <p>No hay alertas para esta cámara</p> :
-            [0, 1, 2].map(estado => {
+          <div className="alerts-panel">
+            <IonTitle>Alertas {selectedCamera ? `de ${selectedCamera.nombre}` : ''}</IonTitle>
+            {[0, 1, 2].map(estado => {
               const filtered = filteredAlerts.filter(a => a.estado === estado);
               const estadoText = estado === 0 ? 'En progreso / No vistas' : estado === 1 ? 'Resueltas' : 'Falsos positivos';
               return (
                 <div key={estado} className="alert-section">
                   <h3>{estadoText} ({filtered.length})</h3>
                   {filtered.map(alert => (
-                    <div key={alert.id} className={`alert-card estado-${alert.estado}`} onClick={() => { setSelectedAlert(alert); setMostrarDescripcion(true); }}>
+                    <div
+                      key={alert.id}
+                      className={`alert-card estado-${alert.estado}`}
+                      onClick={() => { setSelectedAlert(alert); setMostrarDescripcion(true); }}
+                    >
                       <div className="alert-header">
                         <span className="alert-title">Alerta {alert.id}</span>
                         <span className="alert-time">{formatearFecha(alert.hora_suceso)}</span>
                       </div>
                       <p className="alert-message">{alert.mensaje}</p>
                       <div className="alert-footer">
-                        <div className={`alert-chip ${getScoreClass(alert.score_confianza)}`}><IonIcon icon={alertCircle} /> <span>Score: {alert.score_confianza}</span></div>
-                        <div className={`alert-chip ${getStateClass(alert.estado)}`}><IonIcon icon={getStateIcon(alert.estado)} /> <span>{formatEstado(alert.estado)}</span></div>
+                        <div className={`alert-chip ${getScoreClass(alert.score_confianza)}`}>
+                          <IonIcon icon={alertCircle} /> <span>Score: {alert.score_confianza}</span>
+                        </div>
+                        <div className={`alert-chip ${getStateClass(alert.estado)}`}>
+                          <IonIcon icon={getStateIcon(alert.estado)} /> <span>{formatEstado(alert.estado)}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )
-            })
-          }
-        </div>
-
-        {mostrarDescripcion && selectedAlert && (
-          <div className="alert-detail">
-            <h2>Alerta {selectedAlert.id}</h2>
-            <p><strong>Score:</strong> {selectedAlert.score_confianza} • <strong>Ubicación:</strong> {cameraNames[selectedAlert.id_camara] ?? `ID ${selectedAlert.id_camara}`} • <strong>Estado:</strong> {formatEstado(selectedAlert.estado)}</p>
-            <h3>Descripción</h3>
-            <p>{selectedAlert.descripcion_suceso || <i>Sin descripción</i>}</p>
-            <video controls className="video-clip" src={`${CAMERA_URL}/video/play?key=${selectedAlert.clip}&format=mp4`} />
+            })}
           </div>
-        )}
-      </div>
-      }
+
+          {/* PANEL DE DETALLE (EDITAR/ELIMINAR) */}
+          {mostrarDescripcion && selectedAlert && (
+            <div className="alert-detail">
+              <h2>Alerta {selectedAlert.id}</h2>
+              <p>
+                <strong>Score:</strong> {selectedAlert.score_confianza} •{' '}
+                <strong>Ubicación:</strong> {cameraNames[selectedAlert.id_camara] ?? `ID ${selectedAlert.id_camara}`} •{' '}
+                <strong>Estado:</strong> {formatEstado(selectedAlert.estado)}
+              </p>
+              <h3>Descripción</h3>
+
+              {editandoDescripcion ? (
+                <>
+                  <IonTextarea
+                    value={nuevaDescripcion}
+                    onIonChange={e => setNuevaDescripcion(e.detail.value!)}
+                    autoGrow
+                  />
+                  <div className="buttons-row">
+                    <IonButton color="success" onClick={handleGuardarDescripcion} disabled={guardando}>
+                      {guardando ? 'Guardando...' : 'Guardar'}
+                    </IonButton>
+                    <IonButton color="medium" onClick={() => setEditandoDescripcion(false)}>
+                      Cancelar
+                    </IonButton>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p>{selectedAlert.descripcion_suceso || <i>Sin descripción</i>}</p>
+                </>
+              )}
+
+              <video
+                controls
+                className="video-clip"
+                src={`${CAMERA_URL}/video/play?key=${selectedAlert.clip}&format=mp4`}
+              />
+
+              {!editandoDescripcion && (
+                <div className="buttons-row">
+                  <IonButton color="primary" onClick={handleEditarDescripcion}>
+                    <IonIcon icon={create} slot="start" />
+                    Editar descripción
+                  </IonButton>
+                  <IonButton color="danger" onClick={handleEliminarAlerta} disabled={eliminando}>
+                    <IonIcon icon={trash} slot="start" />
+                    {eliminando ? 'Eliminando...' : 'Eliminar alerta'}
+                  </IonButton>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
