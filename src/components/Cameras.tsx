@@ -243,7 +243,7 @@ const Cameras: React.FC<CamerasProps> = ({
           />
           {!selectedCamera ? (
             // ------------ Vista de lista ------------
-            <div className="cameras-list"  style={{ width: '100%' }} >
+            <div className="cameras-list"  style={{ width: '100%' }}>
               <IonList>
                 <IonItem>
                   <IonLabel>

@@ -125,15 +125,27 @@ const MapSelector: React.FC<MapSelectorProps> = ({
   const handleConfirm = () => {
     const lat = position[0].toString().replace(',', '.');;
     const long = position[1].toString().replace(',', '.');;
-    axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&addressdetails=1`)
-    .then(response => {
-      console.log(response.data)
-      if(response.status === 200){
-        const ubicacion = response.data.name;
-        const ubicacion_alternativa = response.data.address.road;
-        console.log("Ubicaciones obtenidas:", ubicacion, ubicacion_alternativa);
-        onPositionSelect(position[0], position[1], ubicacion || ubicacion_alternativa);
-      }
+axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}&addressdetails=1`)
+  .then(response => {
+    if (response.status === 200) {
+      const address = response.data.address;
+
+      // Construye una dirección más completa
+      const direccionCompleta = [
+        address.road,
+        address.house_number,
+        address.suburb,
+        address.city || address.town || address.village,
+        address.state,
+        address.postcode,
+        address.country
+      ]
+        .filter(Boolean) // elimina undefined o null
+        .join(', ');
+
+      console.log("Dirección completa:", direccionCompleta);
+      onPositionSelect(position[0], position[1], direccionCompleta);
+    }
     })
     .catch(error => {
       console.error('Error al obtener ubicación open street map:', error);
