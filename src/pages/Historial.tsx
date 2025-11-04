@@ -29,6 +29,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Historial.css';
 import { useUser } from '../UserContext';
+import HistorialTutorial from '../components/HistorialTutorial';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -165,6 +166,16 @@ function Historial(){
             })
             .finally(() => setLoadingCameraNames(false));
     }, []);
+
+    const [showTutorial, setShowTutorial] = useState(false);
+    
+    const handleShowTutorial = () => {
+        setShowTutorial(true);
+    };
+
+    const handleFinishTutorial = () => {
+        setShowTutorial(false);
+    };
 
     // Handler para mostrar popover en el sitio del click (la campana)
     const handleShowNotifications = (e: React.MouseEvent) => {
@@ -484,7 +495,8 @@ function Historial(){
 
     return (
         <div>
-            <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
+            <HistorialTutorial run={showTutorial} onFinish={handleFinishTutorial} />
+            <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowTutorial={handleShowTutorial} />
             <IonPopover
                 isOpen={popoverOpen}
                 event={event}
@@ -646,7 +658,7 @@ function Historial(){
                 </IonContent>
             </IonModal>
             <div className="containerHistorial">
-                <div style={{ width: '500px', paddingRight: '15px' }}>
+                <div id='camaras' style={{ width: '500px', paddingRight: '15px', display: 'flex', flexDirection: 'column', height: '80vh' }}>
                     <IonTitle>Cámaras</IonTitle>
                     {loadingCameras ? (
                     <div className="loading-container">
@@ -656,6 +668,12 @@ function Historial(){
                     ) : error ? (
                     <p className="error-message">{error}</p>
                     ) : (
+                    <div style={{
+                        flexGrow: 1,
+                        overflowY: 'auto',
+                        marginTop: '10px',
+                        paddingRight: '6px'
+                    }}>
                     <IonList style={{ padding: 0, marginTop: '20px'}}>
                         {cameras.map((camera) => (
                         <IonItem 
@@ -670,12 +688,13 @@ function Historial(){
                         </IonItem>
                         ))}
                     </IonList>
+                    </div>
                     )}
                 </div>
             
                 <hr className='hr-vertical' />
                 
-                <div className={`mi-clase${filteredAlerts.length === 0 ? '-oculto' : '-visible'}`}>
+                <div id='alertas' className={`mi-clase${filteredAlerts.length === 0 ? '-oculto' : '-visible'}`}>
                     <IonTitle style={{ flexShrink: 0 }}>
                     Alertas de {selectedCamera ? selectedCamera.nombre : 'Ninguna cámara seleccionada'}
                     </IonTitle>
