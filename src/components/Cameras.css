@@ -5,9 +5,14 @@
   --border-radius: 20px;
 }
 
+.cameras-list{
+  width: 100%;
+}
+
 .cameras-list ion-card {
   cursor: pointer;
   transition: transform 0.2s ease;
+  width: 100%;
 }
 
 .cameras-list ion-card:hover {
