@@ -26,11 +26,12 @@ interface NavBarProps {
   unseenCount: number;
   onShowNotifications?: (e: React.MouseEvent) => void;
   onShowMantenedores?: (e: React.MouseEvent) => void;
-  searchText: string;
-  onSearchChange: (text: string, results: Camera[]) => void;
-  searchContainerRef: React.RefObject<HTMLDivElement | null>;
-  cameras: Camera[];
+  searchText?: string;
+  onSearchChange?: (text: string, results: Camera[]) => void;
+  searchContainerRef?: React.RefObject<HTMLDivElement | null>;
+  cameras?: Camera[];
 }
+
 
 export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, cameras, searchText, onSearchChange, searchContainerRef}: NavBarProps) {
   const history = useHistory();
@@ -94,15 +95,16 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, c
               justifyContent: 'center',
               position: 'relative'
             }}>
-              { (location.pathname === '/home' || location.pathname.startsWith('/home')) && (
-                <>
-                  <CameraSearch 
-                    cameras={cameras} 
-                    searchText={searchText} // Pasa el estado local
-                    onSearchChange={onSearchChange}
-                  />
-                </>
-              ) }
+            { (location.pathname === '/home' || location.pathname.startsWith('/home')) && (
+              <>
+                <CameraSearch 
+                  cameras={cameras ?? []}
+                  searchText={searchText ?? ''}
+                  onSearchChange={onSearchChange ?? (() => {})}
+                />
+              </>
+            )}
+
             </div>
           </div>
           <IonButtons slot="end">
