@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Joyride, { Step, CallBackProps, STATUS } from "react-joyride";
+import './HomeTutorial.css';
 
 interface HomeTutorialProps {
   run: boolean;
@@ -7,6 +8,21 @@ interface HomeTutorialProps {
 }
 
 const HomeTutorial: React.FC<HomeTutorialProps> = ({ run, onFinish }) => {
+  const [primaryColor, setPrimaryColor] = useState("#1B4965");
+  const [textColor, setTextColor] = useState("#333");
+  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+
+useEffect(() => {
+  const rootStyles = getComputedStyle(document.documentElement);
+  const ionicPrimary = rootStyles.getPropertyValue('--ion-color-primary').trim();
+  const ionicText = rootStyles.getPropertyValue('--ion-text-color').trim();
+  const ionicBackground = rootStyles.getPropertyValue('--ion-background-color').trim();
+
+  if (ionicPrimary) setPrimaryColor(ionicPrimary);
+  if (ionicText) setTextColor(ionicText);
+  if (ionicBackground) setBackgroundColor(ionicBackground);
+}, []);
+
   const steps: Step[] = [
     {
       target: "body",
@@ -80,28 +96,30 @@ const HomeTutorial: React.FC<HomeTutorialProps> = ({ run, onFinish }) => {
   };
 
   return (
-    <Joyride
-      steps={steps}
-      run={run}
-      continuous
-      scrollToFirstStep
-      showSkipButton
-      callback={handleJoyrideCallback}
-      locale={{
-        back: "Atrás",
-        close: "Cerrar",
-        last: "Finalizar",
-        next: "Siguiente",
-        skip: "Saltar"
-      }}
-      styles={{
-        options: {
-          primaryColor: "#1B4965",
-          textColor: "#333",
-          zIndex: 2000,
-        },
-      }}
-    />
+  <Joyride
+    steps={steps}
+    run={run}
+    continuous
+    scrollToFirstStep
+    showSkipButton
+    callback={handleJoyrideCallback}
+    locale={{
+      back: "Atrás",
+      close: "Cerrar",
+      last: "Finalizar",
+      next: "Siguiente",
+      skip: "Saltar"
+    }}
+    styles={{
+      options: {
+        primaryColor,
+        textColor,
+        backgroundColor,
+        zIndex: 2000,
+      },
+    }}
+  />
+
   );
 };
 

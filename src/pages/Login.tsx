@@ -59,7 +59,7 @@ const Login: React.FC = () => {
       <div className="login-wrapper" style={{ position: 'relative', zIndex: 1 }}>
         <div className="login-container">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src="/comuvigia.png" alt="Logo" style={{padding: '20px'}}/>
+            <img src="/comuvigia.png" alt="Logo"  className="logo-comuvigia" style={{padding: '20px'}}/>
           </div>
 
           <form

@@ -57,7 +57,7 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, o
           <IonHeader>
             <IonToolbar>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/comuvigia.png" alt="Logo" style={{ height: '50px'}}/>
+                
               </div>
             </IonToolbar>
           </IonHeader>
@@ -88,7 +88,7 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, o
           </IonButtons>
           
           <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flex: 1, gap: '16px' }}>
-              <img onClick={() => history.push('/home')} src="/comuvigia.png" alt="Logo" style={{ height: '50px', paddingLeft: '10px', cursor: 'pointer'}} />
+              <img onClick={() => history.push('/home')} src="/comuvigia.png" className="logo-comuvigia" alt="Logo" style={{ height: '50px', paddingLeft: '10px', cursor: 'pointer'}} />
             <div ref={searchContainerRef}
             style={{ 
               flex: 1, 

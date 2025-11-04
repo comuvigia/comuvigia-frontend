@@ -504,7 +504,7 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
               // Colores válidos y relleno para que la animación sea visible
               opacity: 0.8,
               fillOpacity: 0,
-              color: '#ffffffff',
+              color: getComputedStyle(document.documentElement).getPropertyValue('--ion-color-primary').trim(),
               weight: 2,
             }}
           />

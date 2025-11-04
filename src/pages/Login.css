@@ -68,3 +68,16 @@
   margin-top: 20px;
   --color: var(--ion-color-primary-contrast);
 }
+
+/* Logo por defecto (modo claro) */
+.logo-comuvigia {
+  height: 100%;
+  content: url("/comuvigia.png");
+}
+
+/* Logo en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .logo-comuvigia {
+    content: url("/comuvigia_claro.png");
+  }
+}

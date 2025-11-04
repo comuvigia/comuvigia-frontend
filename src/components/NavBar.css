@@ -7,6 +7,15 @@ ion-alert.custom-alert {
   --backdrop-opacity: 0.7;
 }
 
+.leaflet-polygon-florida {
+  stroke: var(--ion-color-primary); /* color del borde */
+  stroke-opacity: 0.8;
+  stroke-width: 2;
+  fill-opacity: 0; /* sin relleno */
+}
+
+
+
 .custom-alert .alert-button-group {
   padding: 8px;
 }
@@ -40,4 +49,17 @@ button.alert-button.alert-button-cancel {
 .ios button.alert-button.alert-button-confirm {
   border-bottom-right-radius: 13px;
   border-top-right-radius: 13px;
+}
+
+/* Logo por defecto (modo claro) */
+.logo-comuvigia {
+  height: 50px;
+  content: url("/comuvigia.png");
+}
+
+/* Logo en modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .logo-comuvigia {
+    content: url("/comuvigia_claro.png");
+  }
 }

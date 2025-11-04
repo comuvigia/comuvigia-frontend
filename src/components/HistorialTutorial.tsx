@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Joyride, { Step, CallBackProps, STATUS } from "react-joyride";
 
 interface HistorialTutorialProps {
@@ -7,6 +7,21 @@ interface HistorialTutorialProps {
 }
 
 const HistorialTutorial: React.FC<HistorialTutorialProps> = ({ run, onFinish }) => {
+  const [primaryColor, setPrimaryColor] = useState("#1B4965");
+  const [textColor, setTextColor] = useState("#333");
+  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+
+  useEffect(() => {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const ionicPrimary = rootStyles.getPropertyValue('--ion-color-primary').trim();
+    const ionicText = rootStyles.getPropertyValue('--ion-text-color').trim();
+    const ionicBackground = rootStyles.getPropertyValue('--ion-background-color').trim();
+
+    if (ionicPrimary) setPrimaryColor(ionicPrimary);
+    if (ionicText) setTextColor(ionicText);
+    if (ionicBackground) setBackgroundColor(ionicBackground);
+  }, []);
+
   const steps: Step[] = [
     {
       target: "body",
@@ -74,8 +89,9 @@ const HistorialTutorial: React.FC<HistorialTutorialProps> = ({ run, onFinish }) 
       }}
       styles={{
         options: {
-          primaryColor: "#1B4965",
-          textColor: "#333",
+          primaryColor,
+          textColor,
+          backgroundColor,
           zIndex: 2000,
         },
       }}
