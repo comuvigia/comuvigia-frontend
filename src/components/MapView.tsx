@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, Polygon } from 'react-leaflet';
 import L, { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Camera } from '../types/Camera';
@@ -8,7 +8,9 @@ import './MapView.css';
 import { Tooltip } from 'react-leaflet';
 import { Alert } from '../types/Alert';
 import { NotificacionesPopover } from './Notificaciones';
-import { IonToggle } from '@ionic/react';
+import { IonToggle, IonButton, IonIcon } from '@ionic/react';
+import { locateOutline } from 'ionicons/icons';
+import { floridaPolygon } from '../data/polygon';
 import { io } from 'socket.io-client';
 import { SectorLayer, Sector } from "./SectorLayer";
 import { LayerControl } from "./LayerControl";
@@ -20,6 +22,12 @@ const socket = io(BACKEND_URL);
 const socketCam = io(CAMERA_URL);
 
 const defaultCenter: LatLngExpression = [-33.523, -70.604]; // La Florida, Chile
+const metropolitanRegionBounds: L.LatLngBoundsExpression = [
+  [-34.2, -71.7], // Esquina Suroeste
+  [-32.9, -69.8]  // Esquina Noreste
+];
+
+const puntoCentralFlorida: L.LatLngExpression = [-33.54267, -70.57344];
 
 function FixLeafletResize({ headerHeight }: { headerHeight: number }) {
   const map = useMap();
@@ -69,7 +77,8 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
   const [isDark, setIsDark] = useState(
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
-
+  const [showFloridaPolygon, setShowFloridaPolygon] = useState(false);
+  const polygonTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [heatmapVisible, setHeatmapVisible] = useState(false);
   const [sectores, setSectores] = useState<Sector[]>([]);
   const [toggleCooldown, setToggleCooldown] = useState<number>(0); // segundos restantes
@@ -95,6 +104,43 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
         return prev - 1;
       });
     }, 1000);
+  };
+
+  useEffect(() => {
+    // 1. Comprueba si hay una cámara seleccionada y si el mapa ya cargó
+    if (selectedCamera && mapRef.current) {
+      
+      // 2. Comprueba que 'posicion' existe y tiene 2 elementos
+      if (selectedCamera.posicion && selectedCamera.posicion.length === 2) {
+
+        mapRef.current.flyTo(selectedCamera.posicion, 17);
+
+      } else {
+        console.warn("La cámara seleccionada no tiene una 'posicion' válida:", selectedCamera);
+      }
+    }
+  }, [selectedCamera]); // <-- El array de dependencias: se ejecuta solo si 'selectedCamera' cambia
+
+
+  const handleShowFloridaPolygon = () => {
+    // 1. Limpia cualquier temporizador anterior
+    if (polygonTimerRef.current) {
+      clearTimeout(polygonTimerRef.current);
+    }
+    
+    // 2. Muestra el polígono y resetea la animación
+    setShowFloridaPolygon(true);
+
+    // 3. Centra el mapa (igual que antes)
+    if (mapRef.current) {
+      mapRef.current.flyTo(puntoCentralFlorida, 13);
+    }
+
+    // 4. Configura un temporizador para ocultar el polígono (ej: 4 segundos)
+    polygonTimerRef.current = setTimeout(() => {
+      setShowFloridaPolygon(false);
+      polygonTimerRef.current = null;
+    }, 10000); // 4000ms = 4 segundos
   };
 
   const fetchSectoresPorFecha = async (fechaInicio: string, fechaFin: string) => {
@@ -358,13 +404,25 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
           />
         </div>
       )}
+      {/* Botón para Localizar La Florida (Bottom-Right) */}
+      {user && (user.rol === 1 || user.rol === 2) && (
+        <div className="florida-locate-button-wrapper">
+          <IonButton onClick={handleShowFloridaPolygon} color="light" className="florida-locate-button">
+            <IonIcon slot="icon-only" icon={locateOutline} />
+          </IonButton>
+        </div>
+      )}
       <MapContainer
         center={defaultCenter}
         zoom={15}
         style={{ height: `calc(100vh - ${headerHeight}px)`, width: '100%' }}
         // @ts-ignore
         whenCreated={mapInstance => { mapRef.current = mapInstance; }}
+        ref={mapRef}
         zoomControl={false}
+        maxBounds={metropolitanRegionBounds} // Establece los límites geográficos
+        minZoom={9}                         // Impide alejar el zoom más allá de este nivel
+        maxBoundsViscosity={1.0}            // Hace que los límites sean sólidos
       >
   <TileLayer
     attribution='&copy; ComuVigIA'
@@ -453,6 +511,18 @@ export default function MapView({ cameras,selectedCamera,alerts,cameraNames,user
             <SectorLayer key={sector.id} sector={sector} visible={true} maxAlertas={maxAlertas} />
           ))
         }
+        {showFloridaPolygon && (
+          <Polygon
+            positions={floridaPolygon}
+            pathOptions={{
+              // Colores válidos y relleno para que la animación sea visible
+              opacity: 0.8,
+              fillOpacity: 0,
+              color: '#ffffffff',
+              weight: 2,
+            }}
+          />
+        )}
       </MapContainer>
       {selectedCamera && (
         <div className="camera-panel" style={{ top: headerHeight }}>

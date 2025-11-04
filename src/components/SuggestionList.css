@@ -1,0 +1,14 @@
+/* src/components/SuggestionList.css */
+
+.suggestion-list-container {
+  position: absolute; 
+
+  z-index: 1001;
+  
+  background: var(--ion-card-background, #fff);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border-radius: 0 0 8px 8px; 
+  
+  max-height: 40vh;
+  overflow-y: auto;
+}

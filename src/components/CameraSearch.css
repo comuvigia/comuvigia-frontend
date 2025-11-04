@@ -1,0 +1,59 @@
+.camera-search-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  flex: 1;
+  padding-right: 100px;
+}
+
+.camera-searchbar {
+  --background: var(--ion-background-color);
+  --box-shadow: none;
+  --border-radius: 8px;
+  margin: 0;
+  flex: 1;
+  --min-height: 36px;
+  max-width: 500px;
+  font-size: 14px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.search-type-select {
+  width: auto;
+  min-width: 100px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 14px;
+}
+
+.camera-search-suggestions {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  right: 0;
+  background: var(--ion-background-color);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 6px;
+  max-height: 220px;
+  overflow: auto;
+  z-index: 1200;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+  padding: 6px 0;
+}
+.camera-search-suggestions li {
+  list-style: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.camera-search-suggestions li:hover,
+.camera-search-suggestions li.active {
+  background: rgba(0,0,0,0.04);
+}
+.suggestion-title { font-weight: 600; font-size: 13px; }
+.suggestion-sub { font-size: 12px; color: rgba(0,0,0,0.6); }

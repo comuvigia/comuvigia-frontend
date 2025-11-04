@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   IonHeader, 
   IonToolbar, 
@@ -15,19 +15,26 @@ import {
   IonAlert
 } from '@ionic/react';
 import { notificationsOutline, personOutline, menuOutline, addCircleOutline, exitOutline } from 'ionicons/icons';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import './NavBar.css';
 import { useUser } from '../UserContext';
 import axios from 'axios';
+import CameraSearch from './CameraSearch';
+import { Camera } from '../types/Camera';
 
 interface NavBarProps {
-    unseenCount: number;
-    onShowNotifications?: (e: React.MouseEvent) => void;
-    onShowMantenedores?: (e: React.MouseEvent) => void;
+  unseenCount: number;
+  onShowNotifications?: (e: React.MouseEvent) => void;
+  onShowMantenedores?: (e: React.MouseEvent) => void;
+  searchText: string;
+  onSearchChange: (text: string, results: Camera[]) => void;
+  searchContainerRef: React.RefObject<HTMLDivElement | null>;
+  cameras: Camera[];
 }
 
-export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }: NavBarProps) {
+export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, cameras, searchText, onSearchChange, searchContainerRef}: NavBarProps) {
   const history = useHistory();
+  const location = useLocation();
   const { user, setUser } = useUser();
   const [showExitUser, setShowExitUser] = useState(false);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -78,10 +85,26 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores }:
             )}
           </IonButtons>
           
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flex: 1, gap: '16px' }}>
               <img onClick={() => history.push('/home')} src="/comuvigia.png" alt="Logo" style={{ height: '50px', paddingLeft: '10px', cursor: 'pointer'}} />
+            <div ref={searchContainerRef}
+            style={{ 
+              flex: 1, 
+              display: 'flex', 
+              justifyContent: 'center',
+              position: 'relative'
+            }}>
+              { (location.pathname === '/home' || location.pathname.startsWith('/home')) && (
+                <>
+                  <CameraSearch 
+                    cameras={cameras} 
+                    searchText={searchText} // Pasa el estado local
+                    onSearchChange={onSearchChange}
+                  />
+                </>
+              ) }
+            </div>
           </div>
-          
           <IonButtons slot="end">
             {/*
             <IonButton onClick={onShowMantenedores}>

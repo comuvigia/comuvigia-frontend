@@ -27,6 +27,8 @@ import { io } from 'socket.io-client';
 import './Home.css';
 import { useUser } from '../UserContext';
 import { useToast } from "../components/ToastProvider";
+import SuggestionList from '../components/SuggestionList';
+import '../components/SuggestionList.css';
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -45,6 +47,12 @@ function Home() {
   const [popoverEvent, setPopoverEvent] = useState<React.MouseEvent | null>(null);
   const [activeModal, setActiveModal] = useState<'cameras' | 'users' | 'alerts' | null>(null);
   const [event, setEvent] = useState<MouseEvent | undefined>(undefined);
+  // Estados para búsqueda de cámaras
+  const [searchText, setSearchText] = useState('');
+  const [suggestions, setSuggestions] = useState<Camera[]>([]);
+  // Estados para crear el ref al navbar
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const [listStyle, setListStyle] = useState({});
   //const [modalOpen, setModalOpen] = useState(false);
   const [alertaSeleccionada, setAlertaSeleccionada] = useState<Alert | null>(null);
   const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
@@ -137,6 +145,30 @@ function Home() {
       })
       .finally(() => setLoadingCameras(false));
   }, []);
+
+// Este efecto se ejecuta cada vez que las sugerencias cambian
+  useEffect(() => {
+    if (suggestions.length > 0 && searchContainerRef.current) {
+      const rect = searchContainerRef.current.getBoundingClientRect();
+      setListStyle({
+        position: 'absolute',
+        top: `${rect.bottom}px`,
+        left: `${rect.left*1.64}px`,
+        width: `${rect.width/2}px`
+      });
+    }
+  }, [suggestions]);
+
+  const handleSearchChange = (text: string, results: Camera[]) => {
+    setSearchText(text);
+    setSuggestions(results);
+  };
+
+  const handleSuggestionClick = (camera: Camera) => {
+    setSelectedCamera(camera); // Esto le dice al MapView que cámara enfocar
+    setSearchText('');         // Limpia el buscador
+    setSuggestions([]);        // Oculta la lista
+  };
 
   // Carga de nombre de camaras desde backend
   const [cameraNames, setCameraNames] = useState<{[key:number]:string}>({});
@@ -590,7 +622,20 @@ function Home() {
           </IonFabButton>
         </IonFab>
       )}
-      <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowMantenedores={handleShowMantenedores}/>
+      <Navbar 
+        unseenCount={unseenCountAlerts} 
+        onShowNotifications={handleShowNotifications} 
+        onShowMantenedores={handleShowMantenedores} 
+        cameras={cameras} 
+        searchText={searchText}
+        onSearchChange={handleSearchChange}
+        searchContainerRef={searchContainerRef} 
+      />
+      <SuggestionList
+        suggestions={suggestions}
+        onSelect={handleSuggestionClick}
+        style={listStyle}
+      />
       <IonPopover
         isOpen={popoverOpenMantenedores}
         //event={popoverEvent}
