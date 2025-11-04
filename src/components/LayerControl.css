@@ -9,9 +9,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  /* Aplicando colores del ion-fab-button */
-  background: #1B4965;
-  color: #fff;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
   border: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -23,22 +22,19 @@
 }
 
 .layer-control-fab:hover {
-  /* Usando color hover del ion-fab-button */
-  background: #15374f;
+  background: var(--ion-color-primary-shade);
   transform: scale(1.05);
 }
 
 .layer-control-fab:active {
-  /* Agregando estado activated similar a Ionic */
-  background: #0f2d3e;
+  background: #0f2d3e; /* puedes definir como --ion-color-primary-activated si lo deseas */
   transform: scale(0.98);
 }
 
 .layer-control-menu {
   margin-top: 8px;
-  /* Mejorando el estilo del popover para que se parezca al IonPopover */
-  background: #fff;
-  color: #222;
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   padding: 16px;
@@ -62,7 +58,7 @@
   display: block;
   margin-bottom: 12px;
   font-size: 16px;
-  color: #1b4965;
+  color: var(--ion-color-primary);
 }
 
 .layer-control-option {
@@ -74,13 +70,13 @@
 .layer-control-option label {
   cursor: pointer;
   font-size: 15px;
+  color: var(--ion-text-color);
 }
 
 .heatmap-toggle-btn {
-  /* Mejorando el botón de toggle con estilos más modernos */
-  background: #f5f5f5;
-  color: #333;
-  border: 1px solid #ddd;
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.2);
   border-radius: 8px;
   padding: 8px 20px;
   cursor: pointer;
@@ -92,16 +88,15 @@
 }
 
 .heatmap-toggle-btn:hover {
-  background: #e8e8e8;
-  border-color: #ccc;
+  background: var(--ion-background-color-2);
+  border-color: rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.3);
 }
 
 .heatmap-toggle-btn.active {
-  /* Color activo más vibrante */
-  background: #1b4965;
-  color: #fff;
-  border: 1px solid #1b4965;
-  box-shadow: 0 2px 8px rgba(27, 73, 101, 0.3);
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  border: 1px solid var(--ion-color-primary);
+  box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
 }
 
 /* Responsive */
@@ -121,79 +116,20 @@
   }
 }
 
-/* Dark theme */
-@media (prefers-color-scheme: dark) {
-  .layer-control-menu {
-    background: #23272f;
-    color: #f1f1f1;
-  }
-
-  .layer-control-menu strong {
-    color: #ffffff;
-  }
-
-  .heatmap-toggle-btn {
-    background: #2a2e35;
-    color: #f1f1f1;
-    border: 1px solid #3a3e45;
-  }
-
-  .heatmap-toggle-btn:hover {
-    background: #32363d;
-    border-color: #4a4e55;
-  }
-
-  .heatmap-toggle-btn.active {
-    background: #1b4965;
-    color: #fff;
-    border: 1px solid #1b4965;
-  }
-  .layer-control-fab {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    /* Aplicando colores del ion-fab-button */
-    background: #1B4965;
-    color: #000000;
-    border: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s ease, transform 0.2s ease;
-  }
-}
-
-/* Inputs de fecha: adaptados al estilo general del menú */
+/* Inputs de fecha */
 .fecha-input {
   width: 100%;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.2);
   border-radius: 8px;
   padding: 6px 8px;
   font-size: 14px;
   margin-top: 4px;
-  background: #fff;
-  color: #0f0f0f;
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
   transition: border-color 0.2s ease;
 }
 
 .fecha-input:focus {
   outline: none;
-  border-color: #1b4965;
+  border-color: var(--ion-color-primary);
 }
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .fecha-input {
-    background: #2a2e35;
-    border: 1px solid #3a3e45;
-    color: #f1f1f1;
-  }
-
-  .fecha-input:focus {
-    border-color: #5a9fd4;
-  }
-}
-

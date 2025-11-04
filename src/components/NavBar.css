@@ -1,6 +1,6 @@
 .item-nav {
-    cursor: pointer;
-    --background: var(--ion-background-color);
+  cursor: pointer;
+  --background: var(--ion-background-color);
 }
 
 ion-alert.custom-alert {
@@ -12,18 +12,21 @@ ion-alert.custom-alert {
 }
 
 button.alert-button.alert-button-confirm {
-  background: #c5000f;
-  color: var(--ion-color-success-contrast);
-}
-button.alert-button.alert-button-cancel {
-  background: #1B4965;
-  color: var(--ion-color-success-contrast);
+  background: var(--ion-color-danger, #c5000f);
+  color: var(--ion-color-primary-contrast);
 }
 
+button.alert-button.alert-button-cancel {
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+}
+
+/* Estilo específico para Material Design */
 .md button.alert-button.alert-button-confirm {
   border-radius: 4px;
 }
 
+/* Estilo específico para iOS */
 .ios .custom-alert button.alert-button {
   border: 0.55px solid rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.2);
 }
