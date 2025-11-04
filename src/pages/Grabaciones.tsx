@@ -17,6 +17,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import './Historial.css';
 import { useUser } from '../UserContext';
+import GrabacionesTutorial from '../components/GrabacionesTutorial';
 
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -135,6 +136,16 @@ function Historial(){
           })
           .finally(() => setLoadingCameraNames(false));
     }, []);
+
+    const [showTutorial, setShowTutorial] = useState(false);
+
+    const handleShowTutorial = () => {
+        setShowTutorial(true);
+    };
+
+    const handleFinishTutorial = () => {
+        setShowTutorial(false);
+    };
 
     // Handler para mostrar popover en el sitio del click (la campana)
     const handleShowNotifications = (e: React.MouseEvent) => {
@@ -373,7 +384,8 @@ function Historial(){
 
     return (
         <div>
-            <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} />
+            <GrabacionesTutorial run={showTutorial} onFinish={handleFinishTutorial} />
+            <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowTutorial={handleShowTutorial} />
             <IonPopover
               isOpen={popoverOpen}
               event={event}
