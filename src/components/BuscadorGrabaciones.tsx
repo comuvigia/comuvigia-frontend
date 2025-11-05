@@ -129,7 +129,7 @@ export function BuscadorGrabaciones() {
         </div>
       ) : (
         <>
-          <span className="download-icon">&#10515;</span>
+          <span className="download-icon">&#10515;</span>&nbsp;
           <span>Descargar</span>
         </>
       )}
@@ -231,7 +231,7 @@ export function BuscadorGrabaciones() {
               <div className="result-info">
                 <div className="date">{new Date(rec.time).toLocaleString()}</div>
                 <div className="meta">
-                  <span>Duración: ~5 min</span>
+                  <span>Duración: ~5 min</span>&nbsp;
                   <span>Tamaño: {Math.round(rec.size / 1e6)} MB</span>
                 </div>
               </div>

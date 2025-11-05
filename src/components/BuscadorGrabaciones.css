@@ -16,6 +16,21 @@
   color: var(--ion-color-primary);
 }
 
+.download-btn{
+  padding: 7px;
+  border: 1px solid;
+  border-radius: 15px;
+  font-family: inherit;
+  font-style: inherit;
+  font-variant: inherit;
+  line-height: 1;
+  text-transform: none;
+  cursor: pointer;
+  -webkit-appearance: button;
+  background: var(--ion-color-primary);
+  color: white;
+}
+
 .filters-section {
   display: flex;
   flex-wrap: wrap;
@@ -58,6 +73,7 @@ select:focus, input:focus {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
+  margin: 25px 0px 0px 0px;
 }
 .search-button:hover {
   transform: scale(1.05);
