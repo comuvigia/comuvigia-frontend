@@ -18,7 +18,7 @@ const DetalleSectores: React.FC<{ sectores: Sector[] }> = ({ sectores }) => (
       <IonCardTitle>Detalle por Sectores</IonCardTitle>
     </IonCardHeader>
     <IonCardContent style={{ flex: 1, overflowY: 'auto' }}>
-      <IonList>
+      <IonList style={{ flex: 1, overflowY: 'auto' }}>
         {sectores.map((sector) => (
           <IonItem key={sector.id_sector}>
             <IonLabel>

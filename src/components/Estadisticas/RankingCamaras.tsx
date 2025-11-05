@@ -42,7 +42,7 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader 
   return (
     <>
       {mostrarHeader ? (
-        <IonCard className="centrar" >
+        <IonCard style={{ width: "100%", borderRadius: "12px" }} >
             <IonCardHeader>
               <IonCardTitle style={{ textAlign: "center" }}>
                 Ranking de cámaras más efectivas (últimos 7 días)

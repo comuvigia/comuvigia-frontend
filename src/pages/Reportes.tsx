@@ -733,7 +733,7 @@ function Reportes() {
           <>
             {/* === Sección 1: Filtros === */}
             <div className="card"   style={{
-                  gridColumn: '3 / 4', // columna 2
+                  gridColumn: '1 / 3', // columna 2
                   gridRow: '1 / 2',    // fila 1
                 }}>
               <FiltroPeriodo
@@ -749,7 +749,7 @@ function Reportes() {
 
             {/* === Sección 2: Estadísticas === */}
             <div className="card"   style={{
-                  gridColumn: '1 / 3', // columna 2
+                  gridColumn: '3 / 5', // columna 2
                   gridRow: '1 / 2',    // fila 1
                 }}>
               <EstadisticasTotales
@@ -760,8 +760,8 @@ function Reportes() {
             {/* === Sección 3: Gráfico por sector === */}
             {chartDataSectores && (
             <div className="card"   style={{
-                  gridColumn: '1 / 2', // columna 2
-                  gridRow: '2 / 4',    // fila 1
+                  gridColumn: '1 / 3', // columna 2
+                  gridRow: '2 / 3',    // fila 1
                 }}>
                 <GraficoSector data={chartDataSectores} />
               </div>
@@ -770,8 +770,8 @@ function Reportes() {
             {/* === Sección 4: Gráfico por tipo === */}
             {chartDataTipos && (
             <div className="card"   style={{
-                  gridColumn: '2 / 3', // columna 2
-                  gridRow: '2 / 4',    // fila 1
+                  gridColumn: '3 / 5', // columna 2
+                  gridRow: '2 / 3',    // fila 1
                 }}>
                 <GraficoTipo data={chartDataTipos} />
               </div>
@@ -779,7 +779,7 @@ function Reportes() {
 
             {/* === Sección 5: Detalle por sectores === */}
             <div className="card"   style={{
-                  gridColumn: '3 / 4', // columna 2
+                  gridColumn: '5 / 7', // columna 2
                   gridRow: '2 / 3',    // fila 1
                 }}>
               <DetalleSectores sectores={data.sectores} />
@@ -787,15 +787,15 @@ function Reportes() {
 
             {/* Descarga de informe */}
             <div className="card"   style={{
-                  gridColumn: '3 / 4', // columna 2
-                  gridRow: '3 / 4',    // fila 1 
+                  gridColumn:  '5 / 7', // columna 2
+                  gridRow: '1 / 2',    // fila 1 
                 }}>
               <InformeDescarga />
             </div>
 
             {/* === Sección 6: Gráfico por Horarios === */}
             {dataHorarios.length > 0 && (
-              <div className="card" style={{ gridColumn: "1 / 2", gridRow: "4 / 5" }}>
+              <div className="card" style={{ gridColumn: "2 / 4", gridRow: "3 / 5" }}>
                 <GraficoHorarios horarios={dataHorarios} />
                 {/* Mostrar también los top horarios si existen */}
                 {topHorarios && (
@@ -816,8 +816,8 @@ function Reportes() {
             <div
               className="card"
               style={{
-                gridColumn: "2 / 3", // segunda columna
-                gridRow: "4 / 5",    // misma fila
+                gridColumn: "4 / 6", // segunda columna
+                gridRow: "3/ 4",    // misma fila
               }}
             >
               <RankingCamaras cameras={cameras7d} />

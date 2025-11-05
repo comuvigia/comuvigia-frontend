@@ -1,6 +1,7 @@
 .ion-card-detalle {
   display: flex;
   flex-direction: column;   /* distribuir header y contenido verticalmente */
-  height: 100%;             /* ocupar toda la altura de la celda del grid */
-  overflow: hidden;         /* evitar overflow fuera de la card */
+  height: 100%; 
+  max-height: 40vh;            /* ocupar toda la altura de la celda del grid */
+  overflow: auto;         /* evitar overflow fuera de la card */
 }
