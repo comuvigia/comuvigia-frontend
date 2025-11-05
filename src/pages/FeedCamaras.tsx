@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import {
   IonContent,
   IonGrid,
@@ -42,20 +43,32 @@ const FeedCamaras: React.FC = () => {
   const [loadingCameras, setLoadingCameras] = useState(true);
   const [numFeed, setNumFeed] = useState<1 | 2 | 4>(4);
   const [seleccionadas, setSeleccionadas] = useState<(Camera | null)[]>([null, null, null, null]);
+  const { user } = useUser();
+  const location = useLocation();
+
   // Carga de camaras desde backend con cantidad de alertas
   useEffect(() => {
-    if(!user) return;
+    if (!user) return;
 
-    axios.get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`, { withCredentials: true })
-      .then(response => {
-        //console.log("JSON recibido del backend:", response.data);
+    axios
+      .get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas`, { withCredentials: true })
+      .then((response) => {
         setCameras(response.data);
+
+        // ⚡️ Si vienen cámaras top desde el ranking, cargarlas automáticamente
+        const state = location.state as { topCamaras?: Camera[] } | undefined;
+        if (state?.topCamaras && state.topCamaras.length > 0) {
+          setNumFeed(4);
+          setSeleccionadas(state.topCamaras.slice(0, 4));
+        }
       })
-      .catch(error => {
-        console.error('Error al obtener cámaras:', error);
+      .catch((error) => {
+        console.error("Error al obtener cámaras:", error);
       })
       .finally(() => setLoadingCameras(false));
-  }, []);
+  }, [user, location.state]);
+
+
 
   const handleCamChange = (index: number, camId: number) => {
     const cam = cameras.find((c) => c.id === camId) || null;
@@ -65,6 +78,7 @@ const FeedCamaras: React.FC = () => {
       return nuevas;
     });
   };
+
 
   const handleNumFeedChange = (n: 1 | 2 | 4) => {
     setNumFeed(n);
@@ -81,7 +95,6 @@ const FeedCamaras: React.FC = () => {
   const grids = seleccionadas.slice(0, numFeed);
   const colSize = numFeed === 1 ? "12" : numFeed === 2 ? "6" : "6";
 
-  const { user } = useUser();
   const {addToast, removeToast} = useToast();
   const [toastId, setToastId] = useState<number | null>(null);
   

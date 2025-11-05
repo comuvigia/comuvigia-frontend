@@ -1,5 +1,5 @@
 import { Redirect, Route } from 'react-router-dom';
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import { IonApp, IonRouterOutlet, setupIonicReact, IonPage, IonContent} from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { UserProvider } from './UserContext';
 import { ProtectedRoute } from './ProtectedRoute';
@@ -73,12 +73,20 @@ const App: React.FC = () => (
             </Route>
             <Route exact path="/reportes">
               <ProtectedRoute allowedRoles={[1, 2]}>
-                <Reportes />
+                <IonPage>
+                  <IonContent scrollY={true}>
+                    <Reportes />
+                  </IonContent>
+                </IonPage>
               </ProtectedRoute>
             </Route>
             <Route exact path="/feed_camaras">
               <ProtectedRoute allowedRoles={[1, 2]}>
-                <FeedCamaras />
+                <IonPage>
+                  <IonContent scrollY={true}>
+                    <FeedCamaras />
+                  </IonContent>
+                </IonPage>
               </ProtectedRoute>
             </Route>
             <Route>

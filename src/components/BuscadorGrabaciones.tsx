@@ -16,8 +16,6 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 export function BuscadorGrabaciones(){
     const [cameras, setCameras] = useState<Camera[]>([]);
     const [selectedCamera, setSelectedCamera] = useState<number>(0);
-    const [startDate, setStartDate] = useState<string>(new Date().toISOString());
-    const [endDate, setEndDate] = useState<string>(new Date().toISOString());
     const [recordings, setRecordings] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -27,6 +25,19 @@ export function BuscadorGrabaciones(){
     const [thumbnails, setThumbnails] = useState({});
     const [loadingThumbnails, setLoadingThumbnails] = useState({});
     const { alertState, showError, closeAlert } = useAviso();
+    const formatDateForInput = (date: Date) => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    };
+
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 7);
+
+    const [startDate, setStartDate] = useState<string>(formatDateForInput(sevenDaysAgo));
+    const [endDate, setEndDate] = useState<string>(formatDateForInput(now));
+
+
 
     const mostrarError = (principal: string, titulo: string) => {
         showError(principal, {
@@ -70,42 +81,68 @@ export function BuscadorGrabaciones(){
     };
 
     // Función para buscar grabaciones
-    const searchRecordings = async (page=1) => {
+    const searchRecordings = async (page = 1) => {
         setLoading(true);
         setError('');
+
         try {
             const pageNumber = typeof page === 'object' ? 1 : page;
-            //const formattedStartDate = `${startDate}T00:00:00`;
-            //const formattedEndDate = `${endDate}T23:59:59`;
-            const formattedStartDate = startDate;
-            const formattedEndDate = endDate;
-            if(!diferenciaFechas(formattedStartDate, formattedEndDate)){
-                mostrarError('No se puede buscar un rango de fechas mayor a 7 días. Verifique el rango de fechas.','La cantidad de días seleccionada es mayor a 7');
-                throw new Error('La cantidad de días seleccionada es mayor a 7');
+            let formattedStartDate = new Date(startDate);
+            let formattedEndDate = new Date(endDate);
+
+            // Validar diferencia de 7 días
+            if (!diferenciaFechas(formattedStartDate.toISOString(), formattedEndDate.toISOString())) {
+            mostrarError('No se puede buscar un rango de fechas mayor a 7 días.', 'La cantidad de días seleccionada es mayor a 7');
+            throw new Error('La cantidad de días seleccionada es mayor a 7');
             }
-            // Tu llamada a la API aquí
-            const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate}&end_date=${formattedEndDate}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`);
+
+            // 🕑 Aplicar el rango horario seleccionado
+            switch (selectedTimeRange) {
+            case 'mañana':
+                formattedStartDate.setHours(6, 0, 0, 0);
+                formattedEndDate.setHours(12, 0, 0, 0);
+                break;
+            case 'tarde':
+                formattedStartDate.setHours(12, 0, 0, 0);
+                formattedEndDate.setHours(18, 0, 0, 0);
+                break;
+            case 'noche':
+                formattedStartDate.setHours(18, 0, 0, 0);
+                formattedEndDate.setHours(23, 0, 0, 0);
+                break;
+            case 'madrugada':
+                formattedStartDate.setHours(23, 0, 0, 0);
+                formattedEndDate.setHours(6, 0, 0, 0);
+                formattedEndDate.setDate(formattedEndDate.getDate() + 1); // pasa al día siguiente
+                break;
+            default:
+                // No se seleccionó rango -> no cambiar horas
+                break;
+            }
+
+            const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`);
+
             if (!response.ok) {
-                if (response.status === 400) {
-                    throw new Error();
-                }
-                //throw new Error(`Error HTTP: ${response.status}`);
+            throw new Error(`Error HTTP: ${response.status}`);
             }
+
             const data = await response.json();
-            if(data.videos.length === 0){
-                mostrarError('No se encontraron grabaciones para el rango de fechas seleccionado.','No se encontraron grabaciones');
+            if (data.videos.length === 0) {
+            mostrarError('No se encontraron grabaciones para el rango seleccionado.', 'Sin resultados');
             }
+
             setRecordings(data.videos || []);
             setTotalRecords(data.pagination.total);
             setCurrentPage(page);
         } catch (err) {
-            setError("Error al cargar las grabaciones");
-            console.error(error)
-            console.error("Error en searchRecordings:", err); 
+            setError('Error al cargar las grabaciones');
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
+
+
 
     // Calcular el número total de páginas
     const totalPages = Math.ceil(totalRecords / itemsPerPage);
@@ -260,6 +297,10 @@ export function BuscadorGrabaciones(){
         }
     };
 
+    // Estado para el rango horario
+    const [selectedTimeRange, setSelectedTimeRange] = useState<string>(''); // 'mañana', 'tarde', etc.
+
+
     return (
         <div className="container">
             <header>
@@ -289,13 +330,30 @@ export function BuscadorGrabaciones(){
                 </div>
                 <div className="filter-group">
                 <label htmlFor="start-date">Fecha Inicio</label>
-                <input type="datetime-local" id="start-date" value={startDate} onChange={e => setStartDate(String(e.target.value) as string)}/>
+                <input type="datetime-local" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
+
                 </div>
                     
                 <div className="filter-group">
                 <label htmlFor="end-date">Fecha Fin</label>
-                <input type="datetime-local" id="end-date" value={endDate} onChange={e => setEndDate(String(e.target.value) as string)} min={startDate}/>
+                <input type="datetime-local" id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate}/>
                 </div>
+
+                <div className="filter-group">
+                    <label htmlFor="time-range">Rango horario</label>
+                    <select 
+                        id="time-range" 
+                        value={selectedTimeRange} 
+                        onChange={(e) => setSelectedTimeRange(e.target.value)}
+                    >
+                        <option value="">Seleccionar rango</option>
+                        <option value="mañana">Mañana (6 am - 12 pm)</option>
+                        <option value="tarde">Tarde (12 pm - 6 pm)</option>
+                        <option value="noche">Noche (6 pm - 11 pm)</option>
+                        <option value="madrugada">Madrugada (11 pm - 6 am)</option>
+                    </select>
+                </div>
+
                     
                 <div className="filter-group" style={{ paddingTop: '5px'}}>
                     <label>&nbsp;&nbsp;</label>
@@ -309,8 +367,11 @@ export function BuscadorGrabaciones(){
             </div>
             
             <div className="results-count">
-                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} de {totalRecords} resultados
+                {selectedTimeRange
+                    ? `Mostrando grabaciones del rango ${selectedTimeRange} (${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, totalRecords)} de ${totalRecords})`
+                    : `Mostrando ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, totalRecords)} de ${totalRecords} resultados`}
             </div>
+
             
             <div className="results-list">
             {recordings.length === 0 ? (

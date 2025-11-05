@@ -15,6 +15,8 @@ import FiltroPeriodo from '../components/Estadisticas/FiltroPeriodo';
 import EstadisticasTotales from '../components/Estadisticas/EstadisticasTotales';
 import GraficoSector from '../components/Estadisticas/GraficoSector';
 import GraficoTipo from '../components/Estadisticas/GraficoTipo';
+import GraficoHorarios from '../components/Estadisticas/GraficoHorarios';
+import Ranking from '../components/Estadisticas/RankingCamaras';
 import DetalleSectores from '../components/Estadisticas/DetalleSectores';
 import InformeDescarga from '../components/InformeDescarga';
 import { NotificacionesPopover } from '../components/Notificaciones';
@@ -25,6 +27,7 @@ import axios from 'axios';
 import './Reportes.css';
 import '../components/ReporteEstadisticas.css'
 import ReportesTutorial from '../components/ReportesTutorial';
+import RankingCamaras from '../components/Estadisticas/RankingCamaras';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -53,6 +56,11 @@ function Reportes() {
   );
   const [fechaFin, setFechaFin] = useState(new Date().toISOString().slice(0, 10));
   const [agrupacion, setAgrupacion] = useState('day');
+  const [dataHorarios, setDataHorarios] = useState<any[]>([]);
+  const [topHorarios, setTopHorarios] = useState<any>({});
+  const [loadingHorarios, setLoadingHorarios] = useState(false);
+
+
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -72,6 +80,42 @@ function Reportes() {
       setLoading(false);
     }
   };
+
+
+  const cargarDatos2 = async () => {
+    setLoadingHorarios(true);
+    setError('');
+    try {
+      // 🗓️ Calcular rango de 7 días atrás desde hoy
+      const hoy = new Date();
+      const hace7dias = new Date();
+      hace7dias.setDate(hoy.getDate() - 7);
+
+      const fechaInicio7 = hace7dias.toISOString().slice(0, 10);
+      const fechaFin7 = hoy.toISOString().slice(0, 10);
+
+      const res = await fetch(
+          `${BACKEND_URL}/api/alertas/estadisticas-totales?fecha_inicio=${fechaInicio7}&fecha_fin=${fechaFin7}&group=day`,
+          { credentials: 'include' }
+        );
+
+        if (!res.ok) throw new Error('Error en la respuesta del servidor');
+
+        const json = await res.json();
+
+        setDataHorarios(json.horarios || []);
+        setTopHorarios(json.top_horarios || {});
+      } catch (err) {
+        console.error(err);
+        setError('Error al cargar los datos de horarios');
+      } finally {
+        setLoadingHorarios(false);
+      }
+    };
+
+  useEffect(() => {
+    cargarDatos2();
+  }, []);
 
   useEffect(() => {
     cargarDatos();
@@ -226,6 +270,9 @@ function Reportes() {
   }, []);
 
   const [showTutorial, setShowTutorial] = useState(false);
+
+  const [tipoDelito, setTipoDelito] = useState<string>('todos');
+
   
   const handleShowTutorial = () => {
       setShowTutorial(true);
@@ -500,6 +547,7 @@ function Reportes() {
       setDownloadingZip(null);
     }
   };
+  
 
   return (
     <div className="reportes-page">
@@ -518,11 +566,9 @@ function Reportes() {
           <NotificacionesPopover
             alerts={
               [...alerts].sort((a, b) => {
-                // Se ordena por estado: no vistas (estado === 0) primero
                 if (a.estado !== b.estado) {
                   return a.estado === 0 ? -1 : 1;
                 }
-                // Si tienen el mismo estado, ordenamos por hora_suceso descendente
                 return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
               })
             }
@@ -535,8 +581,8 @@ function Reportes() {
             }}
             onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
             mostrarCamarasCaidas={true}
-            onMarcarTodasVistas={marcarTodasComoVistas} // <- Agregar esta prop
-            unseenCount={unseenCountAlerts} // <- Pasar el contador de no vistas
+            onMarcarTodasVistas={marcarTodasComoVistas}
+            unseenCount={unseenCountAlerts}
           />
         </IonContent>
       </IonPopover>
@@ -764,6 +810,33 @@ function Reportes() {
                   gridRow: '3 / 4',    // fila 1 
                 }}>
               <InformeDescarga />
+            </div>
+
+            {/* === Sección 6: Gráfico por Horarios === */}
+            {dataHorarios.length > 0 && (
+              <div className="card" style={{ gridColumn: "1 / 2", gridRow: "4 / 5" }}>
+                <GraficoHorarios horarios={dataHorarios} />
+                {/* Mostrar también los top horarios si existen */}
+                {topHorarios && (
+                  <div style={{ marginTop: '12px', fontSize: '0.9rem' }}>
+                    <strong>🕒 Horarios más críticos:</strong><br />
+                    Merodeos: {topHorarios.merodeos?.join(', ') || '—'}<br />
+                    Portonazos: {topHorarios.portonazos?.join(', ') || '—'}<br />
+                    Asaltos Hogar: {topHorarios.asaltos_hogar?.join(', ') || '—'}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* === Sección 7: Ranking de Cámaras === */}
+            <div
+              className="card"
+              style={{
+                gridColumn: "2 / 3", // segunda columna
+                gridRow: "4 / 5",    // misma fila
+              }}
+            >
+              <RankingCamaras cameras={cameras} />
             </div>
           </>
         )}
