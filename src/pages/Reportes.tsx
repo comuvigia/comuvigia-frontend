@@ -94,24 +94,50 @@ function Reportes() {
       const fechaInicio7 = hace7dias.toISOString().slice(0, 10);
       const fechaFin7 = hoy.toISOString().slice(0, 10);
 
+      // 📡 Petición al backend
       const res = await fetch(
-          `${BACKEND_URL}/api/alertas/estadisticas-totales?fecha_inicio=${fechaInicio7}&fecha_fin=${fechaFin7}&group=day`,
-          { credentials: 'include' }
-        );
+        `${BACKEND_URL}/api/alertas/estadisticas-totales?fecha_inicio=${fechaInicio7}&fecha_fin=${fechaFin7}&group=day`,
+        { credentials: 'include' }
+      );
 
-        if (!res.ok) throw new Error('Error en la respuesta del servidor');
+      if (!res.ok) throw new Error('Error en la respuesta del servidor');
 
-        const json = await res.json();
+      const json = await res.json();
+      const horarios = json.horarios || [];
 
-        setDataHorarios(json.horarios || []);
-        setTopHorarios(json.top_horarios || {});
-      } catch (err) {
-        console.error(err);
-        setError('Error al cargar los datos de horarios');
-      } finally {
-        setLoadingHorarios(false);
+      // 📊 Guardar datos para el gráfico
+      setDataHorarios(horarios);
+
+      // 🧠 Calcular top 3 horarios solo para tipos seleccionados
+      if (horarios.length > 0) {
+        const tipos = ["merodeos", "portonazos", "asaltos_hogar"];
+        const top: Record<string, string[]> = {};
+
+        tipos.forEach((tipo) => {
+          top[tipo] = horarios
+            // Filtrar solo los que tengan valores válidos (>0)
+            .filter((h: any) => typeof h[tipo] === "number" && h[tipo] > 0)
+            // Ordenar de mayor a menor cantidad
+            .sort((a: any, b: any) => b[tipo] - a[tipo])
+            // Tomar los 3 más altos
+            .slice(0, 3)
+            // Mostrar la hora en formato 00:00
+            .map((h: any) => `${String(h.hora).padStart(2, "0")}:00`);
+        });
+
+        setTopHorarios(top);
+      } else {
+        setTopHorarios({});
       }
-    };
+    } catch (err) {
+      console.error("❌ Error al cargar los datos de horarios:", err);
+      setError("Error al cargar los datos de horarios");
+    } finally {
+      setLoadingHorarios(false);
+    }
+  };
+
+
 
   useEffect(() => {
     cargarDatos2();

@@ -141,24 +141,30 @@ const GraficoHorarios: React.FC<GraficoHorariosProps> = ({ horarios }) => {
           </h4>
 
           {dataHorarios.datasets.map((dataset) => {
-            const top3 = [...dataset.data]
+            const top3 = Array.from(dataset.data as number[])
               .map((val, i) => ({ hora: dataHorarios.labels[i], valor: val }))
+              .filter((item) => typeof item.valor === "number" && item.valor > 0)
               .sort((a, b) => b.valor - a.valor)
               .slice(0, 3);
 
             return (
               <div key={dataset.label} style={{ marginBottom: "10px" }}>
                 <strong>{dataset.label}</strong>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                  {top3.map((t, i) => (
-                    <li key={i} style={{ fontSize: "0.9rem" }}>
-                      {i + 1}. {t.hora} — {t.valor} alertas
-                    </li>
-                  ))}
-                </ul>
+                {top3.length > 0 ? (
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                    {top3.map((t, i) => (
+                      <li key={i} style={{ fontSize: "0.9rem" }}>
+                        {i + 1}. {t.hora} — {t.valor} alertas
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ fontSize: "0.85rem", color: "#888" }}>Sin actividad reciente</p>
+                )}
               </div>
             );
           })}
+
         </div>
       </IonCardContent>
     </IonCard>
