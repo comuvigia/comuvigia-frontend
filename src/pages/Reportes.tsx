@@ -827,6 +827,9 @@ function Reportes() {
                 )}
               </div>
             )}
+            {dataHorarios.length <= 0 && (
+              <p>No hay datos que mostrar</p>
+            )}
 
             {/* === Sección 7: Ranking de Cámaras === */}
             <div
