@@ -73,20 +73,12 @@ const App: React.FC = () => (
             </Route>
             <Route exact path="/reportes">
               <ProtectedRoute allowedRoles={[1, 2]}>
-                <IonPage>
-                  <IonContent scrollY={true}>
-                    <Reportes />
-                  </IonContent>
-                </IonPage>
+                <Reportes />
               </ProtectedRoute>
             </Route>
             <Route exact path="/feed_camaras">
               <ProtectedRoute allowedRoles={[1, 2]}>
-                <IonPage>
-                  <IonContent scrollY={true}>
-                    <FeedCamaras />
-                  </IonContent>
-                </IonPage>
+                <FeedCamaras />
               </ProtectedRoute>
             </Route>
             <Route>
