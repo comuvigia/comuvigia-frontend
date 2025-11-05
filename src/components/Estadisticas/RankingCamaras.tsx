@@ -40,15 +40,82 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader 
   };
 
   return (
-    <IonCard style={{ width: "100%", borderRadius: "12px" }}>
-      {mostrarHeader && (
-        <IonCardHeader>
-          <IonCardTitle style={{ textAlign: "center" }}>
-            Ranking de cámaras más efectivas (últimos 7 días)
-          </IonCardTitle>
-        </IonCardHeader>
-      )}
-      <IonCardContent>
+    <>
+      {mostrarHeader ? (
+        <IonCard className="centrar" >
+            <IonCardHeader>
+              <IonCardTitle style={{ textAlign: "center" }}>
+                Ranking de cámaras más efectivas (últimos 7 días)
+              </IonCardTitle>
+            </IonCardHeader>
+          <IonCardContent >
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {top.map((cam, index) => (
+                <div
+                  key={cam.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 12px",
+                    borderRadius: "8px",
+                    backgroundColor: colors[index] || "#ddd",
+                    color: index < 5 ? "#fff" : "#000",
+                    fontWeight: 500,
+                  }}
+                >
+                  <div style={{ fontWeight: "bold", width: "25px", textAlign: "center" }}>
+                    {index + 1}
+                  </div>
+
+                  <div style={{ flex: 1, marginLeft: "12px" }}>
+                    <div
+                      style={{
+                        fontSize: "0.95rem",
+                        fontWeight: "bold",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {cam.nombre}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.8rem",
+                        opacity: 0.8,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {cam.direccion}
+                    </div>
+                  </div>
+
+                  <div style={{ fontWeight: "bold", minWidth: "20px", textAlign: "right" }}>
+                    {cam.total_alertas}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <IonButton
+              expand="block"
+              color="primary"
+              onClick={handleVerCamaras}
+              style={{
+                "--border-radius": "12px",
+                "--background": "#1B4965",
+                marginTop: "12px",
+              }}
+            >
+              Ver cámaras con más alertas
+            </IonButton>
+          </IonCardContent>
+        </IonCard>
+      ) : (
+        <>
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {top.map((cam, index) => (
             <div
@@ -110,10 +177,11 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader 
             marginTop: "12px",
           }}
         >
-          Ver las 4 cámaras
+          Ver cámaras con más alertas
         </IonButton>
-      </IonCardContent>
-    </IonCard>
+        </>
+      )}
+    </>
   );
 };
 

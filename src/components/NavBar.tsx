@@ -68,10 +68,10 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, o
           <IonContent>
             <IonList style={{ padding: 0, marginTop: '20px' }}>
               <IonItem routerLink='/home' className='item-nav'>Inicio</IonItem>
+              <IonItem routerLink='/feed_camaras' className='item-nav'>Feed Cámaras</IonItem>
               <IonItem routerLink='/historial' className='item-nav'>Historial</IonItem>
               <IonItem routerLink='/grabaciones' className='item-nav'>Grabaciones</IonItem>
               <IonItem routerLink='/reportes' className='item-nav'>Reportes</IonItem>
-              <IonItem routerLink='/feed_camaras' className='item-nav'>Feed Cámaras</IonItem>
               {/*<IonItem>Perfil</IonItem>
               <IonItem>Cerrar sesión</IonItem>*/}
             </IonList>

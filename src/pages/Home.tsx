@@ -18,7 +18,10 @@ import {
   IonIcon,
   IonHeader, 
   IonToolbar, 
-  IonTitle
+  IonTitle,
+  IonSegment, // <-- NUEVO IMPORT
+  IonSegmentButton, // <-- NUEVO IMPORT
+  IonLabel // <-- NUEVO IMPORT
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import { MantenedoresPopover } from '../components/MantenedoresPopover';
@@ -67,6 +70,65 @@ function Home() {
   const [guardando, setGuardando] = useState(false)
   const fabButtonRef = useRef<HTMLIonFabButtonElement>(null);
   const [showRanking, setShowRanking] = useState(false);
+
+  // --- NUEVOS ESTADOS PARA RANKING DINÁMICO ---
+  const [rankingPeriodo, setRankingPeriodo] = useState<'semana' | 'mes' | '6meses' | 'ano'>('semana');
+  const [rankingCameras, setRankingCameras] = useState<Camera[]>([]);
+  const [loadingRanking, setLoadingRanking] = useState(false);
+  // --- FIN DE NUEVOS ESTADOS ---
+
+  // --- NUEVA FUNCIÓN HELPER PARA FECHAS ---
+  const getFechasFromPeriodo = (periodo: 'semana' | 'mes' | '6meses' | 'ano') => {
+    const endDate = new Date();
+    const startDate = new Date();
+    
+    if (periodo === 'semana') {
+      startDate.setDate(endDate.getDate() - 7);
+    } else if (periodo === 'mes') {
+      startDate.setMonth(endDate.getMonth() - 1);
+    } else if (periodo === '6meses') {
+      startDate.setMonth(endDate.getMonth() - 6);
+    } else if (periodo === 'ano') {
+      startDate.setFullYear(endDate.getFullYear() - 1);
+    }
+    
+    // Formato YYYY-MM-DD
+    const fechaFin = endDate.toISOString().slice(0, 10);
+    const fechaInicio = startDate.toISOString().slice(0, 10);
+    
+    return { fechaInicio, fechaFin };
+  };
+  // --- FIN FUNCIÓN HELPER ---
+
+  // --- NUEVA FUNCIÓN PARA CARGAR DATOS RANKING ---
+  const cargarDatosRanking = async (periodo: 'semana' | 'mes' | '6meses' | 'ano') => {
+    setLoadingRanking(true);
+    const { fechaInicio, fechaFin } = getFechasFromPeriodo(periodo);
+    
+    try {
+      const response = await axios.get<Camera[]>(
+        `${BACKEND_URL}/api/camaras/cantidad-alertas-fecha?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, 
+        { withCredentials: true }
+      );
+      setRankingCameras(response.data);
+    } catch (error) {
+      console.error('Error al cargar datos del ranking:', error);
+      setRankingCameras([]); // Limpiar en caso de error
+    } finally {
+      setLoadingRanking(false);
+    }
+  };
+  // --- FIN FUNCIÓN DE CARGA ---
+
+  // --- NUEVO USEEFFECT PARA RANKING ---
+  useEffect(() => {
+    // Solo cargar datos si el modal está abierto
+    if (showRanking) {
+      cargarDatosRanking(rankingPeriodo);
+    }
+  }, [showRanking, rankingPeriodo]); // Se ejecuta al abrir modal O al cambiar de periodo
+  // --- FIN USEEFFECT ---
+
 
   const guardarDescripcion = async () => {
   if (!alertaSeleccionada) return;
@@ -135,6 +197,7 @@ function Home() {
   }, []);
 
   // Carga de camaras desde backend con cantidad de alertas
+  // ESTA ES LA CARGA ORIGINAL - LA DEJAMOS INTACATA PARA EL MAPA
   const [cameras, setCameras] = useState<Camera[]>([]);
   const [loadingCameras, setLoadingCameras] = useState(true);
   useEffect(() => {
@@ -643,32 +706,65 @@ function Home() {
         onShowNotifications={handleShowNotifications} 
         onShowMantenedores={handleShowMantenedores} 
         onShowTutorial={handleShowTutorial}
-        cameras={cameras} 
+        cameras={cameras} // <--- Este se queda con 'cameras' para la búsqueda global
         searchText={searchText}
         onSearchChange={handleSearchChange}
         searchContainerRef={searchContainerRef} 
         showRanking={showRanking}
         onToggleRanking={() => setShowRanking(prevShow => !prevShow)}
       />
+
+      {/* --- INICIO DEL MODAL DE RANKING MODIFICADO --- */}
       {showRanking && (
         <IonModal
           isOpen={showRanking}
-          onDidDismiss={() => setShowRanking(false)} // <-- La magia para "cerrar al hacer clic fuera"
-          className="ranking-modal" // <-- Clase para darle el tamaño "no tan grande"
+          onDidDismiss={() => setShowRanking(false)}
+          className="ranking-modal"
         >
           <IonHeader>
             <IonToolbar>
               <IonTitle>Ranking de cámaras más efectivas</IonTitle>
-              {/* Botón opcional para cerrar desde dentro */}
               <IonButton slot='end' onClick={() => setShowRanking(false)}>X</IonButton>
+            </IonToolbar>
+            {/* BOTONES DE FILTRO */}
+            <IonToolbar>
+              <IonSegment 
+                value={rankingPeriodo} 
+                onIonChange={e => setRankingPeriodo(e.detail.value as any)}
+                color="primary"
+              >
+                <IonSegmentButton value="semana">
+                  <IonLabel>Semana</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value="mes">
+                  <IonLabel>Mes</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value="6meses">
+                  <IonLabel>6 Meses</IonLabel>
+                </IonSegmentButton>
+                <IonSegmentButton value="ano">
+                  <IonLabel>Año</IonLabel>
+                </IonSegmentButton>
+              </IonSegment>
             </IonToolbar>
           </IonHeader>
           <IonContent className="ion-padding">
-            {/* Ponemos tu componente de ranking aquí dentro */}
-            <RankingCamaras cameras={cameras} mostrarHeader={false}/>
+            {/* LÓGICA DE CARGA Y RENDERIZADO */}
+            {loadingRanking ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <IonSpinner name="crescent" />
+              </div>
+            ) : (
+              <RankingCamaras 
+                cameras={rankingCameras} // <-- Usar el nuevo estado 'rankingCameras'
+                mostrarHeader={false}
+              />
+            )}
           </IonContent>
         </IonModal>
       )}
+      {/* --- FIN DEL MODAL DE RANKING MODIFICADO --- */}
+
       <SuggestionList
         suggestions={suggestions}
         onSelect={handleSuggestionClick}
