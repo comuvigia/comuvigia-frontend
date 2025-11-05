@@ -1,456 +1,263 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    IonSpinner,
-    IonTitle,
-} from '@ionic/react';
+import { IonSpinner, IonTitle } from '@ionic/react';
 import axios from 'axios';
 import { Camera } from '../types/Camera';
 import Aviso from '../components/Aviso';
 import { useAviso } from '../hooks/useAviso';
 import './BuscadorGrabaciones.css';
-import '../pages/Historial.css';
 
 const BACKEND_CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-export function BuscadorGrabaciones(){
-    const [cameras, setCameras] = useState<Camera[]>([]);
-    const [selectedCamera, setSelectedCamera] = useState<number>(0);
-    const [recordings, setRecordings] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(3);
-    const [totalRecords, setTotalRecords] = useState(0);
-    const [thumbnails, setThumbnails] = useState({});
-    const [loadingThumbnails, setLoadingThumbnails] = useState({});
-    const { alertState, showError, closeAlert } = useAviso();
-    const formatDateForInput = (date: Date) => {
+export function BuscadorGrabaciones() {
+  const [cameras, setCameras] = useState<Camera[]>([]);
+  const [selectedCamera, setSelectedCamera] = useState<number>(0);
+  const [recordings, setRecordings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const { alertState, showError, closeAlert } = useAviso();
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('');
+  const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
+
+  const formatDateForInput = (date: Date) => {
     const pad = (n: number) => String(n).padStart(2, '0');
-        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    };
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
 
-    const now = new Date();
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(now.getDate() - 7);
+  const now = new Date();
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(now.getDate() - 7);
 
-    const [startDate, setStartDate] = useState<string>(formatDateForInput(sevenDaysAgo));
-    const [endDate, setEndDate] = useState<string>(formatDateForInput(now));
+  const [startDate, setStartDate] = useState<string>(formatDateForInput(sevenDaysAgo));
 
+  const mostrarError = (principal: string, titulo: string) => {
+    showError(principal, { title: titulo, style: 'detailed', duration: 10000 });
+  };
 
-
-    const mostrarError = (principal: string, titulo: string) => {
-        showError(principal, {
-        title: titulo,
-        style: 'detailed',
-        duration: 10000
-        });
-    };
-
-    // Cargar cámaras al montar el componente
-    useEffect(() => {
-        const fetchCameras = async () => {
-            try {
-                const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`, { withCredentials: true });
-                setCameras(response.data);
-                if (response.data.length > 0) {
-                    setSelectedCamera(response.data[0].id);
-                }
-            } catch (err) {
-                setError('Error al cargar las cámaras');
-                console.error(error)
-                console.error(err);     
-            }
-        };
-        fetchCameras();
-    }, []);
-
-    const diferenciaFechas = (fecha1: string, fecha2: string): boolean => {
-        const date1 = new Date(fecha1);
-        const date2 = new Date(fecha2);
-        
-        if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
-            console.error('Una o ambas fechas no son válidas');
-            return false;
+  useEffect(() => {
+    const fetchCameras = async () => {
+      try {
+        const response = await axios.get<Camera[]>(`${BACKEND_URL}/api/camaras`, { withCredentials: true });
+        setCameras(response.data);
+        if (response.data.length > 0) {
+          setSelectedCamera(response.data[0].id);   
         }
-        
-        const diferenciaMs = Math.abs(date2.getTime() - date1.getTime());
-        const diferenciaDias = diferenciaMs / (1000 * 60 * 60 * 24);
-        
-        return diferenciaDias <= 7;
+      } catch (err) {
+        setError('Error al cargar las cámaras');
+        console.error(err);
+      }
     };
+    fetchCameras();
+  }, []);
 
-    // Función para buscar grabaciones
-    const searchRecordings = async (page = 1) => {
-        setLoading(true);
-        setError('');
+  const searchRecordings = async (page = 1) => {
+    setLoading(true);
+    setError('');
+    try {
+      const pageNumber = typeof page === 'object' ? 1 : page;
 
-        try {
-            const pageNumber = typeof page === 'object' ? 1 : page;
-            let formattedStartDate = new Date(startDate);
-            let formattedEndDate = new Date(endDate);
+      // Fecha de inicio definida por el usuario
+      const formattedStartDate = new Date(startDate);
 
-            // Validar diferencia de 7 días
-            if (!diferenciaFechas(formattedStartDate.toISOString(), formattedEndDate.toISOString())) {
-            mostrarError('No se puede buscar un rango de fechas mayor a 7 días.', 'La cantidad de días seleccionada es mayor a 7');
-            throw new Error('La cantidad de días seleccionada es mayor a 7');
-            }
+      // Fecha de fin = 7 días después
+      const formattedEndDate = new Date(formattedStartDate);
+      formattedEndDate.setDate(formattedEndDate.getDate() + 7);
 
-            // 🕑 Aplicar el rango horario seleccionado
-            switch (selectedTimeRange) {
-            case 'mañana':
-                formattedStartDate.setHours(6, 0, 0, 0);
-                formattedEndDate.setHours(12, 0, 0, 0);
-                break;
-            case 'tarde':
-                formattedStartDate.setHours(12, 0, 0, 0);
-                formattedEndDate.setHours(18, 0, 0, 0);
-                break;
-            case 'noche':
-                formattedStartDate.setHours(18, 0, 0, 0);
-                formattedEndDate.setHours(23, 0, 0, 0);
-                break;
-            case 'madrugada':
-                formattedStartDate.setHours(23, 0, 0, 0);
-                formattedEndDate.setHours(6, 0, 0, 0);
-                formattedEndDate.setDate(formattedEndDate.getDate() + 1); // pasa al día siguiente
-                break;
-            default:
-                // No se seleccionó rango -> no cambiar horas
-                break;
-            }
+      switch (selectedTimeRange) {
+        case 'mañana':
+          formattedStartDate.setHours(6, 0, 0, 0);
+          formattedEndDate.setHours(12, 0, 0, 0);
+          break;
+        case 'tarde':
+          formattedStartDate.setHours(12, 0, 0, 0);
+          formattedEndDate.setHours(18, 0, 0, 0);
+          break;
+        case 'noche':
+          formattedStartDate.setHours(18, 0, 0, 0);
+          formattedEndDate.setHours(23, 0, 0, 0);
+          break;
+        case 'madrugada':
+          formattedStartDate.setHours(23, 0, 0, 0);
+          formattedEndDate.setHours(6, 0, 0, 0);
+          formattedEndDate.setDate(formattedEndDate.getDate() + 1);
+          break;
+      }
 
-            const response = await fetch(`${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`);
+      const response = await fetch(
+        `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`
+      );
 
-            if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-            }
+      console.log(response)
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+      if (data.videos.length === 0) mostrarError('No se encontraron grabaciones.', 'Sin resultados');
 
-            const data = await response.json();
-            if (data.videos.length === 0) {
-            mostrarError('No se encontraron grabaciones para el rango seleccionado.', 'Sin resultados');
-            }
+      setRecordings(data.videos || []);
+      setTotalRecords(data.pagination.total);
+      setCurrentPage(page);
+    } catch (err) {
+      setError('Error al cargar las grabaciones');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            setRecordings(data.videos || []);
-            setTotalRecords(data.pagination.total);
-            setCurrentPage(page);
-        } catch (err) {
-            setError('Error al cargar las grabaciones');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const totalPages = Math.ceil(totalRecords / itemsPerPage);
+  const getPageNumbers = () => {
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  };
 
+  const getThumbnailUrl = (cameraId: number, key: string) =>
+    `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?source=mkv&key=${encodeURIComponent(key)}`;
 
-
-    // Calcular el número total de páginas
-    const totalPages = Math.ceil(totalRecords / itemsPerPage);
-
-    // Generar el array de números de página para mostrar
-    const getPageNumbers = () => {
-        const pageNumbers = [];
-        const maxVisiblePages = 5; // Número máximo de páginas visibles
-        
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
-        // Ajustar si estamos cerca del final
-        if (endPage - startPage + 1 < maxVisiblePages) {
-            startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-        
-        for (let i = startPage; i <= endPage; i++) {
-            pageNumbers.push(i);
-        }
-        
-        return pageNumbers;
-    };
-
-    // Función para obtener la URL del thumbnail
-    // @ts-ignore
-    const getThumbnailUrl = (cameraId, key) => {
-        return `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?source=mkv&key=${encodeURIComponent(key)}`;
-    };
-
-    // Función para cargar un thumbnail
-    // @ts-ignore
-    const loadThumbnail = async (cameraId, timestamp, key) => {
-        const thumbnailKey = `${cameraId}_${timestamp}`;
-        
-        // Si ya está cargando o ya cargado, no hacer nada
-        // @ts-ignore
-        if (thumbnails[thumbnailKey] || loadingThumbnails[thumbnailKey]) {
-            return;
-        }
-        
-        setLoadingThumbnails(prev => ({ ...prev, [thumbnailKey]: true }));
-        
-        try {
-            const response = await fetch(
-            //`${API_URL}/video/thumbnail/${cameraId}?time=${encodeURIComponent(timestamp)}`
-            `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?source=mkv&key=${encodeURIComponent(key)}`
-            );
-            
-            if (response.ok) {
-            // Convertir la imagen a URL de datos para cachear
-            const blob = await response.blob();
-            const imageUrl = URL.createObjectURL(blob);
-            
-            setThumbnails(prev => ({ 
-                ...prev, 
-                [thumbnailKey]: imageUrl 
-            }));
-            }
-        } catch (error) {
-            console.error('Error loading thumbnail:', error);
-        } finally {
-            setLoadingThumbnails(prev => ({ ...prev, [thumbnailKey]: false }));
-        }
-    };
-
-    // Efecto para cargar thumbnails cuando cambian las grabaciones
-    useEffect(() => {
-        if (recordings.length > 0 && selectedCamera) {
-            recordings.forEach(recording => {
-            loadThumbnail(selectedCamera,recording.timestamp, recording.key);
-            });
-        }
-    }, [recordings, selectedCamera]);
-
-    // Estado para tracking de descargas
-    //const [downloading, setDownloading] = useState(false);
-    //const [downloadingId, setDownloadingId] = useState(null);
-    const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
-    // @ts-ignore
-    const DownloadButton = ({ recording, cameraId, onDownload, isDownloading }) => {
-        //console.log('Rendering DownloadButton for recording:', recording);
-        
-        return (
-            <button
-                onClick={() => onDownload(recording, cameraId)}
-                disabled={isDownloading}
-                className="download-btn"
-                title="Descargar video"
-            >
-                {isDownloading ? (
-                    <div className="download-loading">
-                        <IonSpinner name="crescent" style={{ width: '16px', height: '16px' }} />
-                        <span>Descargando...</span>
-                    </div>
-                ) : (
-                    <>
-                        <span className="download-icon">&#10515;</span>
-                        <span>Descargar</span>
-                    </>
-                )}
-            </button>
-        );
-    };
-    // Función para descargar video
-    const downloadVideo = async (cameraId: number, startTime: string, endTime: string, filename: string, recordingKey: string, uniqueId: string) => {
-        try {
-            // Mostrar indicador de carga
-            //setDownloading(true);
-            setDownloadingIds(prev => new Set([...prev, uniqueId]));
-
-            // Construir URL de descarga
-            const params = new URLSearchParams({
-                source: 'mkv',
-                start_time: new Date().toISOString(),
-                end_time: new Date().toISOString(),
-                //format: 'mp4',
-                key: recordingKey
-            });
-            
-            const response = await fetch(
-                `${BACKEND_CAMERA_URL}/video/download/${cameraId}?${params.toString()}`
-            );
-            
-            if (!response.ok) {
-                throw new Error('Error al descargar el video');
-            }
-            
-            // Convertir respuesta a blob y crear descarga
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename || `grabacion_${new Date(startTime).toLocaleDateString()}.mp4`;
-            document.body.appendChild(link);
-            link.click();
-            
-            // Limpiar
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(link);
-            
-        } catch (error) {
-            console.error('Error descargando video:', error);
-            alert('Error al descargar el video: ' + error);
-        } finally {
-            //setDownloading(false);
-            setDownloadingIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(uniqueId);
-                return newSet;
-            });
-        }
-    };
-
-    // Estado para el rango horario
-    const [selectedTimeRange, setSelectedTimeRange] = useState<string>(''); // 'mañana', 'tarde', etc.
-
-
-    return (
-        <div className="container">
-            <header>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <IonTitle>Buscador de grabaciones por cámara</IonTitle>
-                </div>
-            </header>
-            <Aviso
-                isOpen={alertState.isOpen}
-                type={alertState.type}
-                title={alertState.title}
-                message={alertState.message}
-                onClose={closeAlert}
-                style={alertState.style}
-                duration={alertState.duration}
-            />
-            <div className="filters">
-                <div className="filter-group">
-                <label htmlFor="camera">Cámara</label>
-                <select className="camera-selector" value={selectedCamera} onChange={e => setSelectedCamera(Number(e.target.value))}>
-                    {cameras.map(camera => (
-                    <option key={camera.id} value={camera.id}>
-                        {camera.nombre}
-                    </option>
-                    ))}
-                </select>
-                </div>
-                <div className="filter-group">
-                <label htmlFor="start-date">Fecha Inicio</label>
-                <input type="datetime-local" id="start-date" value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
-
-                </div>
-                    
-                <div className="filter-group">
-                <label htmlFor="end-date">Fecha Fin</label>
-                <input type="datetime-local" id="end-date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate}/>
-                </div>
-
-                <div className="filter-group">
-                    <label htmlFor="time-range">Rango horario</label>
-                    <select 
-                        id="time-range" 
-                        value={selectedTimeRange} 
-                        onChange={(e) => setSelectedTimeRange(e.target.value)}
-                    >
-                        <option value="">Seleccionar rango</option>
-                        <option value="mañana">Mañana (6 am - 12 pm)</option>
-                        <option value="tarde">Tarde (12 pm - 6 pm)</option>
-                        <option value="noche">Noche (6 pm - 11 pm)</option>
-                        <option value="madrugada">Madrugada (11 pm - 6 am)</option>
-                    </select>
-                </div>
-
-                    
-                <div className="filter-group" style={{ paddingTop: '5px'}}>
-                    <label>&nbsp;&nbsp;</label>
-                    <button id="search-btn" className="search-button"
-                            onClick={() => searchRecordings()}
-                            disabled={loading || !selectedCamera}
-                    >
-                        Buscar
-                    </button>
-                </div>
-            </div>
-            
-            <div className="results-count">
-                {selectedTimeRange
-                    ? `Mostrando grabaciones del rango ${selectedTimeRange} (${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, totalRecords)} de ${totalRecords})`
-                    : `Mostrando ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, totalRecords)} de ${totalRecords} resultados`}
-            </div>
-
-            
-            <div className="results-list">
-            {recordings.length === 0 ? (
-                <div className="no-videos-message">
-                {loading ? <IonSpinner name="crescent" /> : 'No hay grabaciones disponibles'}
-                </div>
-            ) : (
-                recordings.map((recording, index) => (
-                <div key={recording.id} className="result-item">
-                    <div className="thumbnail">
-                    <img 
-                        style={{borderRadius: '20px'}}
-                        src={getThumbnailUrl(selectedCamera, recording.key)} 
-                        alt={`Grabación ${new Date(recording.time).toLocaleString()}`}
-                        onError={(e) => {
-                        // Fallback si el thumbnail no está disponible
-                        (e.target as HTMLImageElement).src = '/placeholder-thumbnail.jpg';
-                        }}
-                    />
-                    </div>
-                    <div className="date-time">{new Date(recording.time).toLocaleString()}</div>
-                    <div className="duration">
-                        {/*<span className="value">{parseFloat(String(recording.duration_seconds/60)).toFixed(2)} min</span>*/}
-                        <span className="value">~ 5 min</span>
-                        <span className="label">Duración</span>
-                    </div>
-                    <div className="size">
-                        <span className="value">{Math.round(recording.size/10**6)} MB</span>
-                        <span className="label">Tamaño</span>
-                    </div>
-                    <div className="download-section">
-                        <DownloadButton
-                            recording={recording}
-                            cameraId={selectedCamera}
-                            isDownloading={downloadingIds.has(recording.id)}
-                            // @ts-ignore
-                            onDownload={async (rec, camId) => {
-                                //const filename = `grabacion_${new Date(rec.start_time).toISOString().split('T')[0]}_${new Date(rec.start_time).toISOString().split('T')[1]}.mp4`;
-                                const filename = `grabacion_${rec.time}.mp4`;
-                                await downloadVideo(camId, rec.start_time, rec.end_time, filename, rec.key, rec.id);
-                            }}
-                        />
-                    </div>
-                </div>
-                ))
-            )}
-            </div>
-            
-            <div className="pagination">
-                <button 
-                id="back-button"
-                disabled={currentPage === 1} 
-                onClick={() => searchRecordings(currentPage - 1)}
-                >
-                &laquo;
-                </button>
-                
-                {getPageNumbers().map(page => (
-                <button
-                    key={page}
-                    className={currentPage === page ? 'active' : ''}
-                    onClick={() => searchRecordings(page)}
-                >
-                    {page}
-                </button>
-                ))}
-                
-                {totalPages > getPageNumbers()[getPageNumbers().length - 1] && (
-                <span>...</span>
-                )}
-                
-                <button 
-                id="next-button"
-                disabled={currentPage === totalPages} 
-                onClick={() => searchRecordings(currentPage + 1)}
-                >
-                &raquo;
-                </button>
-            </div>
+  const DownloadButton = ({ recording, cameraId, onDownload, isDownloading }: any) => (
+    <button onClick={() => onDownload(recording, cameraId)} disabled={isDownloading} className="download-btn">
+      {isDownloading ? (
+        <div className="download-loading">
+          <IonSpinner name="crescent" style={{ width: '16px', height: '16px' }} />
+          <span>Descargando...</span>
         </div>
-    );
-};
+      ) : (
+        <>
+          <span className="download-icon">&#10515;</span>
+          <span>Descargar</span>
+        </>
+      )}
+    </button>
+  );
+
+  const downloadVideo = async (cameraId: number, startTime: string, endTime: string, filename: string, recordingKey: string, uniqueId: string) => {
+    try {
+      setDownloadingIds(prev => new Set([...prev, uniqueId]));
+      const params = new URLSearchParams({
+        source: 'mkv',
+        start_time: new Date().toISOString(),
+        end_time: new Date().toISOString(),
+        key: recordingKey
+      });
+      const response = await fetch(`${BACKEND_CAMERA_URL}/video/download/${cameraId}?${params.toString()}`);
+      if (!response.ok) throw new Error('Error al descargar el video');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error descargando video:', error);
+      alert('Error al descargar el video');
+    } finally {
+      setDownloadingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(uniqueId);
+        return newSet;
+      });
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <header className="page-header">
+        <IonTitle>🎥 Buscador de grabaciones por cámara</IonTitle>
+      </header>
+
+      <Aviso isOpen={alertState.isOpen} type={alertState.type} title={alertState.title} message={alertState.message} onClose={closeAlert} style={alertState.style} duration={alertState.duration} />
+
+      <section className="filters-section">
+        <div className="filter-group">
+          <label>Cámara</label>
+          <select value={selectedCamera} onChange={e => setSelectedCamera(Number(e.target.value))}>
+            {cameras.map(camera => (
+              <option key={camera.id} value={camera.id}>{camera.nombre}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-group">
+            <label>Fecha de inicio</label>
+            <input
+                type="date"
+                value={startDate.split('T')[0]} // solo la parte de la fecha
+                onChange={(e) => setStartDate(`${e.target.value}T00:00`)}
+            />
+        </div>
+
+        <div className="filter-group">
+          <label>Rango horario</label>
+          <select value={selectedTimeRange} onChange={(e) => setSelectedTimeRange(e.target.value)}>
+            <option value="">Seleccionar rango</option>
+            <option value="mañana">Mañana (6am-12pm)</option>
+            <option value="tarde">Tarde (12pm-6pm)</option>
+            <option value="noche">Noche (6pm-11pm)</option>
+            <option value="madrugada">Madrugada (11pm-6am)</option>
+          </select>
+        </div>
+
+        <button className="search-button" onClick={() => searchRecordings()} disabled={loading || !selectedCamera}>
+          Buscar
+        </button>
+      </section>
+
+      <div className="results-info">
+        {selectedTimeRange ? (
+          <>Mostrando grabaciones del rango <b>{selectedTimeRange}</b> ({(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} de {totalRecords})</>
+        ) : (
+          <>Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} de {totalRecords} resultados</>
+        )}
+      </div>
+
+      <section className="results-grid">
+        {recordings.length === 0 ? (
+          <div className="no-videos-message">
+            {loading ? <IonSpinner name="crescent" /> : 'No hay grabaciones disponibles'}
+          </div>
+        ) : (
+          recordings.map((rec) => (
+            <div key={rec.id} className="result-card">
+              <img src={getThumbnailUrl(selectedCamera, rec.key)} alt="Miniatura" className="result-thumbnail" />
+              <div className="result-info">
+                <div className="date">{new Date(rec.time).toLocaleString()}</div>
+                <div className="meta">
+                  <span>Duración: ~5 min</span>
+                  <span>Tamaño: {Math.round(rec.size / 1e6)} MB</span>
+                </div>
+              </div>
+              <DownloadButton
+                recording={rec}
+                cameraId={selectedCamera}
+                isDownloading={downloadingIds.has(rec.id)}
+                onDownload={async (r: any, c: number) => {
+                  const filename = `grabacion_${r.time}.mp4`;
+                  await downloadVideo(c, r.start_time, r.end_time, filename, r.key, r.id);
+                }}
+              />
+            </div>
+          ))
+        )}
+      </section>
+
+      <div className="pagination">
+        <button disabled={currentPage === 1} onClick={() => searchRecordings(currentPage - 1)}>&laquo;</button>
+        {getPageNumbers().map(page => (
+          <button key={page} className={currentPage === page ? 'active' : ''} onClick={() => searchRecordings(page)}>
+            {page}
+          </button>
+        ))}
+        <button disabled={currentPage === totalPages} onClick={() => searchRecordings(currentPage + 1)}>&raquo;</button>
+      </div>
+    </div>
+  );
+}
