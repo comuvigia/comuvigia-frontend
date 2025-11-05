@@ -13,10 +13,12 @@ import {
   IonModal,
   IonSpinner,
   IonTextarea,
-  IonToast,
   IonFab,
   IonFabButton,
-  IonIcon
+  IonIcon,
+  IonHeader, 
+  IonToolbar, 
+  IonTitle
 } from '@ionic/react';
 import { NotificacionesPopover } from '../components/Notificaciones';
 import { MantenedoresPopover } from '../components/MantenedoresPopover';
@@ -30,6 +32,7 @@ import { useToast } from "../components/ToastProvider";
 import SuggestionList from '../components/SuggestionList';
 import '../components/SuggestionList.css';
 import HomeTutorial from '../components/HomeTutorial';
+import RankingCamaras from '../components/Estadisticas/RankingCamaras';
 // URL del backend cargado desde archivo .env
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const CAMERA_URL = import.meta.env.VITE_CAMERA_URL;
@@ -63,6 +66,7 @@ function Home() {
   const [nuevaDescripcion, setNuevaDescripcion] = useState("");
   const [guardando, setGuardando] = useState(false)
   const fabButtonRef = useRef<HTMLIonFabButtonElement>(null);
+  const [showRanking, setShowRanking] = useState(false);
 
   const guardarDescripcion = async () => {
   if (!alertaSeleccionada) return;
@@ -643,7 +647,28 @@ function Home() {
         searchText={searchText}
         onSearchChange={handleSearchChange}
         searchContainerRef={searchContainerRef} 
+        showRanking={showRanking}
+        onToggleRanking={() => setShowRanking(prevShow => !prevShow)}
       />
+      {showRanking && (
+        <IonModal
+          isOpen={showRanking}
+          onDidDismiss={() => setShowRanking(false)} // <-- La magia para "cerrar al hacer clic fuera"
+          className="ranking-modal" // <-- Clase para darle el tamaño "no tan grande"
+        >
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Ranking de cámaras más efectivas</IonTitle>
+              {/* Botón opcional para cerrar desde dentro */}
+              <IonButton slot='end' onClick={() => setShowRanking(false)}>X</IonButton>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent className="ion-padding">
+            {/* Ponemos tu componente de ranking aquí dentro */}
+            <RankingCamaras cameras={cameras} mostrarHeader={false}/>
+          </IonContent>
+        </IonModal>
+      )}
       <SuggestionList
         suggestions={suggestions}
         onSelect={handleSuggestionClick}

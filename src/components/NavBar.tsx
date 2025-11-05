@@ -21,6 +21,7 @@ import { useUser } from '../UserContext';
 import axios from 'axios';
 import CameraSearch from './CameraSearch';
 import { Camera } from '../types/Camera';
+import { podiumOutline } from 'ionicons/icons';
 
 interface NavBarProps {
   unseenCount: number;
@@ -31,9 +32,12 @@ interface NavBarProps {
   onSearchChange?: (text: string, results: Camera[]) => void;
   searchContainerRef?: React.RefObject<HTMLDivElement | null>;
   cameras?: Camera[];
+
+  showRanking?: boolean;
+  onToggleRanking?: () => void;
 }
 
-export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, onShowTutorial, cameras, searchText, onSearchChange, searchContainerRef}: NavBarProps) {
+export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, onShowTutorial, cameras, searchText, onSearchChange, searchContainerRef, showRanking, onToggleRanking}: NavBarProps) {
   const history = useHistory();
   const location = useLocation();
   const { user, setUser } = useUser();
@@ -118,6 +122,15 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, o
               <IonButton onClick={onShowNotifications}>
                 <IonIcon id='notifications-icon' icon={notificationsOutline} />
                 {unseenCount > 0 && <IonBadge color="danger">{unseenCount}</IonBadge>}
+              </IonButton>
+            )}
+            {user && (user.rol == 1 || user.rol == 2) && (location.pathname === '/home' || location.pathname.startsWith('/home')) &&  (
+              <IonButton 
+                onClick={onToggleRanking} // Llama a la prop
+                color={showRanking ? 'primary' : 'default'} // (Opcional) cambia de color si está activo
+              >
+                {/* Los estilos de gridColumn/gridRow no tienen sentido aquí, los quitamos */}
+                <IonIcon icon={podiumOutline} />
               </IonButton>
             )}
             {user && (user.rol == 1 || user.rol == 2) && (

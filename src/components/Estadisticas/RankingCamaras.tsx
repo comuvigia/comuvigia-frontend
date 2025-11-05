@@ -17,9 +17,10 @@ interface Camera {
 
 interface RankingCamarasProps {
   cameras: Camera[];
+  mostrarHeader?: boolean;
 }
 
-const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras }) => {
+const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader = true }) => {
   const history = useHistory();
 
   const sorted = [...cameras].sort((a, b) => b.total_alertas - a.total_alertas);
@@ -40,12 +41,13 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras }) => {
 
   return (
     <IonCard style={{ width: "100%", borderRadius: "12px" }}>
-      <IonCardHeader>
-        <IonCardTitle style={{ textAlign: "center" }}>
-          Ranking de cámaras más efectivas (últimos 7 días)
-        </IonCardTitle>
-      </IonCardHeader>
-
+      {mostrarHeader && (
+        <IonCardHeader>
+          <IonCardTitle style={{ textAlign: "center" }}>
+            Ranking de cámaras más efectivas (últimos 7 días)
+          </IonCardTitle>
+        </IonCardHeader>
+      )}
       <IonCardContent>
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {top.map((cam, index) => (

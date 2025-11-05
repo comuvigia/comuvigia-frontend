@@ -112,3 +112,13 @@ ion-fab-button:hover {
         transform: none !important;
     }
 }
+
+/* Para que el modal no sea de pantalla completa en escritorio */
+.ranking-modal {
+  --width: 450px;
+  --height: 600px;
+  --max-width: 90vw;
+  --max-height: 80vh;
+  --border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
