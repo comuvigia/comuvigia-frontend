@@ -200,6 +200,26 @@ function Reportes() {
     }
   }, []);
 
+    const [cameras7d, setCameras7d] = useState<Camera[]>([]);
+  const [loadingCameras7d, setLoadingCameras7d] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const hoy = new Date();
+    const hace7dias = new Date();
+    hace7dias.setDate(hoy.getDate() - 7);
+
+    const fechaInicio7 = hace7dias.toISOString().slice(0, 10);
+    const fechaFin7 = hoy.toISOString().slice(0, 10);
+
+    axios
+      .get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas-fecha?fecha_inicio=${fechaInicio7}&fecha_fin=${fechaFin7}`, { withCredentials: true })
+      .then(response => setCameras7d(response.data))
+      .catch(error => console.error('Error al obtener cámaras (últimos 7 días):', error))
+      .finally(() => setLoadingCameras7d(false));
+  }, []);
+
   // Carga de alertas no vistas desde backend
   const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
   useEffect(() => {
@@ -431,6 +451,8 @@ function Reportes() {
     1: "Confirmada",
     2: "Falso Positivo"
   };
+
+
 
   // Función para descargar clip
   const downloadClip = async (key: string) => {
@@ -839,7 +861,7 @@ function Reportes() {
                 gridRow: "4 / 5",    // misma fila
               }}
             >
-              <RankingCamaras cameras={cameras} />
+              <RankingCamaras cameras={cameras7d} />
             </div>
           </>
         )}
