@@ -72,7 +72,17 @@ function Reportes() {
       );
       if (!res.ok) throw new Error('Error en la respuesta del servidor');
       const json = await res.json();
+      console.log(json)
       setData(json);
+      setDataHorarios(json.horarios || []);
+      setTopHorarios(json.top_horarios || {});
+
+          axios
+      .get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas-fecha?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, { withCredentials: true })
+      .then(response => setCameras7d(response.data))
+      .catch(error => console.error('Error al obtener cámaras (últimos 7 días):', error))
+      .finally(() => setLoadingCameras7d(false));
+      
     } catch (err) {
       console.error(err);
       setError('Error al cargar los datos');
@@ -82,40 +92,6 @@ function Reportes() {
   };
 
 
-  const cargarDatos2 = async () => {
-    setLoadingHorarios(true);
-    setError('');
-    try {
-      // 🗓️ Calcular rango de 7 días atrás desde hoy
-      const hoy = new Date();
-      const hace7dias = new Date();
-      hace7dias.setDate(hoy.getDate() - 7);
-
-      const fechaInicio7 = hace7dias.toISOString().slice(0, 10);
-      const fechaFin7 = hoy.toISOString().slice(0, 10);
-
-      const res = await fetch(
-          `${BACKEND_URL}/api/alertas/estadisticas-totales?fecha_inicio=${fechaInicio7}&fecha_fin=${fechaFin7}&group=day`,
-          { credentials: 'include' }
-        );
-
-        if (!res.ok) throw new Error('Error en la respuesta del servidor');
-
-        const json = await res.json();
-
-        setDataHorarios(json.horarios || []);
-        setTopHorarios(json.top_horarios || {});
-      } catch (err) {
-        console.error(err);
-        setError('Error al cargar los datos de horarios');
-      } finally {
-        setLoadingHorarios(false);
-      }
-    };
-
-  useEffect(() => {
-    cargarDatos2();
-  }, []);
 
   useEffect(() => {
     cargarDatos();
@@ -202,23 +178,6 @@ function Reportes() {
 
     const [cameras7d, setCameras7d] = useState<Camera[]>([]);
   const [loadingCameras7d, setLoadingCameras7d] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const hoy = new Date();
-    const hace7dias = new Date();
-    hace7dias.setDate(hoy.getDate() - 7);
-
-    const fechaInicio7 = hace7dias.toISOString().slice(0, 10);
-    const fechaFin7 = hoy.toISOString().slice(0, 10);
-
-    axios
-      .get<Camera[]>(`${BACKEND_URL}/api/camaras/cantidad-alertas-fecha?fecha_inicio=${fechaInicio7}&fecha_fin=${fechaFin7}`, { withCredentials: true })
-      .then(response => setCameras7d(response.data))
-      .catch(error => console.error('Error al obtener cámaras (últimos 7 días):', error))
-      .finally(() => setLoadingCameras7d(false));
-  }, []);
 
   // Carga de alertas no vistas desde backend
   const [ unseenAlerts,  setUnseenAlerts ] = useState<Alert[]>([])
