@@ -82,6 +82,41 @@ function Reportes() {
       .then(response => setCameras7d(response.data))
       .catch(error => console.error('Error al obtener cámaras (últimos 7 días):', error))
       .finally(() => setLoadingCameras7d(false));
+
+      
+      // 1️⃣ Normalizar datos
+      const horariosRaw = Array.isArray(json.horarios) ? json.horarios : [];
+      const horarios = horariosRaw.map((h: any) => ({
+        hora: Number(h.hora ?? h.hour ?? h._id ?? 0),
+        merodeos: Number(h.merodeos ?? 0),
+        portonazos: Number(h.portonazos ?? 0),
+        asaltos_hogar: Number(h.asaltos_hogar ?? 0),
+      }));
+
+      console.log("✅ Datos normalizados de horarios:", horarios);
+
+      setDataHorarios(horarios);
+
+      // 2️⃣ Calcular top
+      const pickTop = (arr: any[], key: keyof typeof horarios[0], n = 3) =>
+        arr
+          .slice()
+          .sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0))
+          .slice(0, n)
+          .map((h) => `${String(h.hora).padStart(2, '0')}:00`);
+
+      const top =
+        horarios.length > 0
+          ? {
+              merodeos: pickTop(horarios, 'merodeos'),
+              portonazos: pickTop(horarios, 'portonazos'),
+              asaltos_hogar: pickTop(horarios, 'asaltos_hogar'),
+            }
+          : {};
+
+      console.log("🏆 Top horarios calculado:", top);
+
+      setTopHorarios(top);
       
     } catch (err) {
       console.error(err);
@@ -90,7 +125,6 @@ function Reportes() {
       setLoading(false);
     }
   };
-
 
 
   useEffect(() => {
