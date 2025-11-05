@@ -88,7 +88,8 @@ function Reportes() {
     try {
       const hoy = new Date();
       const hace7dias = new Date();
-      hace7dias.setDate(hoy.getDate() - 7);
+      hace7dias.setDate(hoy.getDate() - 180);
+
 
       const fechaInicio7 = hace7dias.toISOString().slice(0, 10);
       const fechaFin7 = hoy.toISOString().slice(0, 10);
@@ -101,39 +102,53 @@ function Reportes() {
       if (!res.ok) throw new Error('Error en la respuesta del servidor');
 
       const json = await res.json();
-      const horarios = json.horarios || [];
 
-      // Guardar los datos para el gráfico
+      console.log("🔍 JSON completo de horarios recibido:", json);
+
+      // 1️⃣ Normalizar datos
+      const horariosRaw = Array.isArray(json.horarios) ? json.horarios : [];
+      const horarios = horariosRaw.map((h: any) => ({
+        hora: Number(h.hora ?? h.hour ?? h._id ?? 0),
+        merodeos: Number(h.merodeos ?? 0),
+        portonazos: Number(h.portonazos ?? 0),
+        asaltos_hogar: Number(h.asaltos_hogar ?? 0),
+      }));
+
+      console.log("✅ Datos normalizados de horarios:", horarios);
+
       setDataHorarios(horarios);
 
-      // Calcular top 3 por tipo de delito
-      if (horarios.length > 0) {
-        const top = {
-          merodeos: horarios
-            .sort((a: any, b: any) => b.merodeos - a.merodeos)
-            .slice(0, 3)
-            .map((h: any) => `${String(h.hora).padStart(2, '0')}:00`),
-          portonazos: horarios
-            .sort((a: any, b: any) => b.portonazos - a.portonazos)
-            .slice(0, 3)
-            .map((h: any) => `${String(h.hora).padStart(2, '0')}:00`),
-          asaltos_hogar: horarios
-            .sort((a: any, b: any) => b.asaltos_hogar - a.asaltos_hogar)
-            .slice(0, 3)
-            .map((h: any) => `${String(h.hora).padStart(2, '0')}:00`),
-        };
+      // 2️⃣ Calcular top
+      const pickTop = (arr: any[], key: keyof typeof horarios[0], n = 3) =>
+        arr
+          .slice()
+          .sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0))
+          .slice(0, n)
+          .map((h) => `${String(h.hora).padStart(2, '0')}:00`);
 
-        setTopHorarios(top);
-      } else {
-        setTopHorarios({});
-      }
+      const top =
+        horarios.length > 0
+          ? {
+              merodeos: pickTop(horarios, 'merodeos'),
+              portonazos: pickTop(horarios, 'portonazos'),
+              asaltos_hogar: pickTop(horarios, 'asaltos_hogar'),
+            }
+          : {};
+
+      console.log("🏆 Top horarios calculado:", top);
+
+      setTopHorarios(top);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error al cargar los datos de horarios:", err);
       setError('Error al cargar los datos de horarios');
+      setTopHorarios({});
+      setDataHorarios([]);
     } finally {
       setLoadingHorarios(false);
     }
   };
+
+
 
 
   useEffect(() => {
