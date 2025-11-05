@@ -171,7 +171,7 @@ export function BuscadorGrabaciones() {
   return (
     <div className="page-container">
       <header className="page-header">
-        <IonTitle>🎥 Buscador de grabaciones por cámara</IonTitle>
+        <IonTitle>Buscador de grabaciones por cámara</IonTitle>
       </header>
 
       <Aviso isOpen={alertState.isOpen} type={alertState.type} title={alertState.title} message={alertState.message} onClose={closeAlert} style={alertState.style} duration={alertState.duration} />
