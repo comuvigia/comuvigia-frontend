@@ -383,7 +383,7 @@ function Historial(){
   };
 
     return (
-        <div>
+        <IonContent>
             <GrabacionesTutorial run={showTutorial} onFinish={handleFinishTutorial} />
             <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowTutorial={handleShowTutorial} />
             <IonPopover
@@ -554,7 +554,7 @@ function Historial(){
                   <BuscadorGrabaciones/>
                 </> 
             )}
-        </div>
+        </IonContent>
     );
 }
 export default Historial;
