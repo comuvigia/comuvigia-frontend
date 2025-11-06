@@ -14,6 +14,7 @@ import {
   IonLabel,
   IonSegment,
   IonSegmentButton,
+  IonIcon,
 } from "@ionic/react";
 import axios from "axios";
 import "./FeedCamaras.css";
@@ -27,6 +28,7 @@ import {
   IonSpinner,
   IonTextarea,
 } from '@ionic/react';
+import { videocam } from "ionicons/icons";
 import { NotificacionesPopover } from '../components/Notificaciones';
 import { io } from 'socket.io-client';
 import { useUser } from '../UserContext';
@@ -659,16 +661,16 @@ const FeedCamaras: React.FC = () => {
 
       <div className="feed-content ion-padding">
         <div className="segment-container">
-          <IonLabel>Vista:</IonLabel>
+          <IonLabel style={{fontWeight:'bold', color:'#1B4965'}}>Seleccina una vista</IonLabel>
           <IonSegment
             value={String(numFeed)}
             onIonChange={(e) =>
               handleNumFeedChange(Number(e.detail.value) as 1 | 2 | 4)
             }
           >
-            <IonSegmentButton value="1">1</IonSegmentButton>
-            <IonSegmentButton value="2">2</IonSegmentButton>
-            <IonSegmentButton value="4">4</IonSegmentButton>
+            <IonSegmentButton value="1" style={{paddingBottom:'5px'}}>1 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
+            <IonSegmentButton value="2" style={{paddingBottom:'5px'}}>2 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
+            <IonSegmentButton value="4" style={{paddingBottom:'5px'}}>4 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
           </IonSegment>
         </div>
 
@@ -702,7 +704,7 @@ const FeedCamaras: React.FC = () => {
                     </IonItem>
                   </IonCardHeader>
 
-                  <IonCardContent>
+                  <IonCardContent style={{display:'flex', justifyContent:'center'}}>
                     {cam ? (
                       cam.link_camara_externo ? (
                         <img
@@ -721,7 +723,7 @@ const FeedCamaras: React.FC = () => {
                       )
                     ) : (
                       <div className="feed-placeholder">
-                        <p>Seleccione una cámara</p>
+                        <p></p>
                       </div>
                     )}
                   </IonCardContent>

@@ -3,6 +3,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  flex-direction: column;
 }
 
 .feed-video {
@@ -14,13 +15,15 @@
 }
 
 .feed-placeholder {
+  background-image: url('/fondo_camara.png');
   height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f3f3f3;
+  background-size: cover;
   border-radius: 12px;
   color: #666;
+  width: 80%;
 }
 
 .feed-page {
