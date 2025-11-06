@@ -38,7 +38,7 @@ const EstadisticasTotales: React.FC<EstadisticasTotalesProps> = ({ estadisticas_
         <IonGrid>
           <IonRow>
             {/* Total alertas */}
-            <IonCol size="3">
+            <IonCol size="6">
               <div className="stat-card">
                 <div className="stat-number">{estadisticas_totales.total_alertas}</div>
                 <div className="stat-label">Alertas Totales</div>
@@ -46,15 +46,16 @@ const EstadisticasTotales: React.FC<EstadisticasTotalesProps> = ({ estadisticas_
             </IonCol>
 
             {/* Alertas confirmadas */}
-            <IonCol size="3">
+            <IonCol size="6">
               <div className="stat-card">
                 <div className="stat-number">{alertasVerificadas}</div>
                 <div className="stat-label">Alertas Verificadas</div>
               </div>
             </IonCol>
-
+          </IonRow>
+          <IonRow>
             {/* Tasa de confianza */}
-            <IonCol size="3">
+            <IonCol size="6">
               <div
                 className="stat-card"
                 style={{
@@ -80,7 +81,7 @@ const EstadisticasTotales: React.FC<EstadisticasTotalesProps> = ({ estadisticas_
             </IonCol>
 
             {/* Tasa de error */}
-            <IonCol size="3">
+            <IonCol size="6">
               <div
                 className="stat-card"
                 style={{
