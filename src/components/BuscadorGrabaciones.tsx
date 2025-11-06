@@ -59,39 +59,46 @@ const searchRecordings = async (page = 1) => {
   try {
     const pageNumber = typeof page === 'object' ? 1 : page;
 
-    // Fecha de inicio y fin (rango de 7 días)
+    // Fecha de inicio definida por el usuario
     const formattedStartDate = new Date(startDate);
     const formattedEndDate = new Date(formattedStartDate);
     formattedEndDate.setDate(formattedEndDate.getDate() + 7);
 
-    // 🔹 Mapeo de tus labels al formato que espera el backend
-    const timeRangeMap: Record<string, string> = {
-      'mañana': 'morning',
-      'tarde': 'afternoon',
-      'noche': 'night',
-      'madrugada': 'earlymorning'
-    };
+    const response = await fetch(
+      `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`
+    );
 
-    const backendTimeRange = timeRangeMap[selectedTimeRange] || 'all';
-
-    // 🔹 No seteamos horas manualmente, eso ya lo hace el backend
-    const url = `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv` +
-                `&start_date=${formattedStartDate.toISOString()}` +
-                `&end_date=${formattedEndDate.toISOString()}` +
-                `&page=${pageNumber}` +
-                `&per_page=${itemsPerPage}` +
-                `&duration_min=5` +
-                `&time_range=${backendTimeRange}`;
-
-    const response = await fetch(url);
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
     const data = await response.json();
-    if (data.videos.length === 0) {
-      mostrarError('No se encontraron grabaciones.', 'Sin resultados');
+
+    let videos = data.videos || [];
+
+    // 🟦 FILTRO LOCAL SOLO PARA HORARIO (sin romper paginación)
+    if (selectedTimeRange) {
+      videos = videos.filter((v: { time: string | number | Date; }) => {
+        const videoDate = new Date(v.time);
+        const hour = videoDate.getHours();
+
+        switch (selectedTimeRange) {
+          case 'mañana':
+            return hour >= 6 && hour < 12;
+          case 'tarde':
+            return hour >= 12 && hour < 18;
+          case 'noche':
+            return hour >= 18 && hour <= 23;
+          case 'madrugada':
+            return hour >= 0 && hour < 6;
+          default:
+            return true;
+        }
+      });
     }
 
-    setRecordings(data.videos || []);
+    // 🟩 Si no hay resultados en la página actual
+    if (videos.length === 0) mostrarError('No se encontraron grabaciones.', 'Sin resultados');
+
+    // Mantiene paginación real
+    setRecordings(videos);
     setTotalRecords(data.pagination.total);
     setCurrentPage(page);
 
