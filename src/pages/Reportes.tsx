@@ -60,8 +60,6 @@ function Reportes() {
   const [topHorarios, setTopHorarios] = useState<any>({});
   const [loadingHorarios, setLoadingHorarios] = useState(false);
 
-
-
   const cargarDatos = async () => {
     setLoading(true);
     setError('');
@@ -125,7 +123,6 @@ function Reportes() {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     cargarDatos();
@@ -210,7 +207,7 @@ function Reportes() {
     }
   }, []);
 
-    const [cameras7d, setCameras7d] = useState<Camera[]>([]);
+  const [cameras7d, setCameras7d] = useState<Camera[]>([]);
   const [loadingCameras7d, setLoadingCameras7d] = useState(true);
 
   // Carga de alertas no vistas desde backend
@@ -320,6 +317,7 @@ function Reportes() {
               : c
           )
         );
+        cargarDatos()
       });
   
       return () => {
