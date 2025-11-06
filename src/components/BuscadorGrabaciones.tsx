@@ -53,58 +53,65 @@ export function BuscadorGrabaciones() {
     fetchCameras();
   }, []);
 
-  const searchRecordings = async (page = 1) => {
-    setLoading(true);
-    setError('');
-    try {
-      const pageNumber = typeof page === 'object' ? 1 : page;
+const searchRecordings = async (page = 1) => {
+  setLoading(true);
+  setError('');
+  try {
+    const pageNumber = typeof page === 'object' ? 1 : page;
+      
+    // Fecha de inicio definida por el usuario
+    const formattedStartDate = new Date(startDate);
 
-      // Fecha de inicio definida por el usuario
-      const formattedStartDate = new Date(startDate);
+    // Fecha de fin = 7 días después
+    const formattedEndDate = new Date(formattedStartDate);
+    formattedEndDate.setDate(formattedEndDate.getDate() + 7);
 
-      // Fecha de fin = 7 días después
-      const formattedEndDate = new Date(formattedStartDate);
-      formattedEndDate.setDate(formattedEndDate.getDate() + 7);
+    const response = await fetch(
+      `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`
+    );
 
-      switch (selectedTimeRange) {
-        case 'mañana':
-          formattedStartDate.setHours(6, 0, 0, 0);
-          formattedEndDate.setHours(12, 0, 0, 0);
-          break;
-        case 'tarde':
-          formattedStartDate.setHours(12, 0, 0, 0);
-          formattedEndDate.setHours(18, 0, 0, 0);
-          break;
-        case 'noche':
-          formattedStartDate.setHours(18, 0, 0, 0);
-          formattedEndDate.setHours(23, 0, 0, 0);
-          break;
-        case 'madrugada':
-          formattedStartDate.setHours(23, 0, 0, 0);
-          formattedEndDate.setHours(6, 0, 0, 0);
-          formattedEndDate.setDate(formattedEndDate.getDate() + 1);
-          break;
-      }
+    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+    const data = await response.json();
 
-      const response = await fetch(
-        `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`
-      );
+    let videos = data.videos || [];
 
-      console.log(response)
-      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-      const data = await response.json();
-      if (data.videos.length === 0) mostrarError('No se encontraron grabaciones.', 'Sin resultados');
+    // 🟦 FILTRO LOCAL DE HORARIO (día por día)
+    if (selectedTimeRange) {
+      videos = videos.filter((v: { time: string | number | Date; }) => {
+        const videoDate = new Date(v.time);
+        const hour = videoDate.getHours();
 
-      setRecordings(data.videos || []);
-      setTotalRecords(data.pagination.total);
-      setCurrentPage(page);
-    } catch (err) {
-      setError('Error al cargar las grabaciones');
-      console.error(err);
-    } finally {
-      setLoading(false);
+        switch (selectedTimeRange) {
+          case 'mañana':
+            return hour >= 6 && hour < 12;
+          case 'tarde':
+            return hour >= 12 && hour < 18;
+          case 'noche':
+            return hour >= 18 && hour < 24;
+          case 'madrugada':
+            return hour >= 0 && hour < 6;
+          default:
+            return true;
+        }
+      });
     }
-  };
+
+    // 🟩 Si no hay resultados, mostrar error
+    if (videos.length === 0) mostrarError('No se encontraron grabaciones.', 'Sin resultados');
+
+    // Guardar en estado
+    setRecordings(videos);
+    setTotalRecords(videos.length);
+    setCurrentPage(page);
+
+  } catch (err) {
+    setError('Error al cargar las grabaciones');
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const totalPages = Math.ceil(totalRecords / itemsPerPage);
   const getPageNumbers = () => {
