@@ -16,7 +16,7 @@ export function BuscadorGrabaciones() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalRecords, setTotalRecords] = useState(0);
   const { alertState, showError, closeAlert } = useAviso();
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('');
