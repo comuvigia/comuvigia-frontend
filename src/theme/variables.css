@@ -62,4 +62,43 @@ body.dark {
 
 
 
+ion-alert {
+  --background: var(--ion-background-color) !important;
+  --color: var(--ion-text-color) !important;
+}
+
+/* Botones dentro del Ion Alert */
+ion-alert button.alert-button,
+button.alert-button.sc-ion-alert-md {
+  color: var(--ion-color-primary) !important;
+  background: transparent !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 8px 14px !important;
+  text-transform: none !important;
+}
+
+/* Botón Cancelar */
+ion-alert button.alert-button-role-cancel,
+button.alert-button-role-cancel.sc-ion-alert-md {
+  color: var(--ion-color-medium, #888) !important;
+}
+
+/* Botón Confirmar (OK, Aceptar, etc.) */
+ion-alert button.alert-button-role-confirm,
+button.alert-button-role-confirm.sc-ion-alert-md {
+  background: var(--ion-color-primary) !important;
+  color: var(--ion-color-primary-contrast) !important;
+}
+
+/* Hover/Focus */
+ion-alert button.alert-button:hover,
+button.alert-button.sc-ion-alert-md:hover {
+  filter: brightness(1.1) !important;
+}
+
+/* Asegurar que el texto interno herede color */
+ion-alert .alert-button-inner {
+  color: inherit !important;
+}
 
