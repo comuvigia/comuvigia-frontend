@@ -206,8 +206,8 @@ const searchRecordings = async (page = 1) => {
             <option value="">Seleccionar rango</option>
             <option value="mañana">Mañana (6am-12pm)</option>
             <option value="tarde">Tarde (12pm-6pm)</option>
-            <option value="noche">Noche (6pm-11pm)</option>
-            <option value="madrugada">Madrugada (11pm-6am)</option>
+            <option value="noche">Noche (6pm-12pm)</option>
+            <option value="madrugada">Madrugada (12pm-6am)</option>
           </select>
         </div>
 
