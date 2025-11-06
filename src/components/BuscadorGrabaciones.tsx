@@ -17,7 +17,6 @@ export function BuscadorGrabaciones() {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [totalRecords, setTotalRecords] = useState(0);
   const { alertState, showError, closeAlert } = useAviso();
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('');
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
@@ -30,7 +29,6 @@ export function BuscadorGrabaciones() {
   const now = new Date();
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(now.getDate() - 7);
-
   const [startDate, setStartDate] = useState<string>(formatDateForInput(sevenDaysAgo));
 
   const mostrarError = (principal: string, titulo: string) => {
@@ -53,74 +51,55 @@ export function BuscadorGrabaciones() {
     fetchCameras();
   }, []);
 
-const searchRecordings = async (page = 1) => {
-  setLoading(true);
-  setError('');
-  try {
-    const pageNumber = typeof page === 'object' ? 1 : page;
+  const searchRecordings = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const formattedStartDate = new Date(startDate);
+      const formattedEndDate = new Date(formattedStartDate);
+      formattedEndDate.setDate(formattedEndDate.getDate() + 7);
 
-    // Fecha de inicio definida por el usuario
-    const formattedStartDate = new Date(startDate);
-    const formattedEndDate = new Date(formattedStartDate);
-    formattedEndDate.setDate(formattedEndDate.getDate() + 7);
+      const response = await fetch(
+        `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&per_page=${1000}&duration_min=5`
+      );
 
-    const response = await fetch(
-      `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${pageNumber}&per_page=${itemsPerPage}&duration_min=5`
-    );
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+      let videos = data.videos || [];
 
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
+      // 🔵 FILTRO LOCAL por horario
+      if (selectedTimeRange) {
+        videos = videos.filter((v: { time: string | number | Date; }) => {
+          const videoDate = new Date(v.time);
+          const hour = videoDate.getHours();
+          switch (selectedTimeRange) {
+            case 'mañana': return hour >= 6 && hour < 12;
+            case 'tarde': return hour >= 12 && hour < 18;
+            case 'noche': return hour >= 18 && hour <= 23;
+            case 'madrugada': return hour >= 0 && hour < 6;
+            default: return true;
+          }
+        });
+      }
 
-    let videos = data.videos || [];
+      if (videos.length === 0) mostrarError('No se encontraron grabaciones.', 'Sin resultados');
 
-    // 🟦 FILTRO LOCAL SOLO PARA HORARIO (sin romper paginación)
-    if (selectedTimeRange) {
-      videos = videos.filter((v: { time: string | number | Date; }) => {
-        const videoDate = new Date(v.time);
-        const hour = videoDate.getHours();
+      setRecordings(videos);
+      setCurrentPage(1);
 
-        switch (selectedTimeRange) {
-          case 'mañana':
-            return hour >= 6 && hour < 12;
-          case 'tarde':
-            return hour >= 12 && hour < 18;
-          case 'noche':
-            return hour >= 18 && hour <= 23;
-          case 'madrugada':
-            return hour >= 0 && hour < 6;
-          default:
-            return true;
-        }
-      });
+    } catch (err) {
+      setError('Error al cargar las grabaciones');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-
-    // 🟩 Si no hay resultados en la página actual
-    if (videos.length === 0) mostrarError('No se encontraron grabaciones.', 'Sin resultados');
-
-    // Mantiene paginación real
-    setRecordings(videos);
-    setTotalRecords(data.pagination.total);
-    setCurrentPage(page);
-
-  } catch (err) {
-    setError('Error al cargar las grabaciones');
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  const totalPages = Math.ceil(totalRecords / itemsPerPage);
-  const getPageNumbers = () => {
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   };
+
+  // 🔹 PAGINACIÓN LOCAL
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRecordings = recordings.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(recordings.length / itemsPerPage);
 
   const getThumbnailUrl = (cameraId: number, key: string) =>
     `${BACKEND_CAMERA_URL}/video/thumbnail/${cameraId}?source=mkv&key=${encodeURIComponent(key)}`;
@@ -192,12 +171,12 @@ const searchRecordings = async (page = 1) => {
         </div>
 
         <div className="filter-group">
-            <label>Fecha de inicio</label>
-            <input
-                type="date"
-                value={startDate.split('T')[0]} // solo la parte de la fecha
-                onChange={(e) => setStartDate(`${e.target.value}T00:00`)}
-            />
+          <label>Fecha de inicio</label>
+          <input
+            type="date"
+            value={startDate.split('T')[0]}
+            onChange={(e) => setStartDate(`${e.target.value}T00:00`)}
+          />
         </div>
 
         <div className="filter-group">
@@ -217,20 +196,16 @@ const searchRecordings = async (page = 1) => {
       </section>
 
       <div className="results-info">
-        {selectedTimeRange ? (
-          <>Mostrando grabaciones del rango <b>{selectedTimeRange}</b> ({(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} de {totalRecords})</>
-        ) : (
-          <>Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} de {totalRecords} resultados</>
-        )}
+        Mostrando {(indexOfFirstItem + 1)} - {Math.min(indexOfLastItem, recordings.length)} de {recordings.length} resultados
       </div>
 
       <section className="results-grid">
-        {recordings.length === 0 ? (
+        {currentRecordings.length === 0 ? (
           <div className="no-videos-message">
             {loading ? <IonSpinner name="crescent" /> : 'No hay grabaciones disponibles'}
           </div>
         ) : (
-          recordings.map((rec) => (
+          currentRecordings.map((rec) => (
             <div key={rec.id} className="result-card">
               <img src={getThumbnailUrl(selectedCamera, rec.key)} alt="Miniatura" className="result-thumbnail" />
               <div className="result-info">
@@ -255,13 +230,17 @@ const searchRecordings = async (page = 1) => {
       </section>
 
       <div className="pagination">
-        <button disabled={currentPage === 1} onClick={() => searchRecordings(currentPage - 1)}>&laquo;</button>
-        {getPageNumbers().map(page => (
-          <button key={page} className={currentPage === page ? 'active' : ''} onClick={() => searchRecordings(page)}>
-            {page}
+        <button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>&laquo;</button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            className={currentPage === i + 1 ? 'active' : ''}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
           </button>
         ))}
-        <button disabled={currentPage === totalPages} onClick={() => searchRecordings(currentPage + 1)}>&raquo;</button>
+        <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>&raquo;</button>
       </div>
     </div>
   );
