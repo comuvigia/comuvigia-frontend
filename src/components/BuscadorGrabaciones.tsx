@@ -58,11 +58,9 @@ const searchRecordings = async (page = 1) => {
   setError('');
   try {
     const pageNumber = typeof page === 'object' ? 1 : page;
-      
+
     // Fecha de inicio definida por el usuario
     const formattedStartDate = new Date(startDate);
-
-    // Fecha de fin = 7 días después
     const formattedEndDate = new Date(formattedStartDate);
     formattedEndDate.setDate(formattedEndDate.getDate() + 7);
 
@@ -75,7 +73,7 @@ const searchRecordings = async (page = 1) => {
 
     let videos = data.videos || [];
 
-    // 🟦 FILTRO LOCAL DE HORARIO (día por día)
+    // 🟦 FILTRO LOCAL SOLO PARA HORARIO (sin romper paginación)
     if (selectedTimeRange) {
       videos = videos.filter((v: { time: string | number | Date; }) => {
         const videoDate = new Date(v.time);
@@ -87,7 +85,7 @@ const searchRecordings = async (page = 1) => {
           case 'tarde':
             return hour >= 12 && hour < 18;
           case 'noche':
-            return hour >= 18 && hour < 24;
+            return hour >= 18 && hour <= 23;
           case 'madrugada':
             return hour >= 0 && hour < 6;
           default:
@@ -96,12 +94,12 @@ const searchRecordings = async (page = 1) => {
       });
     }
 
-    // 🟩 Si no hay resultados, mostrar error
+    // 🟩 Si no hay resultados en la página actual
     if (videos.length === 0) mostrarError('No se encontraron grabaciones.', 'Sin resultados');
 
-    // Guardar en estado
+    // Mantiene paginación real
     setRecordings(videos);
-    setTotalRecords(videos.length);
+    setTotalRecords(data.pagination.total);
     setCurrentPage(page);
 
   } catch (err) {
@@ -208,8 +206,8 @@ const searchRecordings = async (page = 1) => {
             <option value="">Seleccionar rango</option>
             <option value="mañana">Mañana (6am-12pm)</option>
             <option value="tarde">Tarde (12pm-6pm)</option>
-            <option value="noche">Noche (6pm-12pm)</option>
-            <option value="madrugada">Madrugada (12am-6am)</option>
+            <option value="noche">Noche (6pm-11pm)</option>
+            <option value="madrugada">Madrugada (11pm-6am)</option>
           </select>
         </div>
 
