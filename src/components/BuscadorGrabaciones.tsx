@@ -60,7 +60,7 @@ export function BuscadorGrabaciones() {
       formattedEndDate.setDate(formattedEndDate.getDate() + 7);
 
       const response = await fetch(
-        `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&per_page=${1000}&duration_min=5`
+        `${BACKEND_CAMERA_URL}/video/list/${selectedCamera}?source=mkv&start_date=${formattedStartDate.toISOString()}&end_date=${formattedEndDate.toISOString()}&page=${1}&per_page=${1000}&duration_min=5`
       );
 
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
