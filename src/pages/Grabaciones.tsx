@@ -418,7 +418,7 @@ function Historial(){
             </IonContent>
             </IonPopover>
             {loadingCameras || loadingAlerts ? (
-                <div className="full-page-loading">
+                <div className="full-page-loading " style={{overflow: "scroll"}}>
                     <IonSpinner name="crescent" />
                     <p>Cargando datos...</p>
                 </div>

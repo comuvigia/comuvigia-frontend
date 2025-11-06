@@ -4,6 +4,7 @@
   color: var(--ion-text-color);
   padding: 40px;
   transition: background 0.3s, color 0.3s;
+  overflow-y: scroll;
 }
 
 .page-header {
@@ -85,13 +86,14 @@ select:focus, input:focus {
   margin-bottom: 20px;
   font-size: 1.1rem;
   color: var(--ion-text-color);
+  overflow-y: scroll;
 }
 
 .results-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 
 .result-card {
