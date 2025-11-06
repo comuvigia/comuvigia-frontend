@@ -241,7 +241,7 @@ export default function Historial() {
 
   // ---------- Render ----------
   return (
-    <>
+    <IonContent>
       <HistorialTutorial run={showTutorial} onFinish={handleFinishTutorial} />
       <Navbar
         unseenCount={unseenAlerts.length}
@@ -409,6 +409,6 @@ export default function Historial() {
           )}
         </div>
       )}
-    </>
+    </IonContent>
   );
 }
