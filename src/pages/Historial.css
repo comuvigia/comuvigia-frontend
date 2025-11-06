@@ -12,6 +12,14 @@
   background: var(--ion-background-color);
   color: var(--ion-text-color, #000);
 }
+.full-page-loading {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  padding-top: 20vh;
+}
 
 /* Left - cameras */
 .cameras-list {

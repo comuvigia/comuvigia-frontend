@@ -563,7 +563,7 @@ function Reportes() {
   
 
   return (
-    <div className="reportes-page">
+    <IonContent>
       <ReportesTutorial run={showTutorial} onFinish={handleFinishTutorial} />
       <Navbar unseenCount={unseenCountAlerts} onShowNotifications={handleShowNotifications} onShowTutorial={handleShowTutorial}/>
 
@@ -870,7 +870,7 @@ function Reportes() {
           </div>
         )}
       </div>
-    </div>
+    </IonContent>
   );
 }
 

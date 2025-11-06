@@ -95,7 +95,7 @@ const FeedCamaras: React.FC = () => {
 
   const idsSeleccionados = seleccionadas.filter((c) => c !== null).map((c) => c!.id);
   const grids = seleccionadas.slice(0, numFeed);
-  const colSize = numFeed === 1 ? "12" : numFeed === 2 ? "6" : "6";
+  const colSize = numFeed === 1 ? "6" : numFeed === 2 ? "6" : "6";
 
   const {addToast, removeToast} = useToast();
   const [toastId, setToastId] = useState<number | null>(null);
@@ -480,261 +480,260 @@ const FeedCamaras: React.FC = () => {
   };
 
   return (
-    <div className="feed-page">
-      <FeedCamarasTutorial run={showTutorial} onFinish={handleFinishTutorial} />
-      <Navbar
-        unseenCount={unseenCountAlerts}
-        onShowNotifications={handleShowNotifications}
-        onShowMantenedores={handleShowMantenedores}
-        onShowTutorial={handleShowTutorial}
-      />
+    <IonContent>
+        <FeedCamarasTutorial run={showTutorial} onFinish={handleFinishTutorial} />
+        <Navbar
+          unseenCount={unseenCountAlerts}
+          onShowNotifications={handleShowNotifications}
+          onShowMantenedores={handleShowMantenedores}
+          onShowTutorial={handleShowTutorial}
+        />
 
-      <IonPopover
-        isOpen={popoverOpen}
-        event={event}
-        onDidDismiss={() => setPopoverOpen(false)}
-        side="bottom"
-        alignment="end"
-        
-      >
-        <IonContent class='custom-content'>
-          <NotificacionesPopover
-            alerts={
-              [...alerts].sort((a, b) => {
-                // Se ordena por estado: no vistas (estado === 0) primero
-                if (a.estado !== b.estado) {
-                  return a.estado === 0 ? -1 : 1;
-                }
-                // Si tienen el mismo estado, ordenamos por hora_suceso descendente
-                return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
-              })
-            }
-            cameraNames={cameraNames}
-            variant="sidebar"
-            formatearFecha={formatearFecha}
-            handleAccion={async (alert, accion) => {
-              const nuevoEstado = accion === "leida" ? 1 : 2;
-              await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
-            }}
-            onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
-            mostrarCamarasCaidas={true}
-            onMarcarTodasVistas={marcarTodasComoVistas} // <- Agregar esta prop
-            unseenCount={unseenCountAlerts} // <- Pasar el contador de no vistas
-          />
-        </IonContent>
-      </IonPopover>
+        <IonPopover
+          isOpen={popoverOpen}
+          event={event}
+          onDidDismiss={() => setPopoverOpen(false)}
+          side="bottom"
+          alignment="end"
+          
+        >
+          <IonContent class='custom-content'>
+            <NotificacionesPopover
+              alerts={
+                [...alerts].sort((a, b) => {
+                  // Se ordena por estado: no vistas (estado === 0) primero
+                  if (a.estado !== b.estado) {
+                    return a.estado === 0 ? -1 : 1;
+                  }
+                  // Si tienen el mismo estado, ordenamos por hora_suceso descendente
+                  return new Date(b.hora_suceso).getTime() - new Date(a.hora_suceso).getTime();
+                })
+              }
+              cameraNames={cameraNames}
+              variant="sidebar"
+              formatearFecha={formatearFecha}
+              handleAccion={async (alert, accion) => {
+                const nuevoEstado = accion === "leida" ? 1 : 2;
+                await marcarVistaAlerta(alert, nuevoEstado, setAlerts, setUnseenAlerts);
+              }}
+              onVerDescripcion={(alerta) => handleVerDescripcion(alerta)}
+              mostrarCamarasCaidas={true}
+              onMarcarTodasVistas={marcarTodasComoVistas} // <- Agregar esta prop
+              unseenCount={unseenCountAlerts} // <- Pasar el contador de no vistas
+            />
+          </IonContent>
+        </IonPopover>
 
-      <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)} className="modal-descripcion">
-        <IonContent className="ion-padding">
-          <h2>Alerta {alertaSeleccionada?.id}</h2>
-          <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; {alertaSeleccionada ? cameraNames[alertaSeleccionada.id_camara] ?? `ID ${alertaSeleccionada.id_camara}` : ''} &nbsp; | &nbsp; Sector: {alertaSeleccionada?.sector} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
-          <br />
-          {/* Sección de descripción */}
-          <h2>Descripción del suceso</h2>
-          {editandoDescripcion ? (
-            <div style={{ marginBottom: '15px' }}>
-              <IonTextarea
-                value={nuevaDescripcion}
-                onIonInput={(e) => setNuevaDescripcion(e.detail.value!)}
-                autoGrow={true}
-                rows={4}
-                placeholder="Escribe la descripción aquí..."
-                style={{
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  padding: '10px',
-                  marginBottom: '10px'
-                }}
-              />
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <IonButton 
-                  onClick={guardarDescripcion} 
-                  disabled={guardando}
-                  style={{ flex: 1 }}
-                >
-                  {guardando ? <IonSpinner name="crescent" className='spinner-descarga' /> : 'Guardar'}
-                </IonButton>
-                <IonButton 
-                  color="medium" 
-                  onClick={() => {
-                    setEditandoDescripcion(false);
-                    setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
-                  }}
-                  disabled={guardando}
-                  style={{ flex: 1 }}
-                >
-                  Cancelar
-                </IonButton>
-              </div>
-            </div>
-          ) : (
-            <div>
-              {alertaSeleccionada?.descripcion_suceso ? (
-                <p>{alertaSeleccionada.descripcion_suceso}</p>
-              ) : (
-                <p style={{ fontStyle: 'italic', color: '#888' }}>Esta alerta no tiene descripción</p>
-              )}
-              {user && user.rol == 2 && (
-                <IonButton
-                  expand="block"
-                  onClick={() => {
-                    setEditandoDescripcion(true);
-                    setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
-                  }}
+        <IonModal isOpen={mostrarDescripcion} onDidDismiss={() => setMostrarDescripcion(false)} className="modal-descripcion">
+          <IonContent className="ion-padding">
+            <h2>Alerta {alertaSeleccionada?.id}</h2>
+            <p>Score: {alertaSeleccionada?.score_confianza} &nbsp; | &nbsp; {alertaSeleccionada ? cameraNames[alertaSeleccionada.id_camara] ?? `ID ${alertaSeleccionada.id_camara}` : ''} &nbsp; | &nbsp; Sector: {alertaSeleccionada?.sector} &nbsp; | &nbsp; Estado: {alertaSeleccionada?.estado !== undefined && estados[alertaSeleccionada.estado]}</p>
+            <br />
+            {/* Sección de descripción */}
+            <h2>Descripción del suceso</h2>
+            {editandoDescripcion ? (
+              <div style={{ marginBottom: '15px' }}>
+                <IonTextarea
+                  value={nuevaDescripcion}
+                  onIonInput={(e) => setNuevaDescripcion(e.detail.value!)}
+                  autoGrow={true}
+                  rows={4}
+                  placeholder="Escribe la descripción aquí..."
                   style={{
-                    marginTop: '10px',
-                    fontSize: '1.1rem',
-                    '--border-radius': '15px',
-                    '--background': '#1B4965'
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    marginBottom: '10px'
                   }}
-                >
-                  Editar descripción
-                </IonButton>
-              )}
-            </div>
-          )}
-
-          <h2>Clip del suceso</h2>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-            { alertaSeleccionada?.clip ? (
-              <video 
-                controls 
-                autoPlay 
-                className="video-clip"
-                src={ `${CAMERA_URL}/video/play?key=${alertaSeleccionada?.clip}&format=mp4` }
-              />
+                />
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <IonButton 
+                    onClick={guardarDescripcion} 
+                    disabled={guardando}
+                    style={{ flex: 1 }}
+                  >
+                    {guardando ? <IonSpinner name="crescent" className='spinner-descarga' /> : 'Guardar'}
+                  </IonButton>
+                  <IonButton 
+                    color="medium" 
+                    onClick={() => {
+                      setEditandoDescripcion(false);
+                      setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
+                    }}
+                    disabled={guardando}
+                    style={{ flex: 1 }}
+                  >
+                    Cancelar
+                  </IonButton>
+                </div>
+              </div>
             ) : (
-                  <p style={{fontStyle: 'italic'}}>No hay clip disponible para esta alerta </p>
-                )
-            }
-            
-          </div>
-          <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}>
-            <IonButton 
-              color="danger"
-              expand="block"
-              onClick={() => downloadClip(alertaSeleccionada?.clip || '')}
-              disabled={downloadingClip === alertaSeleccionada?.clip}
-              style={{
-                padding: '0px 25px 15px',
-                fontSize: '1.1rem',
-                '--border-radius': '15px',
-              }}
-            >
-              {downloadingClip === alertaSeleccionada?.clip ? (
-                <IonSpinner name="crescent" className='spinner-descarga' />
+              <div>
+                {alertaSeleccionada?.descripcion_suceso ? (
+                  <p>{alertaSeleccionada.descripcion_suceso}</p>
+                ) : (
+                  <p style={{ fontStyle: 'italic', color: '#888' }}>Esta alerta no tiene descripción</p>
+                )}
+                {user && user.rol == 2 && (
+                  <IonButton
+                    expand="block"
+                    onClick={() => {
+                      setEditandoDescripcion(true);
+                      setNuevaDescripcion(alertaSeleccionada?.descripcion_suceso || "");
+                    }}
+                    style={{
+                      marginTop: '10px',
+                      fontSize: '1.1rem',
+                      '--border-radius': '15px',
+                      '--background': '#1B4965'
+                    }}
+                  >
+                    Editar descripción
+                  </IonButton>
+                )}
+              </div>
+            )}
+
+            <h2>Clip del suceso</h2>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+              { alertaSeleccionada?.clip ? (
+                <video 
+                  controls 
+                  autoPlay 
+                  className="video-clip"
+                  src={ `${CAMERA_URL}/video/play?key=${alertaSeleccionada?.clip}&format=mp4` }
+                />
               ) : (
-                'Descargar'
-              )}
-            </IonButton>
-            <IonButton 
-              color="secondary"
-              expand="block"
-              onClick={() => downloadZip(alertaSeleccionada)}
-              disabled={downloadingZip === alertaSeleccionada?.id}
-              style={{
-                padding: '0px 25px 15px',
-                fontSize: '1.1rem',
-                '--border-radius': '15px',
-              }}
+                    <p style={{fontStyle: 'italic'}}>No hay clip disponible para esta alerta </p>
+                  )
+              }
+              
+            </div>
+            <div style={{display: 'flex', justifyContent: 'center', padding: '10px'}}>
+              <IonButton 
+                color="danger"
+                expand="block"
+                onClick={() => downloadClip(alertaSeleccionada?.clip || '')}
+                disabled={downloadingClip === alertaSeleccionada?.clip}
+                style={{
+                  padding: '0px 25px 15px',
+                  fontSize: '1.1rem',
+                  '--border-radius': '15px',
+                }}
+              >
+                {downloadingClip === alertaSeleccionada?.clip ? (
+                  <IonSpinner name="crescent" className='spinner-descarga' />
+                ) : (
+                  'Descargar'
+                )}
+              </IonButton>
+              <IonButton 
+                color="secondary"
+                expand="block"
+                onClick={() => downloadZip(alertaSeleccionada)}
+                disabled={downloadingZip === alertaSeleccionada?.id}
+                style={{
+                  padding: '0px 25px 15px',
+                  fontSize: '1.1rem',
+                  '--border-radius': '15px',
+                }}
+              >
+                {downloadingZip === alertaSeleccionada?.id ? (
+                  <IonSpinner name="crescent" className='spinner-descarga' />
+                ) : (
+                  'Descargar ZIP'
+                )}
+              </IonButton>
+              <IonButton color="medium"
+                expand="block"
+                onClick={() => setMostrarDescripcion(false)}
+                style={{
+                  padding: '0px 25px 15px',
+                  fontSize: '1.1rem',
+                  '--border-radius': '15px',
+                }}
+              >
+                Cerrar
+              </IonButton>
+            </div>
+          </IonContent>
+        </IonModal>
+
+        <div className="feed-content ion-padding">
+          <div className="segment-container">
+            <IonLabel style={{fontWeight:'bold', color:'#1B4965'}}>Seleccina una vista</IonLabel>
+            <IonSegment
+              value={String(numFeed)}
+              onIonChange={(e) =>
+                handleNumFeedChange(Number(e.detail.value) as 1 | 2 | 4)
+              }
             >
-              {downloadingZip === alertaSeleccionada?.id ? (
-                <IonSpinner name="crescent" className='spinner-descarga' />
-              ) : (
-                'Descargar ZIP'
-              )}
-            </IonButton>
-            <IonButton color="medium"
-              expand="block"
-              onClick={() => setMostrarDescripcion(false)}
-              style={{
-                padding: '0px 25px 15px',
-                fontSize: '1.1rem',
-                '--border-radius': '15px',
-              }}
-            >
-              Cerrar
-            </IonButton>
+              <IonSegmentButton value="1" style={{paddingBottom:'5px'}}>1 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
+              <IonSegmentButton value="2" style={{paddingBottom:'5px'}}>2 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
+              <IonSegmentButton value="4" style={{paddingBottom:'5px'}}>4 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
+            </IonSegment>
           </div>
-        </IonContent>
-      </IonModal>
 
-      <div className="feed-content ion-padding">
-        <div className="segment-container">
-          <IonLabel style={{fontWeight:'bold', color:'#1B4965'}}>Seleccina una vista</IonLabel>
-          <IonSegment
-            value={String(numFeed)}
-            onIonChange={(e) =>
-              handleNumFeedChange(Number(e.detail.value) as 1 | 2 | 4)
-            }
-          >
-            <IonSegmentButton value="1" style={{paddingBottom:'5px'}}>1 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
-            <IonSegmentButton value="2" style={{paddingBottom:'5px'}}>2 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
-            <IonSegmentButton value="4" style={{paddingBottom:'5px'}}>4 <IonIcon src={videocam} style={{marginBottom:'0'}}></IonIcon></IonSegmentButton>
-          </IonSegment>
-        </div>
+          <IonGrid>
+            <IonRow style={{display: 'flex', justifyContent: 'center'}}>
+              {grids.map((cam, index) => (
+                <IonCol key={index} size={colSize}>
+                  <IonCard>
+                    <IonCardHeader>
+                      <IonItem lines="none">
+                        <IonLabel>
+                          {cam ? cam.nombre : `Cámara ${index + 1}`}
+                        </IonLabel>
 
-        <IonGrid>
-          <IonRow>
-            {grids.map((cam, index) => (
-              <IonCol key={index} size={colSize}>
-                <IonCard>
-                  <IonCardHeader>
-                    <IonItem lines="none">
-                      <IonLabel>
-                        {cam ? cam.nombre : `Cámara ${index + 1}`}
-                      </IonLabel>
+                        <IonSelect
+                          placeholder="Seleccionar cámara"
+                          value={cam?.id}
+                          onIonChange={(e) => handleCamChange(index, e.detail.value)}
+                        >
+                          {cameras
+                            .filter(
+                              (c) =>
+                                c.id === cam?.id || !idsSeleccionados.includes(c.id)
+                            )
+                            .map((c) => (
+                              <IonSelectOption key={c.id} value={c.id}>
+                                {c.nombre}
+                              </IonSelectOption>
+                            ))}
+                        </IonSelect>
+                      </IonItem>
+                    </IonCardHeader>
 
-                      <IonSelect
-                        placeholder="Seleccionar cámara"
-                        value={cam?.id}
-                        onIonChange={(e) => handleCamChange(index, e.detail.value)}
-                      >
-                        {cameras
-                          .filter(
-                            (c) =>
-                              c.id === cam?.id || !idsSeleccionados.includes(c.id)
-                          )
-                          .map((c) => (
-                            <IonSelectOption key={c.id} value={c.id}>
-                              {c.nombre}
-                            </IonSelectOption>
-                          ))}
-                      </IonSelect>
-                    </IonItem>
-                  </IonCardHeader>
-
-                  <IonCardContent style={{display:'flex', justifyContent:'center'}}>
-                    {cam ? (
-                      cam.link_camara_externo ? (
-                        <img
-                          src={cam.link_camara_externo}
-                          alt={cam.nombre}
-                          className="feed-video"
-                        />
+                    <IonCardContent style={{display:'flex', justifyContent:'center'}}>
+                      {cam ? (
+                        cam.link_camara_externo ? (
+                          <img
+                            src={cam.link_camara_externo}
+                            alt={cam.nombre}
+                            className="feed-video"
+                          />
+                        ) : (
+                          <video
+                            src={`${BUCKET_URL}${cam.link_camara}`}
+                            autoPlay
+                            muted
+                            controls
+                            className="feed-video"
+                          />
+                        )
                       ) : (
-                        <video
-                          src={`${BUCKET_URL}${cam.link_camara}`}
-                          autoPlay
-                          muted
-                          controls
-                          className="feed-video"
-                        />
-                      )
-                    ) : (
-                      <div className="feed-placeholder">
-                        <p></p>
-                      </div>
-                    )}
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-            ))}
-          </IonRow>
-        </IonGrid>
-      </div>
-    </div>
-
+                        <div className="feed-placeholder">
+                          <p></p>
+                        </div>
+                      )}
+                    </IonCardContent>
+                  </IonCard>
+                </IonCol>
+              ))}
+            </IonRow>
+          </IonGrid>
+        </div>
+      </IonContent>
   );
 };
 

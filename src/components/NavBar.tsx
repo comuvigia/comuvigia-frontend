@@ -58,13 +58,13 @@ export function Navbar({ unseenCount, onShowNotifications, onShowMantenedores, o
       {/* Menú Hamburguesa */}
       {user && (user.rol == 1 || user.rol == 2) && (
         <IonMenu side="start" contentId="main-content">
-          <IonHeader>
+          <div className='header-div'>
             <IonToolbar>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 
               </div>
             </IonToolbar>
-          </IonHeader>
+          </div>
           <IonContent>
             <IonList style={{ padding: 0, marginTop: '20px' }}>
               <IonItem routerLink='/home' className='item-nav'>Inicio</IonItem>
