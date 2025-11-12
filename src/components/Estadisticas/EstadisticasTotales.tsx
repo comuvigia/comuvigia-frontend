@@ -30,7 +30,7 @@ const EstadisticasTotales: React.FC<EstadisticasTotalesProps> = ({ estadisticas_
     : 0;
 
   return (
-    <IonCard id='estadisticas-totales'>
+    <IonCard id='estadisticas-totales' style={{width: '100%'}}>
       <IonCardHeader>
         <IonCardTitle>Estadísticas Totales</IonCardTitle>
       </IonCardHeader>

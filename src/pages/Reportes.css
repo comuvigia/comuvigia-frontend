@@ -40,6 +40,8 @@
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
 }
 
 
@@ -86,8 +88,8 @@
 }
 
 .card canvas {
-  width: 100% !important;
-  height: 100 !important;
+  width: 400px !important;
+  height: 200px !important;
 }
 
 /* Spinner central */

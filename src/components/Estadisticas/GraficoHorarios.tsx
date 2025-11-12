@@ -98,7 +98,7 @@ const GraficoHorarios: React.FC<GraficoHorariosProps> = ({ horarios }) => {
   // 🧠 Evitar render vacío
   if (!horarios || horarios.length === 0) {
     return (
-      <IonCard style={{ width: "100%", borderRadius: "12px" }}>
+      <IonCard style={{ width: "fit-content", borderRadius: "12px" }}>
         <IonCardHeader>
           <IonCardTitle style={{ textAlign: "center" }}>
             Distribución horaria por tipo de delito
@@ -113,7 +113,7 @@ const GraficoHorarios: React.FC<GraficoHorariosProps> = ({ horarios }) => {
   console.log("📊 Horarios recibidos:", horarios)
 
   return (
-    <IonCard style={{ width: "100%", borderRadius: "12px" }}>
+    <IonCard style={{ width: "fit-content", borderRadius: "12px", overflowY: 'auto'}}>
         
       <IonCardHeader>
         <IonCardTitle style={{ textAlign: "center" }}>
@@ -124,8 +124,6 @@ const GraficoHorarios: React.FC<GraficoHorariosProps> = ({ horarios }) => {
       <IonCardContent>
         <div
           style={{
-            width: "100%",
-            height: "400px",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",

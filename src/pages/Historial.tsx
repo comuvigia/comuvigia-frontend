@@ -268,6 +268,7 @@ export default function Historial() {
 
       <div className="search-section">
         <IonSearchbar
+          style={{'--border-radius': '12px'}}
           placeholder="Buscar alertas..."
           value={searchQuery}
           onIonInput={e => {

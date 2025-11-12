@@ -751,15 +751,15 @@ function Reportes() {
       </IonModal>
 
       {/* Contenedor de reportes */}
+      {loading && (
+        <div className="loading-container card">
+          <IonSpinner
+            style={{ '--color': '#1B4965', width: '40px', height: '40px' }}
+          />
+          <p>Cargando datos del reporte...</p>
+        </div>
+      )}
       <div className="grid-container">
-        {loading && (
-          <div className="loading-container card">
-            <IonSpinner
-              style={{ '--color': '#1B4965', width: '40px', height: '40px' }}
-            />
-            <p>Cargando datos del reporte...</p>
-          </div>
-        )}
 
         {!loading && data && (
           <>
@@ -831,8 +831,8 @@ function Reportes() {
                 <GraficoHorarios horarios={dataHorarios} />
                 {/* Mostrar también los top horarios si existen */}
                 {topHorarios && (
-                  <div style={{ marginTop: '12px', fontSize: '0.9rem' }}>
-                    <strong>🕒 Horarios más críticos:</strong><br />
+                  <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                    <strong>🕒 Horarios más críticos</strong><br />
                     Merodeos: {topHorarios.merodeos?.join(', ') || '—'}<br />
                     Portonazos: {topHorarios.portonazos?.join(', ') || '—'}<br />
                     Asaltos Hogar: {topHorarios.asaltos_hogar?.join(', ') || '—'}
