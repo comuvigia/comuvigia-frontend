@@ -95,8 +95,11 @@ const FeedCamaras: React.FC = () => {
 
   const idsSeleccionados = seleccionadas.filter((c) => c !== null).map((c) => c!.id);
   const grids = seleccionadas.slice(0, numFeed);
-  const colSize = numFeed === 1 ? "6" : numFeed === 2 ? "6" : "6";
-
+  //const colSize = numFeed === 1 ? "6" : numFeed === 2 ? "6" : "6";
+  const colSize = {
+    xs: "12", 
+    md: numFeed === 1 ? "10" : "6"
+  };
   const {addToast, removeToast} = useToast();
   const [toastId, setToastId] = useState<number | null>(null);
   
@@ -677,7 +680,9 @@ const FeedCamaras: React.FC = () => {
           <IonGrid>
             <IonRow style={{display: 'flex', justifyContent: 'center'}}>
               {grids.map((cam, index) => (
-                <IonCol key={index} size={colSize}>
+                <IonCol key={index} 
+                  size-xs={colSize.xs} 
+                  size-md={colSize.md}>
                   <IonCard>
                     <IonCardHeader>
                       <IonItem lines="none">
@@ -686,6 +691,7 @@ const FeedCamaras: React.FC = () => {
                         </IonLabel>
 
                         <IonSelect
+                          interface="popover"
                           placeholder="Seleccionar cámara"
                           value={cam?.id}
                           onIonChange={(e) => handleCamChange(index, e.detail.value)}
@@ -722,8 +728,9 @@ const FeedCamaras: React.FC = () => {
                           />
                         )
                       ) : (
-                        <div className="feed-placeholder">
-                          <p></p>
+                        <div style={{display:'flex', justifyContent:'center'}}>
+                          <img src="/fondo_camara.png" style={{width:'85%', borderRadius: '12px'}}></img>
+
                         </div>
                       )}
                     </IonCardContent>

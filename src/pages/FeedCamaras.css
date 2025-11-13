@@ -12,10 +12,12 @@
   object-fit: contain;
   border-radius: 12px;
   background: #000;
+  text-align: center;
+  color: white;
 }
 
 .feed-placeholder {
-  background-image: url('/fondo_camara.png');
+  /*background-image: url('/fondo_camara.png');*/
   height: 300px;
   display: flex;
   align-items: center;
