@@ -224,7 +224,7 @@ const searchRecordings = async (page = 1) => {
         )}
       </div>
 
-      <section className="results-grid">
+      <section style={{paddingTop:'3rem', display: 'flex', justifyContent: 'center'}}>
         {recordings.length === 0 ? (
           <div className="no-videos-message">
             {loading ? <IonSpinner name="crescent" /> : 'No hay grabaciones disponibles'}
