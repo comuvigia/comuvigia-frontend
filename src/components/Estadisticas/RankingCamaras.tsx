@@ -87,6 +87,7 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader 
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
+                        width: '300px',
                       }}
                     >
                       {cam.direccion}
@@ -154,6 +155,7 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader 
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
+                    width: '300px',
                   }}
                 >
                   {cam.direccion}
