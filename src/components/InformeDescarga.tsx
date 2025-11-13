@@ -125,7 +125,7 @@ const InformeDescarga: React.FC = () => {
 };
 
   return (
-    <IonCard id="informe-descarga" style={{width: '100%'}}>
+    <IonCard id="informe-descarga" style={{width: '100%', borderRadius: '12px'}}>
       <IonCardHeader>
         <IonCardTitle>Descarga de informe</IonCardTitle>
       </IonCardHeader>

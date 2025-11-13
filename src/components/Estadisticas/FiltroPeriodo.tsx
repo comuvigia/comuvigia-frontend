@@ -19,7 +19,7 @@ interface FiltroPeriodoProps {
 const FiltroPeriodo: React.FC<FiltroPeriodoProps> = ({
   fechaInicio, fechaFin, setFechaInicio, setFechaFin, agrupacion, setAgrupacion, onGenerarReporte
 }) => (
-  <IonCard id='filtro-periodo'>
+  <IonCard id='filtro-periodo' style={{ borderRadius: '12px' }}>
     <IonCardHeader>
       <IonCardTitle>Período del Reporte</IonCardTitle>
     </IonCardHeader>

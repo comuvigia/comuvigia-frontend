@@ -108,7 +108,7 @@ const ReporteEstadisticas: React.FC<ReporteEstadisticasProps> = ({
   return (
       <div>
         {/* Header con período */}
-        <IonCard>
+        <IonCard >
           <IonCardHeader>
             <IonCardTitle>Período del Reporte</IonCardTitle>
           </IonCardHeader>

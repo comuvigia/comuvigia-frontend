@@ -68,7 +68,7 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader 
                     {index + 1}
                   </div>
 
-                  <div style={{ flex: 1, marginLeft: "12px" }}>
+                  <div style={{ flex: 1, minWidth: 0, marginLeft: "12px" }}>
                     <div
                       style={{
                         fontSize: "0.95rem",
@@ -136,7 +136,7 @@ const RankingCamaras: React.FC<RankingCamarasProps> = ({ cameras, mostrarHeader 
                 {index + 1}
               </div>
 
-              <div style={{ flex: 1, marginLeft: "12px" }}>
+              <div style={{ flex: 1, minWidth: 0, marginLeft: "12px" }}>
                 <div
                   style={{
                     fontSize: "0.95rem",

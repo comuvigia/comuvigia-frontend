@@ -4,7 +4,7 @@ import { IonCard, IonCardHeader, IonCardTitle, IonCardContent } from '@ionic/rea
 import { BarChartTipo } from '../Charts';
 
 const GraficoTipo: React.FC<{ data: any }> = ({ data }) => (
-  <IonCard id='grafico-tipo' className="centrar">
+  <IonCard id='grafico-tipo' className="centrar" style={{ borderRadius: '12px' }}>
     <IonCardHeader>
       <IonCardTitle>Distribución por Tipo</IonCardTitle>
     </IonCardHeader>
